@@ -18,14 +18,14 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const navLinks = [
+  const navLinks: Array<{ label: string; desktopHref: string; mobileHref: string }> = [
     // Match homepage section order
-    { href: '#gallery', label: 'Photos' },
-    { href: '#details', label: 'Property' },
-    { href: '#amenities', label: 'Amenities' },
-    { href: '#testimonials', label: 'Reviews' },
-    { href: '#local-area', label: 'Nearby' },
-    { href: '#calendar', label: 'Availability' },
+    { label: 'Photos', desktopHref: '#gallery', mobileHref: '/photos' },
+    { label: 'Property', desktopHref: '#details', mobileHref: '#details' },
+    { label: 'Amenities', desktopHref: '#amenities', mobileHref: '#amenities' },
+    { label: 'Reviews', desktopHref: '#testimonials', mobileHref: '#testimonials' },
+    { label: 'Nearby', desktopHref: '#local-area', mobileHref: '#local-area' },
+    { label: 'Availability', desktopHref: '#calendar', mobileHref: '#calendar' },
   ]
 
   return (
@@ -55,7 +55,7 @@ export default function Navigation() {
                 priority
               />
             </span>
-            <span className="hidden sm:inline">Max Enterain</span>
+            <span className="hidden sm:inline">Max Entertain</span>
             <span className="sm:hidden">Max</span>
           </Link>
 
@@ -63,8 +63,8 @@ export default function Navigation() {
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <a
-                key={link.href}
-                href={link.href}
+                key={link.label}
+                href={link.desktopHref}
                 className={`transition-colors font-medium text-sm ${
                   isScrolled
                     ? 'text-gray-700 hover:text-luxury-gold'
@@ -108,8 +108,8 @@ export default function Navigation() {
             <div className="container-custom px-4 py-4 space-y-4">
               {navLinks.map((link) => (
                 <a
-                  key={link.href}
-                  href={link.href}
+                  key={link.label}
+                  href={link.mobileHref}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="block text-gray-700 hover:text-luxury-gold transition-colors font-medium py-2"
                 >

@@ -121,12 +121,20 @@ export default function Hero() {
                     <span>VRBO</span>
                   </a>
                 )}
+                {/* Desktop: scroll to photos section */}
                 <a
                   href="#gallery"
-                  className="btn-secondary text-white border-white hover:bg-white hover:text-luxury-dark"
+                  className="hidden md:inline-flex btn-secondary text-white border-white hover:bg-white hover:text-luxury-dark"
                 >
                   Explore Property
                 </a>
+                {/* Mobile: open dedicated photos page */}
+                <Link
+                  href="/photos"
+                  className="md:hidden btn-secondary text-white border-white hover:bg-white hover:text-luxury-dark"
+                >
+                  Explore Property
+                </Link>
               </div>
             </div>
           </motion.div>
