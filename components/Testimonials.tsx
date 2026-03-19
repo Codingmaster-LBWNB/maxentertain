@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { Star, Quote } from 'lucide-react'
 import { propertyConfig } from '@/config/property'
 import AwardBanner from '@/components/AwardBanner'
@@ -41,8 +42,12 @@ export default function Testimonials() {
   const rest = testimonials.slice(4)
 
   const ReviewCard = ({ testimonial, index }: { testimonial: (typeof testimonials)[number]; index: number }) => (
-    <div
+    <motion.div
       key={`${testimonial.name}-${testimonial.date}-${index}`}
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.55, ease: 'easeOut', delay: (index % 3) * 0.1 }}
       className="bg-gradient-to-br from-luxury-light to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
     >
       <Quote className="text-luxury-gold mb-4" size={32} />
@@ -58,7 +63,7 @@ export default function Testimonials() {
         <p className="font-semibold text-luxury-dark">{testimonial.name}</p>
         <p className="text-sm text-gray-500">{testimonial.date}</p>
       </div>
-    </div>
+    </motion.div>
   )
 
   return (
