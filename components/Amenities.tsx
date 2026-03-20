@@ -142,26 +142,19 @@ export default function Amenities() {
           </p>
         </div>
 
-        <motion.div
+        <div
           id="amenities-grid"
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-60px' }}
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.06 } },
-          }}
         >
           {visibleAmenities.map((amenity, index) => {
             const Icon = getIcon(amenity)
             return (
               <motion.div
-                key={index}
-                variants={{
-                  hidden: { opacity: 0, y: 24 },
-                  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } },
-                }}
+                key={amenity}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.45, ease: 'easeOut', delay: Math.min(index * 0.04, 0.35) }}
                 className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1 hover:scale-[1.02]"
               >
                 <div className="flex flex-col items-center text-center">
@@ -175,7 +168,7 @@ export default function Amenities() {
               </motion.div>
             )
           })}
-        </motion.div>
+        </div>
 
         {allAmenities.length > INITIAL_VISIBLE && (
           <div className="mt-10 flex items-center justify-center">
