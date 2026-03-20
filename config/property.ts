@@ -36,6 +36,8 @@ export interface PropertyConfig {
     attractions: {
       name: string;
       type: 'restaurant' | 'attraction' | 'activity' | 'beach' | 'shopping';
+      // Optional external website for this attraction
+      url?: string;
       // Legacy distance label (if you don't provide structured drive info)
       distance?: string;
       // Optional nearby photo (stored under `/public/images/...`)
@@ -585,60 +587,70 @@ This helps keep the home safe, quiet and comfortable for families and neighbours
       {
         name: "Rye Pier",
         type: "attraction",
+        url: "https://www.visitmorningtonpeninsula.org/Places-To-See/Beaches-Coastline/Piers-Jetties/View/5b42f1e6af2d017d4be728e4/Rye-Pier",
         image: nearby("Rye pier.webp"),
         drive: { distanceKm: 3.1, durationMin: 6 },
       },
       {
         name: "Peninsula Hot Springs",
         type: "activity",
+        url: "https://www.peninsulahotsprings.com/",
         image: nearby("Peninsular hot springs.jpeg"),
         drive: { distanceKm: 7.1, durationMin: 10 },
       },
       {
         name: "Alba Thermal Springs & Spa",
         type: "activity",
+        url: "https://albathermalsprings.com.au/",
         image: nearby("alba.jpg"),
         drive: { distanceKm: 5.8, durationMin: 8 },
       },
       {
         name: "Rosebud Plaza",
         type: "shopping",
+        url: "https://rosebudplaza.com.au/",
         image: nearby("rosebud plazza.jpg"),
         drive: { distanceKm: 4.2, durationMin: 6 },
       },
       {
         name: "Pt. Leo Estate",
         type: "restaurant",
+        url: "https://www.ptleoestate.com.au/",
         image: nearby("Pt. Leo Estate.jpeg"),
         drive: { distanceKm: 27.7, durationMin: 28 },
       },
       {
         name: "The Cups Estate",
         type: "restaurant",
+        url: "https://www.thecupsestate.com.au/",
         image: nearby("The cups estate.jpg"),
         drive: { distanceKm: 5.0, durationMin: 6 },
       },
       {
         name: "Moonah Links Golf",
         type: "activity",
+        url: "https://www.moonahlinks.com.au/cms/",
         image: nearby("Moonah Links golf.jpg"),
         drive: { distanceKm: 6.4, durationMin: 9 },
       },
       {
         name: "The National Golf Club",
         type: "activity",
+        url: "https://nationalgolf.com.au/",
         image: nearby("national golf.jpg"),
         drive: { distanceKm: 14.5, durationMin: 17 },
       },
       {
         name: "RACV Cape Schanck Resort",
         type: "activity",
+        url: "https://www.racv.com.au/travel-experiences/resorts/cape-schanck/golf.html",
         image: nearby("Racv golf.jpg"),
         drive: { distanceKm: 14.3, durationMin: 16 },
       },
       {
         name: "The Dunes Golf Links",
         type: "activity",
+        url: "https://thedunes.com.au/",
         image: nearby("the dunes.webp"),
         drive: { distanceKm: 4.6, durationMin: 7 },
       },

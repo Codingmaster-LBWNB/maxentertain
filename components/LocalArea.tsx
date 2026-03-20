@@ -77,7 +77,20 @@ export default function LocalArea() {
                       <Icon className="text-luxury-gold" size={24} />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-luxury-dark mb-1">{attraction.name}</h3>
+                      {attraction.url ? (
+                        <h3 className="font-semibold text-luxury-dark mb-1">
+                          <a
+                            href={attraction.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:text-luxury-gold transition-colors underline decoration-transparent hover:decoration-luxury-gold underline-offset-2"
+                          >
+                            {attraction.name}
+                          </a>
+                        </h3>
+                      ) : (
+                        <h3 className="font-semibold text-luxury-dark mb-1">{attraction.name}</h3>
+                      )}
                       {distanceLabel && (
                         <p className="text-sm text-gray-600 flex items-center gap-1">
                           <FaMapMarkerAlt size={14} />
