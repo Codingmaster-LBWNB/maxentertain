@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { MessageCircle, X, Send, Loader2, Trash2 } from 'lucide-react'
 
 type Role = 'user' | 'assistant'
 type ChatMessage = { id: string; role: Role; content: string }
@@ -161,7 +160,7 @@ export default function GuestChatWidget() {
           className="inline-flex items-center gap-2 rounded-full bg-luxury-gold text-white px-4 py-3 shadow-xl hover:shadow-2xl transition-shadow"
           aria-label="Open chat"
         >
-          <MessageCircle size={18} />
+          <span className="material-icons" style={{ fontSize: '18px' }}>chat</span>
           <span className="text-sm font-semibold">Chat</span>
         </button>
       ) : (
@@ -187,7 +186,7 @@ export default function GuestChatWidget() {
                 aria-label="Clear chat"
                 title="Clear chat"
               >
-                <Trash2 size={18} className="text-gray-700" />
+                <span className="material-icons text-gray-700" style={{ fontSize: '18px' }}>delete</span>
               </button>
               <button
                 ref={closeBtnRef}
@@ -197,7 +196,7 @@ export default function GuestChatWidget() {
                 aria-label="Close chat"
                 title="Close"
               >
-                <X size={18} className="text-gray-700" />
+                <span className="material-icons text-gray-700" style={{ fontSize: '18px' }}>close</span>
               </button>
             </div>
           </div>
@@ -221,7 +220,7 @@ export default function GuestChatWidget() {
             {isSending && (
               <div className="flex justify-start">
                 <div className="bg-gray-100 text-gray-700 rounded-2xl rounded-bl-md px-3 py-2 text-sm inline-flex items-center gap-2">
-                  <Loader2 className="animate-spin" size={16} />
+                  <span className="material-icons animate-spin" style={{ fontSize: '16px' }}>autorenew</span>
                   <span>Thinking…</span>
                 </div>
               </div>
@@ -279,7 +278,7 @@ export default function GuestChatWidget() {
                 className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-luxury-gold text-white disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label="Send message"
               >
-                {isSending ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
+                {isSending ? <span className="material-icons animate-spin" style={{ fontSize: '18px' }}>autorenew</span> : <span className="material-icons" style={{ fontSize: '18px' }}>send</span>}
               </button>
             </div>
             <div className="mt-2 text-[11px] text-gray-500">

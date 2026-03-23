@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths } from 'date-fns'
-import { Calendar as CalendarIcon } from 'lucide-react'
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz'
 
 const AU_TZ = 'Australia/Melbourne'
@@ -116,7 +115,7 @@ export default function DatePicker({
         <span className={displayValue ? 'text-gray-900' : 'text-gray-400'}>
           {displayValue || 'YYYY-MM-DD'}
         </span>
-        <CalendarIcon size={18} className="text-gray-500" />
+        <span className="material-icons text-gray-500" style={{ fontSize: '18px' }}>calendar_today</span>
       </button>
 
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}

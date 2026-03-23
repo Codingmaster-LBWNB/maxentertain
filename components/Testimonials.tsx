@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Star, Quote } from 'lucide-react'
 import { propertyConfig } from '@/config/property'
 import AwardBanner from '@/components/AwardBanner'
 
@@ -50,10 +49,10 @@ export default function Testimonials() {
       transition={{ duration: 0.55, ease: 'easeOut', delay: (index % 3) * 0.1 }}
       className="bg-gradient-to-br from-luxury-light to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
     >
-      <Quote className="text-luxury-gold mb-4" size={32} />
+      <span className="material-icons text-luxury-gold mb-4" style={{ fontSize: '32px' }}>format_quote</span>
       <div className="flex gap-1 mb-4">
         {Array.from({ length: testimonial.rating }).map((_, i) => (
-          <Star key={i} className="fill-luxury-gold text-luxury-gold" size={20} />
+          <span key={i} className="material-icons text-luxury-gold" style={{ fontSize: '20px' }}>star</span>
         ))}
       </div>
       <p className="text-gray-700 mb-6 leading-relaxed italic">

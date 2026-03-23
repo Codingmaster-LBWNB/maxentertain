@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar as CalendarIcon, RefreshCw } from 'lucide-react'
 import { blockedDates as defaultBlockedDates } from '@/config/property'
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, isPast, isToday, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
@@ -194,12 +193,12 @@ export default function Calendar({
             {/* Note about iCal sync */}
             <div className="mt-6 p-4 bg-luxury-light rounded-lg">
               <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
-                <CalendarIcon size={16} />
+                <span className="material-icons" style={{ fontSize: '16px' }}>calendar_today</span>
                 <span>
                   Calendar syncs with other booking platforms. Blocked dates are automatically updated. 
                 </span>
                 {isLoading && (
-                  <RefreshCw className="animate-spin ml-2" size={14} />
+                  <span className="material-icons animate-spin ml-2" style={{ fontSize: '14px' }}>autorenew</span>
                 )}
               </div>
               {lastUpdated && !isLoading && (

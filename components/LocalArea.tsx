@@ -1,27 +1,14 @@
 'use client'
 
 import Image from 'next/image'
-import { FaMapMarkerAlt } from 'react-icons/fa'
-import { 
-  FaUtensils,
-  FaCamera,
-  FaUmbrellaBeach,
-  FaShoppingBag,
-  FaHiking,
-  FaSpa,
-  FaWineGlass,
-  FaGolfBall,
-  FaSwimmingPool
-} from 'react-icons/fa'
-import { MdLocalDining, MdAttractions, MdShoppingCart, MdBeachAccess } from 'react-icons/md'
 import { propertyConfig } from '@/config/property'
 
-const attractionIcons: Record<string, any> = {
-  restaurant: FaUtensils,
-  attraction: FaCamera,
-  activity: FaHiking,
-  beach: FaUmbrellaBeach,
-  shopping: FaShoppingBag,
+const attractionIcons: Record<string, string> = {
+  restaurant: 'restaurant',
+  attraction: 'camera_alt',
+  activity: 'hiking',
+  beach: 'beach_access',
+  shopping: 'shopping_bag',
 }
 
 function formatKm(km: number) {
@@ -45,7 +32,7 @@ export default function LocalArea() {
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {attractions.map((attraction, index) => {
-            const Icon = attractionIcons[attraction.type] || FaMapMarkerAlt
+            const iconName = attractionIcons[attraction.type] || 'location_on'
             const driveMin = attraction.drive?.durationMin
             const driveKm = attraction.drive?.distanceKm
             const distanceLabel =
@@ -74,7 +61,7 @@ export default function LocalArea() {
                 <div className="p-6">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 bg-luxury-gold/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <Icon className="text-luxury-gold" size={24} />
+                      <span className="material-icons text-luxury-gold" style={{ fontSize: '24px' }}>{iconName}</span>
                     </div>
                     <div className="flex-1">
                       {attraction.url ? (
@@ -93,7 +80,7 @@ export default function LocalArea() {
                       )}
                       {distanceLabel && (
                         <p className="text-sm text-gray-600 flex items-center gap-1">
-                          <FaMapMarkerAlt size={14} />
+                          <span className="material-icons" style={{ fontSize: '14px' }}>location_on</span>
                           {distanceLabel}
                         </p>
                       )}
@@ -128,7 +115,7 @@ export default function LocalArea() {
                 rel="noopener noreferrer"
                 className="bg-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-sm font-semibold text-luxury-dark hover:text-luxury-gold flex items-center gap-2"
               >
-                <FaMapMarkerAlt size={16} />
+                <span className="material-icons" style={{ fontSize: '16px' }}>location_on</span>
                 Open in Google Maps
               </a>
             </div>

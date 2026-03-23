@@ -2,7 +2,6 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Calendar } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
 
@@ -73,7 +72,7 @@ export default function Hero() {
               className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap"
             >
               <Link href="/inquiry" className="btn-primary inline-flex items-center gap-2">
-                <Calendar size={20} />
+                <span className="material-icons" style={{ fontSize: '20px' }}>calendar_today</span>
                 Book Directly and Save!
               </Link>
               {propertyConfig.booking?.airbnb && (

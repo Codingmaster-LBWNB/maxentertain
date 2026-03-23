@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Mail, Phone, MapPin, Facebook, Instagram } from 'lucide-react'
 import { propertyConfig } from '@/config/property'
 
 export default function Footer() {
@@ -16,7 +15,7 @@ export default function Footer() {
             </h3>
             <p className="text-gray-300 mb-4">{propertyConfig.description}</p>
             <div className="flex items-center gap-2 text-gray-300 mb-2">
-              <MapPin size={18} />
+              <span className="material-icons" style={{ fontSize: '18px' }}>location_on</span>
               <span>{propertyConfig.location}</span>
             </div>
           </div>
@@ -47,7 +46,7 @@ export default function Footer() {
                   href={`mailto:${propertyConfig.contact.email}`}
                   className="flex items-center gap-2 text-gray-300 hover:text-luxury-gold transition-colors"
                 >
-                  <Mail size={18} />
+                  <span className="material-icons" style={{ fontSize: '18px' }}>mail</span>
                   <span>{propertyConfig.contact.email}</span>
                 </a>
               </li>
@@ -57,7 +56,7 @@ export default function Footer() {
                     href={`tel:${propertyConfig.contact.phone}`}
                     className="flex items-center gap-2 text-gray-300 hover:text-luxury-gold transition-colors"
                   >
-                    <Phone size={18} />
+                    <span className="material-icons" style={{ fontSize: '18px' }}>phone</span>
                     <span>{propertyConfig.contact.phone}</span>
                   </a>
                 </li>
@@ -72,7 +71,7 @@ export default function Footer() {
                       className="text-gray-300 hover:text-luxury-gold transition-colors"
                       aria-label="Instagram"
                     >
-                      <Instagram size={20} />
+                      <span className="material-icons" style={{ fontSize: '20px' }}>photo_camera</span>
                     </a>
                   )}
                   {propertyConfig.socialMedia.facebook && (
@@ -83,7 +82,7 @@ export default function Footer() {
                       className="text-gray-300 hover:text-luxury-gold transition-colors"
                       aria-label="Facebook"
                     >
-                      <Facebook size={20} />
+                      <span className="material-icons" style={{ fontSize: '20px' }}>facebook</span>
                     </a>
                   )}
                 </li>

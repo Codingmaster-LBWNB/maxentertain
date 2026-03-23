@@ -2,7 +2,6 @@
 
 import { useMemo, useState, FormEvent, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import emailjs from '@emailjs/browser'
 import { propertyConfig } from '@/config/property'
 import { emailJsConfig } from '@/config/emailjs'
@@ -332,7 +331,7 @@ export default function InquiryForm({
                 animate={{ scale: 1, opacity: 1 }}
                 className="text-center py-8"
               >
-                <CheckCircle className="mx-auto text-green-500 mb-4" size={64} />
+                <span className="material-icons mx-auto text-green-500 mb-4 block text-center" style={{ fontSize: '64px' }}>check_circle</span>
                 <h3 className="text-2xl font-serif font-semibold text-luxury-dark mb-2">
                   Thank You!
                 </h3>
@@ -486,7 +485,7 @@ export default function InquiryForm({
 
                 {submitStatus === 'error' && (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                    <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
+                    <span className="material-icons text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '20px' }}>error</span>
                     <div>
                       <p className="text-red-800 font-semibold">Error sending inquiry</p>
                       <p className="text-red-600 text-sm mt-1">
@@ -511,12 +510,12 @@ export default function InquiryForm({
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="animate-spin" size={20} />
+                      <span className="material-icons animate-spin" style={{ fontSize: '20px' }}>autorenew</span>
                       Sending...
                     </>
                   ) : (
                     <>
-                      <Send size={20} />
+                      <span className="material-icons" style={{ fontSize: '20px' }}>send</span>
                       Submit Inquiry
                     </>
                   )}

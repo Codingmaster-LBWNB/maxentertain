@@ -52,6 +52,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href={iconHref} type="image/png" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
         <Script
           async
           src="https://www.googletagmanager.com/gtag/js?id=AW-17899499107"
@@ -67,8 +68,10 @@ export default function RootLayout({
         </Script>
       </head>
       <body className="font-sans antialiased">
-        {children}
-        {chatEnabled ? <GuestChatWidget /> : null}
+        <div className="relative z-[1]">
+          {children}
+          {chatEnabled ? <GuestChatWidget /> : null}
+        </div>
       </body>
     </html>
   )

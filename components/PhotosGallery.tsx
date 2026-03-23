@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
 import Image from 'next/image'
-import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { propertyConfig } from '@/config/property'
 
 export default function PhotosGallery() {
@@ -269,7 +268,7 @@ export default function PhotosGallery() {
             className="absolute top-3 right-3 md:top-4 md:right-4 text-white/90 hover:text-white p-3 rounded-full bg-black/30 hover:bg-black/40 transition-colors"
             aria-label="Close"
           >
-            <X size={28} />
+            <span className="material-icons" style={{ fontSize: '28px' }}>close</span>
           </button>
 
           <button
@@ -281,7 +280,7 @@ export default function PhotosGallery() {
             className="hidden md:inline-flex absolute left-2 md:left-6 text-white/90 hover:text-white p-2 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
             aria-label="Previous photo"
           >
-            <ChevronLeft size={36} />
+            <span className="material-icons" style={{ fontSize: '36px' }}>chevron_left</span>
           </button>
 
           <div
@@ -309,7 +308,7 @@ export default function PhotosGallery() {
             className="hidden md:inline-flex absolute right-2 md:right-6 text-white/90 hover:text-white p-2 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
             aria-label="Next photo"
           >
-            <ChevronRight size={36} />
+            <span className="material-icons" style={{ fontSize: '36px' }}>chevron_right</span>
           </button>
 
           {/* Mobile: simple pager + swipe hint (smooth + less clutter) */}

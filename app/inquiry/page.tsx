@@ -1,6 +1,5 @@
 import InquiryForm from '@/components/InquiryForm'
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import Image from 'next/image'
 
 export default function InquiryPage() {
@@ -28,7 +27,7 @@ export default function InquiryPage() {
             href="/" 
             className="inline-flex items-center gap-2 text-white/90 hover:text-white mb-8 transition-colors drop-shadow"
           >
-            <ArrowLeft size={20} />
+            <span className="material-icons" style={{ fontSize: '20px' }}>arrow_back</span>
             <span>Back to Property</span>
           </Link>
           <div className="grid gap-10 lg:grid-cols-12 lg:items-start">

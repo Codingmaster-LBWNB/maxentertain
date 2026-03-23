@@ -1,7 +1,6 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Share2, Check } from 'lucide-react'
 
 type Props = {
   className?: string
@@ -45,12 +44,12 @@ export default function ShareButton({ className, iconOnly = false, label = 'Shar
     >
       {copied ? (
         <>
-          <Check size={16} />
+          <span className="material-icons" style={{ fontSize: '16px' }}>check</span>
           {!iconOnly && <span>Copied</span>}
         </>
       ) : (
         <>
-          <Share2 size={16} />
+          <span className="material-icons" style={{ fontSize: '16px' }}>share</span>
           {!iconOnly && <span>{label}</span>}
         </>
       )}

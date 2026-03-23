@@ -2,14 +2,13 @@
 
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Bed, Bath, Users, MapPin } from 'lucide-react'
 import { propertyConfig } from '@/config/property'
 
 export default function PropertyDetails() {
   const details = [
-    { icon: Bed, label: 'Bedrooms', value: propertyConfig.bedrooms },
-    { icon: Bath, label: 'Bathrooms', value: propertyConfig.bathrooms },
-    { icon: Users, label: 'Max Guests', value: `${propertyConfig.maxGuests}+` },
+    { icon: 'bed', label: 'Bedrooms', value: propertyConfig.bedrooms },
+    { icon: 'bathtub', label: 'Bathrooms', value: propertyConfig.bathrooms },
+    { icon: 'group', label: 'Max Guests', value: `${propertyConfig.maxGuests}+` },
   ]
 
   const [showAllAbout, setShowAllAbout] = useState(false)
@@ -33,7 +32,7 @@ export default function PropertyDetails() {
         >
           <h2 className="heading-primary">{propertyConfig.name}</h2>
           <div className="flex items-center justify-center gap-2 text-luxury-accent mb-8">
-            <MapPin size={20} />
+            <span className="material-icons" style={{ fontSize: '20px' }}>location_on</span>
             <p className="text-xl">{propertyConfig.location}</p>
           </div>
         </motion.div>
@@ -47,14 +46,13 @@ export default function PropertyDetails() {
           className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
         >
           {details.map((detail, index) => {
-            const Icon = detail.icon
             return (
               <div
                 key={index}
                 className="text-center p-8 rounded-2xl bg-gradient-to-br from-luxury-light to-white shadow-lg hover:shadow-xl transition-shadow"
               >
                 <div className="inline-flex items-center justify-center w-16 h-16 bg-luxury-gold/10 rounded-full mb-4">
-                  <Icon className="text-luxury-gold" size={32} />
+                  <span className="material-icons text-luxury-gold" style={{ fontSize: '32px' }}>{detail.icon}</span>
                 </div>
                 <div className="text-4xl font-serif font-bold text-luxury-dark mb-2">
                   {detail.value}

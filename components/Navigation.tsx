@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X, Calendar } from 'lucide-react'
 import ShareButton from '@/components/ShareButton'
 
 export default function Navigation() {
@@ -117,7 +116,7 @@ export default function Navigation() {
               href="/inquiry"
               className="btn-primary text-sm py-2 px-4 lg:px-6 flex-shrink-0"
             >
-              <Calendar size={16} className="inline mr-2" />
+              <span className="material-icons inline mr-2" style={{ fontSize: '16px' }}>calendar_today</span>
               Inquiry
             </Link>
           </div>
@@ -128,7 +127,7 @@ export default function Navigation() {
               href="/inquiry"
               className="inline-flex items-center gap-2 bg-luxury-gold text-white px-3 py-2 rounded-lg font-semibold text-sm shadow-lg hover:bg-opacity-90 transition-all"
             >
-              <Calendar size={16} />
+              <span className="material-icons" style={{ fontSize: '16px' }}>calendar_today</span>
               Enquiry
             </Link>
 
@@ -151,7 +150,7 @@ export default function Navigation() {
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-nav"
             >
-              {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMobileMenuOpen ? <span className="material-icons" style={{ fontSize: '24px' }}>close</span> : <span className="material-icons" style={{ fontSize: '24px' }}>menu</span>}
             </button>
           </div>
         </div>
@@ -183,7 +182,7 @@ export default function Navigation() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="btn-primary w-full flex items-center justify-center gap-2 text-center"
               >
-                <Calendar size={16} />
+                <span className="material-icons" style={{ fontSize: '16px' }}>calendar_today</span>
                 Send Inquiry
               </Link>
             </div>

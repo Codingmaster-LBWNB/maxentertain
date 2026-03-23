@@ -3,123 +3,76 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
-// React Icons - Font Awesome for more illustrative icons
-import { 
-  FaWifi,
-  FaSnowflake,
-  FaFire,
-  FaUtensils,
-  FaTshirt,
-  FaTv,
-  FaCar,
-  FaSwimmingPool,
-  FaHotTub,
-  FaTree,
-  FaUmbrellaBeach,
-  FaFireAlt,
-  FaCoffee,
-  FaHome,
-  FaSpeakerDeck,
-  FaShieldAlt,
-  FaGamepad,
-  FaTableTennis,
-  FaGolfBall,
-  FaChild,
-  FaTable,
-  FaDice,
-  FaFilm,
-  FaMusic,
-  FaMicrophone,
-  FaBasketballBall,
-  FaStar,
-  FaSoap,
-  FaVideo
-} from 'react-icons/fa'
-import { 
-  MdLocalParking,
-  MdKitchen,
-  MdAcUnit,
-  MdLocalLaundryService,
-  MdMovie,
-  MdSecurity,
-  MdSmartphone,
-  MdSpa
-} from 'react-icons/md'
-import { SiNetflix } from 'react-icons/si'
-
-const amenityIcons: Record<string, any> = {
+const amenityIcons: Record<string, string> = {
   // Internet & Tech
-  'Wi-Fi': FaWifi,
-  'Smart Home Tech': FaHome,
-  'Security System': FaShieldAlt,
-  
+  'Wi-Fi': 'wifi',
+  'Smart Home Tech': 'home',
+  'Security System': 'security',
+
   // Climate Control
-  'Air Conditioning': FaSnowflake,
-  'Heating': FaFire,
-  'Undertile Heating': FaFire,
-  
+  'Air Conditioning': 'ac_unit',
+  'Heating': 'local_fire_department',
+  'Undertile Heating': 'local_fire_department',
+
   // Kitchen & Dining
-  'Kitchen': FaUtensils,
-  'Fully Equipped Kitchen': MdKitchen,
-  'Dishwasher': FaSoap,
-  'Coffee Maker': FaCoffee,
-  'BBQ Grill': FaFireAlt,
-  
+  'Kitchen': 'restaurant',
+  'Fully Equipped Kitchen': 'kitchen',
+  'Dishwasher': 'soap',
+  'Coffee Maker': 'coffee',
+  'BBQ Grill': 'fireplace',
+
   // Laundry
-  'Washing Machine': FaTshirt,
-  'Dryer': MdLocalLaundryService,
-  
+  'Washing Machine': 'local_laundry_service',
+  'Dryer': 'local_laundry_service',
+
   // Entertainment
-  'TV': FaTv,
-  'Netflix': SiNetflix,
-  'Private Theatre Room': FaFilm,
-  '120 inch Projector Screen': FaVideo,
-  'In-Ceiling Speakers': FaSpeakerDeck,
-  'Karaoke System': FaMicrophone,
-  
+  'TV': 'tv',
+  'Netflix': 'movie',
+  'Private Theatre Room': 'movie',
+  '120 inch Projector Screen': 'videocam',
+  'In-Ceiling Speakers': 'speaker',
+  'Karaoke System': 'mic',
+
   // Parking & Transportation
-  'Parking': FaCar,
-  'Parking (8 spaces)': MdLocalParking,
-  
+  'Parking': 'directions_car',
+  'Parking (8 spaces)': 'local_parking',
+
   // Outdoor & Recreation
-  'Swimming Pool': FaSwimmingPool,
-  'Swimming Pool (Solar Heated)': FaSwimmingPool,
-  'Hot Tub/Spa': FaHotTub,
-  'Hot Tub/Spa (6 person)': MdSpa,
-  'Garden': FaTree,
-  'Balcony': FaUmbrellaBeach,
-  
+  'Swimming Pool': 'pool',
+  'Swimming Pool (Solar Heated)': 'pool',
+  'Hot Tub/Spa': 'hot_tub',
+  'Hot Tub/Spa (6 person)': 'spa',
+  'Garden': 'park',
+  'Balcony': 'beach_access',
+
   // Games & Activities
-  'Racing Arcade': FaGamepad,
-  'Shooting Arcade': FaGamepad,
-  'Table Tennis': FaTableTennis,
-  'Pool Table': FaTable,
-  'Foosball Table': FaDice,
-  'Mini Golf': FaGolfBall,
-  'Trampoline': FaChild,
-  
+  'Racing Arcade': 'sports_esports',
+  'Shooting Arcade': 'sports_esports',
+  'Table Tennis': 'sports_tennis',
+  'Pool Table': 'table_restaurant',
+  'Foosball Table': 'casino',
+  'Mini Golf': 'flag',
+  'Trampoline': 'child_care',
+
   // Home Features
-  'Gas Log Fireplace': FaFire,
-  'Sea View': FaUmbrellaBeach,
-  'Beach Access': FaUmbrellaBeach,
+  'Gas Log Fireplace': 'local_fire_department',
+  'Sea View': 'beach_access',
+  'Beach Access': 'beach_access',
 }
 
-const getIcon = (amenity: string) => {
-  // Try exact match first
+const getIcon = (amenity: string): string => {
   if (amenityIcons[amenity]) {
     return amenityIcons[amenity]
   }
-  
-  // Try partial match
+
   const amenityLower = amenity.toLowerCase()
-  for (const [key, Icon] of Object.entries(amenityIcons)) {
+  for (const [key, icon] of Object.entries(amenityIcons)) {
     if (amenityLower.includes(key.toLowerCase()) || key.toLowerCase().includes(amenityLower)) {
-      return Icon
+      return icon
     }
   }
-  
-  // Default icon
-  return FaStar
+
+  return 'star'
 }
 
 export default function Amenities() {
@@ -147,7 +100,7 @@ export default function Amenities() {
           className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
         >
           {visibleAmenities.map((amenity, index) => {
-            const Icon = getIcon(amenity)
+            const iconName = getIcon(amenity)
             return (
               <motion.div
                 key={amenity}
@@ -159,7 +112,7 @@ export default function Amenities() {
               >
                 <div className="flex flex-col items-center text-center">
                   <div className="w-16 h-16 bg-luxury-gold/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-luxury-gold/20 transition-colors">
-                    <Icon className="text-luxury-gold" size={28} />
+                    <span className="material-icons text-luxury-gold" style={{ fontSize: '28px' }}>{iconName}</span>
                   </div>
                   <span className="text-gray-700 font-medium text-sm md:text-base">
                     {amenity}

@@ -1,5 +1,4 @@
 import Link from 'next/link'
-import { ArrowLeft } from 'lucide-react'
 import PhotosGallery from '@/components/PhotosGallery'
 
 export default function PhotosPage() {
@@ -11,7 +10,7 @@ export default function PhotosPage() {
             href="/"
             className="inline-flex items-center gap-2 text-luxury-accent hover:text-luxury-gold mb-5 transition-colors"
           >
-            <ArrowLeft size={20} />
+            <span className="material-icons" style={{ fontSize: '20px' }}>arrow_back</span>
             <span>Back</span>
           </Link>
 
