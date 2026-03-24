@@ -20,7 +20,6 @@ export default function Navigation() {
   }, [])
 
   const navLinks: Array<{ label: string; desktopHref: string; mobileHref: string }> = [
-    // Match homepage section order
     { label: 'Photos', desktopHref: '#gallery', mobileHref: '/photos' },
     { label: 'Property', desktopHref: '#details', mobileHref: '#details' },
     { label: 'Amenities', desktopHref: '#amenities', mobileHref: '#amenities' },
@@ -31,18 +30,19 @@ export default function Navigation() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-lg'
-          : 'bg-black/35 backdrop-blur-md border-b border-white/10 shadow-lg'
+          ? 'bg-white/96 backdrop-blur-md shadow-sm border-b border-gray-100'
+          : 'bg-transparent backdrop-blur-sm'
       }`}
     >
       <div className="container-custom px-4 md:px-8 lg:px-16">
-        <div className="flex items-center justify-between min-h-20 py-3 md:py-0">
+        <div className="flex items-center justify-between min-h-20 py-3 md:py-0 gap-4">
+
           {/* Logo */}
           <Link
             href="/"
-            className={`flex items-center gap-2 md:gap-3 text-2xl font-serif font-bold transition-colors min-w-0 ${
+            className={`flex items-center gap-2 md:gap-3 font-serif font-bold transition-colors flex-shrink min-w-0 overflow-hidden ${
               isScrolled ? 'text-luxury-dark' : 'text-white drop-shadow-lg'
             }`}
           >
@@ -56,41 +56,47 @@ export default function Navigation() {
                 priority
               />
             </span>
-            {/* Desktop: shorten on laptops to prevent overlap */}
-            <span className="hidden md:inline xl:hidden whitespace-nowrap text-base">
+            {/* md to lg: short */}
+            <span className="hidden md:inline lg:hidden whitespace-nowrap text-sm truncate">
+              Max Entertain
+            </span>
+            {/* lg to xl: medium */}
+            <span className="hidden lg:inline xl:hidden whitespace-nowrap text-base truncate">
               Max Entertain Retreat
             </span>
-            <span className="hidden xl:inline whitespace-nowrap">
+            {/* xl+: full */}
+            <span className="hidden xl:inline whitespace-nowrap text-xl truncate">
               Award Winning Luxury Retreat
             </span>
-            {/* Mobile: allow wrap (prevents “single letter” collapse + overlap) */}
-            <span className="md:hidden block min-w-0 max-w-[70vw] text-sm font-serif font-bold leading-tight whitespace-normal break-words">
+            {/* Mobile */}
+            <span className="md:hidden block min-w-0 text-sm font-serif font-bold leading-tight whitespace-normal break-words max-w-[60vw]">
               Award Winning Luxury Retreat
             </span>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4 lg:gap-6">
+          <div className="hidden md:flex items-center gap-3 lg:gap-5 flex-shrink-0">
             {navLinks.map((link) => {
-              const isLessImportant = link.label === 'Property' || link.label === 'Amenities'
+              const isLessImportant =
+                link.label === 'Property' ||
+                link.label === 'Amenities' ||
+                link.label === 'Nearby'
               return (
                 <a
                   key={link.label}
                   href={link.desktopHref}
-                  className={`transition-colors font-medium text-xs lg:text-sm ${
-                    isLessImportant ? 'hidden xl:inline' : 'inline'
-                  } ${
-                    isScrolled
-                      ? 'text-gray-700 hover:text-luxury-gold'
-                      : 'text-white/90 hover:text-white'
-                  }`}
+                  className={`relative transition-colors font-sans text-[11px] font-semibold tracking-[0.15em] uppercase pb-0.5
+                    after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-luxury-gold after:transition-all after:duration-300 hover:after:w-full
+                    ${isLessImportant ? 'hidden xl:inline' : 'inline'}
+                    ${isScrolled ? 'text-gray-600 hover:text-luxury-dark' : 'text-white/80 hover:text-white'}
+                  `}
                 >
                   {link.label}
                 </a>
               )
             })}
 
-            {/* Share: icon-only on laptop, label on xl+ */}
+            {/* Share button */}
             <div className="xl:hidden">
               <ShareButton
                 iconOnly
@@ -114,14 +120,14 @@ export default function Navigation() {
 
             <Link
               href="/inquiry"
-              className="btn-primary text-sm py-2 px-4 lg:px-6 flex-shrink-0"
+              className="btn-primary text-[10px] py-2.5 px-5 flex-shrink-0 inline-flex items-center gap-1.5"
             >
-              <span className="material-icons inline mr-2" style={{ fontSize: '16px' }}>calendar_today</span>
+              <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>
               Inquiry
             </Link>
           </div>
 
-          {/* Mobile actions: always-visible Inquiry + menu */}
+          {/* Mobile actions */}
           <div className="md:hidden flex items-center gap-2 flex-shrink-0">
             <Link
               href="/inquiry"
@@ -150,9 +156,13 @@ export default function Navigation() {
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-nav"
             >
-              {isMobileMenuOpen ? <span className="material-icons" style={{ fontSize: '24px' }}>close</span> : <span className="material-icons" style={{ fontSize: '24px' }}>menu</span>}
+              {isMobileMenuOpen
+                ? <span className="material-icons" style={{ fontSize: '24px' }}>close</span>
+                : <span className="material-icons" style={{ fontSize: '24px' }}>menu</span>
+              }
             </button>
           </div>
+
         </div>
       </div>
 
@@ -172,7 +182,7 @@ export default function Navigation() {
                   key={link.label}
                   href={link.mobileHref}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-gray-700 hover:text-luxury-gold transition-colors font-medium py-2"
+                  className="block text-gray-500 hover:text-luxury-dark transition-colors font-sans text-[11px] font-semibold tracking-[0.2em] uppercase py-3 border-b border-gray-50"
                 >
                   {link.label}
                 </a>
@@ -182,7 +192,7 @@ export default function Navigation() {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="btn-primary w-full flex items-center justify-center gap-2 text-center"
               >
-                <span className="material-icons" style={{ fontSize: '16px' }}>calendar_today</span>
+                <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>
                 Send Inquiry
               </Link>
             </div>
@@ -192,8 +202,3 @@ export default function Navigation() {
     </nav>
   )
 }
-
-
-
-
-

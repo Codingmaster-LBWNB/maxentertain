@@ -6,7 +6,7 @@ import { propertyConfig } from '@/config/property'
 
 export default function PhotosGallery() {
   const PLACEHOLDER =
-    'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"1200\" height=\"800\"%3E%3Crect fill=\"%23ddd\" width=\"1200\" height=\"800\"/%3E%3Ctext fill=\"%23999\" font-family=\"sans-serif\" font-size=\"24\" x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\"%3EImage%20unavailable%3C/text%3E%3C/svg%3E'
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"%3E%3Crect fill="%23222" width="1200" height="800"/%3E%3C/svg%3E'
 
   const safeSrc = (src: string) => (src.startsWith('data:') ? src : encodeURI(src))
 
@@ -37,27 +37,16 @@ export default function PhotosGallery() {
       for (const hdSrc of section.images) {
         if (!hdSrc || seen.has(hdSrc)) continue
         seen.add(hdSrc)
-        photos.push({
-          sectionId: section.id,
-          sectionTitle: section.title,
-          hdSrc,
-          thumbSrc: toThumb(hdSrc),
-        })
+        photos.push({ sectionId: section.id, sectionTitle: section.title, hdSrc, thumbSrc: toThumb(hdSrc) })
       }
     }
-
     for (const hdSrc of propertyConfig.images) {
       if (!hdSrc || seen.has(hdSrc)) continue
       seen.add(hdSrc)
-      photos.push({
-        sectionId: 'other',
-        sectionTitle: 'Other',
-        hdSrc,
-        thumbSrc: toThumb(hdSrc),
-      })
+      photos.push({ sectionId: 'other', sectionTitle: 'Other', hdSrc, thumbSrc: toThumb(hdSrc) })
     }
-
     return photos
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections])
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
@@ -67,27 +56,22 @@ export default function PhotosGallery() {
   const lockedScrollYRef = useRef<number>(0)
 
   const close = () => setActiveIndex(null)
-  const prev = () =>
-    setActiveIndex((i) => (i === null ? null : (i - 1 + totalImages) % totalImages))
+  const prev = () => setActiveIndex((i) => (i === null ? null : (i - 1 + totalImages) % totalImages))
   const next = () => setActiveIndex((i) => (i === null ? null : (i + 1) % totalImages))
 
-  // Lock page scrolling when lightbox is open (iOS-safe).
+  // Lock page scroll when lightbox is open
   useEffect(() => {
     if (activeIndex === null) return
-
     const body = document.body
     lockedScrollYRef.current = window.scrollY
-
     const prevOverflow = body.style.overflow
     const prevPosition = body.style.position
     const prevTop = body.style.top
     const prevWidth = body.style.width
-
     body.style.overflow = 'hidden'
     body.style.position = 'fixed'
     body.style.top = `-${lockedScrollYRef.current}px`
     body.style.width = '100%'
-
     return () => {
       body.style.overflow = prevOverflow
       body.style.position = prevPosition
@@ -99,7 +83,6 @@ export default function PhotosGallery() {
 
   useEffect(() => {
     if (activeIndex === null) return
-
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close()
       if (e.key === 'ArrowLeft') prev()
@@ -110,17 +93,22 @@ export default function PhotosGallery() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeIndex, totalImages])
 
+  const openPhoto = (idx: number) => setActiveIndex(idx)
+
+  // Clamp number of dot indicators so it doesn't overflow
+  const showDots = totalImages <= 30
+
   return (
     <>
-      {/* Jump nav */}
-      <div className="sticky top-0 z-20 -mx-4 md:-mx-8 lg:-mx-16 px-4 md:px-8 lg:px-16 py-4 mb-6 bg-gray-50/90 backdrop-blur border-b border-black/5">
-        <div className="text-xs font-semibold text-gray-700 mb-2">Jump to section</div>
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+      {/* Section jump nav */}
+      <div className="sticky top-0 z-20 -mx-4 md:-mx-8 lg:-mx-16 px-4 md:px-8 lg:px-16 py-0 border-b"
+        style={{ backgroundColor: '#0c0c0b', borderColor: 'rgba(255,255,255,0.06)' }}>
+        <div className="flex gap-0 overflow-x-auto no-scrollbar">
           {sections.map((s) => (
             <a
               key={s.id}
               href={`#section-${s.id}`}
-              className="shrink-0 px-3 py-1.5 rounded-full border bg-white text-xs text-gray-700 hover:text-luxury-gold hover:border-luxury-gold transition-colors"
+              className="shrink-0 px-4 py-4 font-sans text-[10px] font-semibold tracking-[0.22em] uppercase text-white/35 hover:text-white transition-colors border-b-2 border-transparent hover:border-luxury-gold/50 whitespace-nowrap"
             >
               {s.title}
             </a>
@@ -128,111 +116,180 @@ export default function PhotosGallery() {
         </div>
       </div>
 
-      {/* Sectioned gallery */}
-      <div className="space-y-6 md:space-y-8">
-        {sections.map((section) => {
+      {/* Sections */}
+      <div className="space-y-16 pt-12">
+        {sections.map((section, sIdx) => {
           const items = flat.filter((p) => p.sectionId === section.id)
           if (items.length === 0) return null
 
+          const useFeatured = items.length >= 3
+
           return (
-            <section
-              key={section.id}
-              id={`section-${section.id}`}
-              className="scroll-mt-24 md:scroll-mt-28 rounded-2xl bg-white shadow-sm ring-1 ring-black/5 p-4 md:p-6"
-            >
-              <div className="flex items-baseline justify-between gap-4 mb-3 md:mb-4">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-serif font-bold text-luxury-dark">
+            <section key={section.id} id={`section-${section.id}`} className="scroll-mt-20">
+
+              {/* Section header */}
+              <div className="flex items-center gap-5 mb-6">
+                <div className="h-px flex-shrink-0 w-6" style={{ backgroundColor: 'rgba(212,175,55,0.4)' }} />
+                <div className="min-w-0">
+                  <span className="block text-[9px] font-sans font-semibold tracking-[0.35em] uppercase mb-1"
+                    style={{ color: 'rgba(212,175,55,0.65)' }}>
+                    {String(sIdx + 1).padStart(2, '0')} — {items.length} photos
+                  </span>
+                  <h2 className="text-xl md:text-2xl font-serif font-bold text-white leading-tight">
                     {section.title}
                   </h2>
                   {'description' in section && section.description ? (
-                    <div className="mt-1 text-sm text-gray-600">{section.description}</div>
+                    <p className="text-xs font-sans text-white/35 mt-1 font-light leading-relaxed">
+                      {section.description}
+                    </p>
                   ) : null}
                 </div>
-                <div className="text-xs text-gray-500">{items.length} photos</div>
+                <div className="h-px flex-1" style={{ backgroundColor: 'rgba(255,255,255,0.06)' }} />
               </div>
 
-              {/* Mobile: 2 per row */}
-              <div className="md:hidden grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {/* Mobile grid — uniform 2-col */}
+              <div className="md:hidden grid grid-cols-2 gap-1.5">
                 {items.map((p) => {
                   const globalIndex = flat.findIndex((x) => x.hdSrc === p.hdSrc)
                   const idx = globalIndex >= 0 ? globalIndex : 0
-
-                  return (
-                  <div
-                    key={p.hdSrc}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => setActiveIndex(idx)}
-                    onKeyDown={(e: ReactKeyboardEvent) => {
-                      if (e.key === 'Enter' || e.key === ' ') setActiveIndex(idx)
-                    }}
-                    aria-label={`Open photo ${idx + 1} (${section.title})`}
-                    className="relative aspect-[4/3] w-full rounded-xl overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold"
-                  >
-                    <Image
-                      src={safeSrc(p.thumbSrc)}
-                      alt={`${propertyConfig.name} - ${section.title}`}
-                      fill
-                      className="object-cover"
-                      sizes="50vw"
-                      loading="lazy"
-                      quality={70}
-                      unoptimized={false}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        target.src = safeSrc(p.hdSrc || PLACEHOLDER)
-                      }}
-                    />
-                  </div>
-                  )
-                })}
-              </div>
-
-              {/* Desktop/tablet */}
-              <div className="hidden md:grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-                {items.map((p) => {
-                  const globalIndex = flat.findIndex((x) => x.hdSrc === p.hdSrc)
-                  const idx = globalIndex >= 0 ? globalIndex : 0
-
                   return (
                     <div
                       key={p.hdSrc}
                       role="button"
                       tabIndex={0}
-                      onClick={() => setActiveIndex(idx)}
+                      onClick={() => openPhoto(idx)}
                       onKeyDown={(e: ReactKeyboardEvent) => {
-                        if (e.key === 'Enter' || e.key === ' ') setActiveIndex(idx)
+                        if (e.key === 'Enter' || e.key === ' ') openPhoto(idx)
                       }}
-                      aria-label={`Open photo ${idx + 1} (${section.title})`}
-                      className="relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-luxury-gold"
+                      aria-label={`Open photo ${idx + 1}`}
+                      className="relative aspect-[4/3] w-full overflow-hidden cursor-pointer focus:outline-none group"
                     >
                       <Image
                         src={safeSrc(p.thumbSrc)}
                         alt={`${propertyConfig.name} - ${section.title}`}
                         fill
-                        className="object-cover"
-                        sizes="(max-width: 1200px) 33vw, 25vw"
+                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        sizes="50vw"
                         loading="lazy"
-                        quality={70}
-                        unoptimized={false}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.src = safeSrc(p.hdSrc || PLACEHOLDER)
-                        }}
+                        quality={72}
+                        onError={(e) => { (e.target as HTMLImageElement).src = safeSrc(p.hdSrc || PLACEHOLDER) }}
                       />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-400" />
+                      <div className="absolute inset-0 border border-luxury-gold/0 group-hover:border-luxury-gold/50 transition-colors duration-400" />
                     </div>
                   )
                 })}
+              </div>
+
+              {/* Desktop — featured first + uniform grid */}
+              <div className="hidden md:block">
+                {useFeatured ? (
+                  <div
+                    className="grid grid-cols-4 gap-1.5"
+                    style={{ gridAutoRows: '220px' }}
+                  >
+                    {items.map((p, i) => {
+                      const globalIndex = flat.findIndex((x) => x.hdSrc === p.hdSrc)
+                      const idx = globalIndex >= 0 ? globalIndex : 0
+                      const isFeatured = i === 0
+                      return (
+                        <div
+                          key={p.hdSrc}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => openPhoto(idx)}
+                          onKeyDown={(e: ReactKeyboardEvent) => {
+                            if (e.key === 'Enter' || e.key === ' ') openPhoto(idx)
+                          }}
+                          aria-label={`Open photo ${idx + 1} (${section.title})`}
+                          className={`relative overflow-hidden cursor-pointer focus:outline-none group ${
+                            isFeatured ? 'col-span-2 row-span-2' : ''
+                          }`}
+                        >
+                          <Image
+                            src={safeSrc(p.thumbSrc)}
+                            alt={`${propertyConfig.name} - ${section.title}`}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            sizes={isFeatured ? '50vw' : '25vw'}
+                            loading={idx < 6 ? 'eager' : 'lazy'}
+                            quality={isFeatured ? 80 : 70}
+                            onError={(e) => { (e.target as HTMLImageElement).src = safeSrc(p.hdSrc || PLACEHOLDER) }}
+                          />
+                          {/* Hover overlay */}
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500" />
+                          {/* Gold border */}
+                          <div className="absolute inset-0 border border-luxury-gold/0 group-hover:border-luxury-gold/60 transition-colors duration-400" />
+                          {/* Zoom icon */}
+                          <div className="absolute inset-0 flex items-end justify-end p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="w-7 h-7 bg-luxury-gold flex items-center justify-center">
+                              <span className="material-icons text-white" style={{ fontSize: '14px' }}>zoom_in</span>
+                            </div>
+                          </div>
+                          {/* Featured badge */}
+                          {isFeatured && (
+                            <div className="absolute top-3 left-3 px-2 py-1 bg-luxury-gold/90 text-white text-[9px] font-sans font-semibold tracking-[0.2em] uppercase">
+                              Featured
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  /* Small sections: uniform grid */
+                  <div
+                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-1.5"
+                    style={{ gridAutoRows: '220px' }}
+                  >
+                    {items.map((p) => {
+                      const globalIndex = flat.findIndex((x) => x.hdSrc === p.hdSrc)
+                      const idx = globalIndex >= 0 ? globalIndex : 0
+                      return (
+                        <div
+                          key={p.hdSrc}
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => openPhoto(idx)}
+                          onKeyDown={(e: ReactKeyboardEvent) => {
+                            if (e.key === 'Enter' || e.key === ' ') openPhoto(idx)
+                          }}
+                          aria-label={`Open photo ${idx + 1} (${section.title})`}
+                          className="relative overflow-hidden cursor-pointer focus:outline-none group"
+                        >
+                          <Image
+                            src={safeSrc(p.thumbSrc)}
+                            alt={`${propertyConfig.name} - ${section.title}`}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            sizes="25vw"
+                            loading="lazy"
+                            quality={70}
+                            onError={(e) => { (e.target as HTMLImageElement).src = safeSrc(p.hdSrc || PLACEHOLDER) }}
+                          />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500" />
+                          <div className="absolute inset-0 border border-luxury-gold/0 group-hover:border-luxury-gold/60 transition-colors duration-400" />
+                          <div className="absolute inset-0 flex items-end justify-end p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <div className="w-7 h-7 bg-luxury-gold flex items-center justify-center">
+                              <span className="material-icons text-white" style={{ fontSize: '14px' }}>zoom_in</span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
               </div>
             </section>
           )
         })}
       </div>
 
+      {/* ── LIGHTBOX ── */}
       {activeIndex !== null && (
         <div
-          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center"
+          className="fixed inset-0 z-[100] flex items-center justify-center"
+          style={{ backgroundColor: 'rgba(8,8,7,0.97)' }}
           role="dialog"
           aria-modal="true"
           onClick={close}
@@ -246,100 +303,133 @@ export default function PhotosGallery() {
             const startY = touchStartYRef.current
             touchStartXRef.current = null
             touchStartYRef.current = null
-
             const t = e.changedTouches[0]
             if (startX === null || startY === null || !t) return
-
             const dx = t.clientX - startX
             const dy = t.clientY - startY
-
-            // Horizontal swipe (ignore if mostly vertical).
             if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy)) return
             if (dx > 0) prev()
             else next()
           }}
         >
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              close()
-            }}
-            className="absolute top-3 right-3 md:top-4 md:right-4 text-white/90 hover:text-white p-3 rounded-full bg-black/30 hover:bg-black/40 transition-colors"
-            aria-label="Close"
-          >
-            <span className="material-icons" style={{ fontSize: '28px' }}>close</span>
-          </button>
+          {/* Top bar */}
+          <div className="absolute top-0 left-0 right-0 flex items-center justify-between px-5 py-4 z-10"
+            style={{ background: 'linear-gradient(to bottom, rgba(8,8,7,0.8), transparent)' }}>
+            {/* Counter */}
+            <div className="flex items-baseline gap-1.5 font-sans">
+              <span className="text-white text-xl font-serif font-bold">
+                {String(activeIndex + 1).padStart(2, '0')}
+              </span>
+              <span className="text-white/30 text-sm">/ {String(totalImages).padStart(2, '0')}</span>
+            </div>
 
+            {/* Section label */}
+            <div className="hidden md:block text-[10px] font-sans font-semibold tracking-[0.3em] uppercase"
+              style={{ color: 'rgba(212,175,55,0.7)' }}>
+              {flat[activeIndex]?.sectionTitle}
+            </div>
+
+            {/* Close */}
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); close() }}
+              className="w-9 h-9 border flex items-center justify-center text-white/50 hover:text-white transition-all group"
+              style={{ borderColor: 'rgba(255,255,255,0.15)' }}
+              aria-label="Close"
+            >
+              <span className="material-icons group-hover:scale-110 transition-transform" style={{ fontSize: '18px' }}>close</span>
+            </button>
+          </div>
+
+          {/* Prev arrow */}
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              prev()
-            }}
-            className="hidden md:inline-flex absolute left-2 md:left-6 text-white/90 hover:text-white p-2 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+            onClick={(e) => { e.stopPropagation(); prev() }}
+            className="hidden md:flex absolute left-5 w-11 h-11 border items-center justify-center text-white/40 hover:text-white hover:border-luxury-gold/60 transition-all z-10"
+            style={{ borderColor: 'rgba(255,255,255,0.12)' }}
             aria-label="Previous photo"
           >
-            <span className="material-icons" style={{ fontSize: '36px' }}>chevron_left</span>
+            <span className="material-icons" style={{ fontSize: '22px' }}>chevron_left</span>
           </button>
 
+          {/* Main image */}
           <div
-            className="relative w-[92vw] max-w-5xl h-[72vh] md:h-[80vh]"
+            className="relative z-10"
+            style={{ width: '90vw', maxWidth: '1100px', height: '76vh' }}
             onClick={(e) => e.stopPropagation()}
           >
             <Image
-              src={safeSrc(
-                flat[activeIndex]?.hdSrc || flat[activeIndex]?.thumbSrc || PLACEHOLDER,
-              )}
+              src={safeSrc(flat[activeIndex]?.hdSrc || flat[activeIndex]?.thumbSrc || PLACEHOLDER)}
               alt={`${propertyConfig.name} - Photo ${activeIndex + 1}`}
               fill
               className="object-contain"
-              sizes="92vw"
+              sizes="90vw"
               priority
             />
           </div>
 
+          {/* Next arrow */}
           <button
             type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              next()
-            }}
-            className="hidden md:inline-flex absolute right-2 md:right-6 text-white/90 hover:text-white p-2 rounded-full bg-black/20 hover:bg-black/30 transition-colors"
+            onClick={(e) => { e.stopPropagation(); next() }}
+            className="hidden md:flex absolute right-5 w-11 h-11 border items-center justify-center text-white/40 hover:text-white hover:border-luxury-gold/60 transition-all z-10"
+            style={{ borderColor: 'rgba(255,255,255,0.12)' }}
             aria-label="Next photo"
           >
-            <span className="material-icons" style={{ fontSize: '36px' }}>chevron_right</span>
+            <span className="material-icons" style={{ fontSize: '22px' }}>chevron_right</span>
           </button>
 
-          {/* Mobile: simple pager + swipe hint (smooth + less clutter) */}
-          <div className="md:hidden absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
-            <div className="text-xs text-white/75">Swipe left/right</div>
-            <div className="flex items-center gap-3">
+          {/* Bottom bar */}
+          <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-5 py-4 z-10"
+            style={{ background: 'linear-gradient(to top, rgba(8,8,7,0.8), transparent)' }}>
+            {/* Mobile nav buttons */}
+            <div className="md:hidden flex items-center gap-3">
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  prev()
-                }}
-                className="px-4 py-2 rounded-full bg-white/10 text-white/90 border border-white/15"
-                aria-label="Previous photo"
+                onClick={(e) => { e.stopPropagation(); prev() }}
+                className="px-4 py-2 border text-white/60 text-xs font-sans font-semibold tracking-widest uppercase hover:text-white transition-colors"
+                style={{ borderColor: 'rgba(255,255,255,0.15)' }}
               >
                 Prev
               </button>
-              <div className="text-xs text-white/75 tabular-nums">
-                {activeIndex + 1} / {totalImages}
-              </div>
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  next()
-                }}
-                className="px-4 py-2 rounded-full bg-white/10 text-white/90 border border-white/15"
-                aria-label="Next photo"
+                onClick={(e) => { e.stopPropagation(); next() }}
+                className="px-4 py-2 border text-white/60 text-xs font-sans font-semibold tracking-widest uppercase hover:text-white transition-colors"
+                style={{ borderColor: 'rgba(255,255,255,0.15)' }}
               >
                 Next
               </button>
+            </div>
+
+            {/* Dot progress indicators */}
+            <div className="hidden md:flex items-center gap-1.5 absolute left-1/2 -translate-x-1/2">
+              {showDots
+                ? Array.from({ length: totalImages }).map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); setActiveIndex(i) }}
+                    aria-label={`Go to photo ${i + 1}`}
+                    className="transition-all duration-300"
+                    style={{
+                      width: i === activeIndex ? '20px' : '6px',
+                      height: '2px',
+                      backgroundColor: i === activeIndex ? '#D4AF37' : 'rgba(255,255,255,0.2)',
+                    }}
+                  />
+                ))
+                : (
+                  <span className="text-white/25 text-[10px] font-sans tracking-widest uppercase">
+                    {activeIndex + 1} of {totalImages}
+                  </span>
+                )
+              }
+            </div>
+
+            {/* Property name */}
+            <div className="ml-auto text-[9px] font-sans font-semibold tracking-[0.3em] uppercase text-white/20">
+              {propertyConfig.name}
             </div>
           </div>
         </div>
@@ -347,4 +437,3 @@ export default function PhotosGallery() {
     </>
   )
 }
-

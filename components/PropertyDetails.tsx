@@ -30,37 +30,37 @@ export default function PropertyDetails() {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
+          <span className="section-label">The Property</span>
           <h2 className="heading-primary">{propertyConfig.name}</h2>
-          <div className="flex items-center justify-center gap-2 text-luxury-accent mb-8">
-            <span className="material-icons" style={{ fontSize: '20px' }}>location_on</span>
-            <p className="text-xl">{propertyConfig.location}</p>
+          <div className="flex items-center justify-center gap-2 text-luxury-accent">
+            <span className="material-icons" style={{ fontSize: '16px' }}>location_on</span>
+            <p className="text-sm font-sans font-semibold tracking-[0.15em] uppercase text-gray-500">{propertyConfig.location}</p>
           </div>
         </motion.div>
 
-        {/* Property Stats */}
+        {/* Property Stats — editorial horizontal bar */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
+          className="mb-20"
         >
-          {details.map((detail, index) => {
-            return (
-              <div
-                key={index}
-                className="text-center p-8 rounded-2xl bg-gradient-to-br from-luxury-light to-white shadow-lg hover:shadow-xl transition-shadow"
-              >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-luxury-gold/10 rounded-full mb-4">
-                  <span className="material-icons text-luxury-gold" style={{ fontSize: '32px' }}>{detail.icon}</span>
+          <div className="border border-gray-100 bg-white shadow-sm">
+            <div className="grid grid-cols-3 divide-x divide-gray-100">
+              {details.map((detail, index) => (
+                <div key={index} className="text-center py-10 px-4 group hover:bg-luxury-gold/3 transition-colors">
+                  <div className="inline-flex items-center justify-center w-10 h-10 mb-4">
+                    <span className="material-icons text-luxury-gold/70" style={{ fontSize: '24px' }}>{detail.icon}</span>
+                  </div>
+                  <div className="text-4xl md:text-5xl font-serif font-bold text-luxury-dark mb-1">
+                    {detail.value}
+                  </div>
+                  <div className="text-xs font-sans font-semibold tracking-[0.2em] uppercase text-gray-400">{detail.label}</div>
                 </div>
-                <div className="text-4xl font-serif font-bold text-luxury-dark mb-2">
-                  {detail.value}
-                </div>
-                <div className="text-gray-600 font-medium">{detail.label}</div>
-              </div>
-            )
-          })}
+              ))}
+            </div>
+          </div>
         </motion.div>
 
         {/* Description */}
@@ -71,17 +71,18 @@ export default function PropertyDetails() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="max-w-4xl mx-auto"
         >
-          <div className="relative mb-12">
-            <h3 className="text-4xl md:text-5xl font-serif font-bold text-luxury-dark mb-4 text-center">
+          <div className="mb-10 text-center">
+            <span className="section-label">About</span>
+            <h3 className="text-4xl md:text-5xl font-serif font-bold text-luxury-dark tracking-tight">
               About This Property
             </h3>
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <div className="h-px w-16 bg-gradient-to-r from-transparent to-luxury-gold"></div>
-              <div className="w-2 h-2 rounded-full bg-luxury-gold"></div>
-              <div className="h-px w-16 bg-gradient-to-l from-transparent to-luxury-gold"></div>
+            <div className="flex items-center justify-center gap-3 mt-5">
+              <div className="h-px w-12 bg-luxury-gold/60"></div>
+              <div className="w-1.5 h-1.5 bg-luxury-gold rotate-45"></div>
+              <div className="h-px w-12 bg-luxury-gold/60"></div>
             </div>
           </div>
-          <div className="bg-gradient-to-br from-luxury-light/30 via-white to-luxury-light/20 p-8 md:p-12 rounded-3xl shadow-lg border border-luxury-gold/10">
+          <div className="bg-white p-8 md:p-14 border border-gray-100 shadow-sm">
             <div className="text-gray-700">
               <div className="text-base md:text-lg lg:text-xl font-sans font-light tracking-wide">
                 {visibleAboutLines.map((line, index) => {
@@ -147,8 +148,8 @@ export default function PropertyDetails() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="max-w-4xl mx-auto mt-16 grid md:grid-cols-2 gap-8"
         >
-          <div className="bg-luxury-light p-8 rounded-2xl">
-            <h4 className="text-xl font-serif font-semibold mb-4 text-luxury-dark">
+          <div className="bg-white border border-gray-100 p-8">
+            <h4 className="text-xs font-sans font-semibold tracking-[0.2em] uppercase text-luxury-gold mb-5">
               Check-in & Check-out
             </h4>
             <p className="text-gray-700 mb-2">
@@ -158,11 +159,11 @@ export default function PropertyDetails() {
               <span className="font-semibold">Check-out:</span> {propertyConfig.policies.checkOut}
             </p>
           </div>
-          <div className="bg-luxury-light p-8 rounded-2xl">
-            <h4 className="text-xl font-serif font-semibold mb-4 text-luxury-dark">
+          <div className="bg-white border border-gray-100 p-8">
+            <h4 className="text-xs font-sans font-semibold tracking-[0.2em] uppercase text-luxury-gold mb-5">
               Cancellation Policy
             </h4>
-            <p className="text-gray-700">{propertyConfig.policies.cancellation}</p>
+            <p className="text-gray-600 font-light leading-relaxed">{propertyConfig.policies.cancellation}</p>
           </div>
         </motion.div>
 

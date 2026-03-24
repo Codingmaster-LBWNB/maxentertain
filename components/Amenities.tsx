@@ -86,11 +86,12 @@ export default function Amenities() {
   )
 
   return (
-    <section id="amenities" className="section-padding bg-gradient-to-b from-white to-luxury-light scroll-mt-24 md:scroll-mt-28">
+    <section id="amenities" className="section-padding bg-[#fafaf8] scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <div className="text-center mb-16">
-          <h2 className="heading-primary">Amenities & Features</h2>
-          <p className="text-luxury text-gray-600 max-w-2xl mx-auto">
+          <span className="section-label">Included</span>
+          <h2 className="heading-primary">Amenities &amp; Features</h2>
+          <p className="text-luxury max-w-2xl mx-auto">
             Everything you need for a comfortable and memorable stay
           </p>
         </div>
@@ -108,13 +109,13 @@ export default function Amenities() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.45, ease: 'easeOut', delay: Math.min(index * 0.04, 0.35) }}
-                className="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all cursor-pointer group hover:-translate-y-1 hover:scale-[1.02]"
+                className="bg-white border border-gray-100 p-5 hover:border-luxury-gold/40 hover:shadow-md transition-all cursor-pointer group"
               >
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-luxury-gold/10 rounded-full flex items-center justify-center mb-4 group-hover:bg-luxury-gold/20 transition-colors">
-                    <span className="material-icons text-luxury-gold" style={{ fontSize: '28px' }}>{iconName}</span>
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 group-hover:text-luxury-gold transition-colors">
+                    <span className="material-icons text-luxury-gold/60 group-hover:text-luxury-gold transition-colors" style={{ fontSize: '22px' }}>{iconName}</span>
                   </div>
-                  <span className="text-gray-700 font-medium text-sm md:text-base">
+                  <span className="text-gray-700 font-sans text-sm font-medium leading-tight">
                     {amenity}
                   </span>
                 </div>

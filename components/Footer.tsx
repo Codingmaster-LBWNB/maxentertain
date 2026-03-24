@@ -5,73 +5,92 @@ import { propertyConfig } from '@/config/property'
 
 export default function Footer() {
   return (
-    <footer className="bg-luxury-dark text-white py-12">
-      <div className="container-custom px-4 md:px-8 lg:px-16">
-        <div className="grid md:grid-cols-3 gap-8 mb-8">
-          {/* Property Info */}
-          <div>
-            <h3 className="text-2xl font-serif font-bold mb-4 text-luxury-gold">
+    <footer className="bg-luxury-dark text-white">
+      {/* Top gold rule */}
+      <div className="h-px bg-gradient-to-r from-transparent via-luxury-gold/60 to-transparent" />
+
+      <div className="container-custom px-4 md:px-8 lg:px-16 pt-16 pb-10">
+        <div className="grid md:grid-cols-12 gap-12 mb-12">
+
+          {/* Property Info — wider column */}
+          <div className="md:col-span-5">
+            <span className="block text-[10px] font-sans font-semibold tracking-[0.3em] uppercase text-luxury-gold mb-4">
+              Award Winning Retreat
+            </span>
+            <h3 className="text-3xl font-serif font-bold mb-4 text-white leading-tight">
               {propertyConfig.name}
             </h3>
-            <p className="text-gray-300 mb-4">{propertyConfig.description}</p>
-            <div className="flex items-center gap-2 text-gray-300 mb-2">
-              <span className="material-icons" style={{ fontSize: '18px' }}>location_on</span>
+            <p className="text-gray-400 mb-6 font-light leading-relaxed text-sm max-w-sm">
+              {propertyConfig.description}
+            </p>
+            <div className="flex items-center gap-2 text-gray-500 text-xs font-sans font-semibold tracking-[0.12em] uppercase">
+              <span className="material-icons text-luxury-gold/60" style={{ fontSize: '14px' }}>location_on</span>
               <span>{propertyConfig.location}</span>
             </div>
           </div>
 
+          {/* Spacer */}
+          <div className="hidden md:block md:col-span-1" />
+
           {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
-              <li>
-                <Link href="#details" className="text-gray-300 hover:text-luxury-gold transition-colors">
-                  Property Details
-                </Link>
-              </li>
-              <li>
-                <Link href="#inquiry" className="text-gray-300 hover:text-luxury-gold transition-colors">
-                  Book Your Stay
-                </Link>
-              </li>
+          <div className="md:col-span-3">
+            <h4 className="text-[10px] font-sans font-semibold tracking-[0.3em] uppercase text-luxury-gold mb-6">Quick Links</h4>
+            <ul className="space-y-3">
+              {[
+                { label: 'Property Details', href: '#details' },
+                { label: 'Amenities', href: '#amenities' },
+                { label: 'Guest Reviews', href: '#testimonials' },
+                { label: 'Nearby Attractions', href: '#local-area' },
+                { label: 'Book Your Stay', href: '#inquiry' },
+              ].map((item) => (
+                <li key={item.label}>
+                  <Link
+                    href={item.href}
+                    className="text-gray-400 hover:text-white transition-colors text-sm font-light inline-flex items-center gap-2 group"
+                  >
+                    <span className="h-px w-0 bg-luxury-gold group-hover:w-4 transition-all duration-300" />
+                    {item.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Contact */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4">Contact Us</h4>
-            <ul className="space-y-3">
+          <div className="md:col-span-3">
+            <h4 className="text-[10px] font-sans font-semibold tracking-[0.3em] uppercase text-luxury-gold mb-6">Contact</h4>
+            <ul className="space-y-4">
               <li>
                 <a
                   href={`mailto:${propertyConfig.contact.email}`}
-                  className="flex items-center gap-2 text-gray-300 hover:text-luxury-gold transition-colors"
+                  className="flex items-start gap-3 text-gray-400 hover:text-white transition-colors group"
                 >
-                  <span className="material-icons" style={{ fontSize: '18px' }}>mail</span>
-                  <span>{propertyConfig.contact.email}</span>
+                  <span className="material-icons text-luxury-gold/50 group-hover:text-luxury-gold transition-colors mt-0.5" style={{ fontSize: '16px' }}>mail_outline</span>
+                  <span className="text-sm font-light break-all">{propertyConfig.contact.email}</span>
                 </a>
               </li>
               {propertyConfig.contact.phone && (
                 <li>
                   <a
                     href={`tel:${propertyConfig.contact.phone}`}
-                    className="flex items-center gap-2 text-gray-300 hover:text-luxury-gold transition-colors"
+                    className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group"
                   >
-                    <span className="material-icons" style={{ fontSize: '18px' }}>phone</span>
-                    <span>{propertyConfig.contact.phone}</span>
+                    <span className="material-icons text-luxury-gold/50 group-hover:text-luxury-gold transition-colors" style={{ fontSize: '16px' }}>phone</span>
+                    <span className="text-sm font-light">{propertyConfig.contact.phone}</span>
                   </a>
                 </li>
               )}
               {propertyConfig.socialMedia && (
-                <li className="flex gap-4 mt-4">
+                <li className="flex gap-3 pt-2">
                   {propertyConfig.socialMedia.instagram && (
                     <a
                       href={propertyConfig.socialMedia.instagram}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-300 hover:text-luxury-gold transition-colors"
+                      className="w-9 h-9 border border-gray-700 hover:border-luxury-gold flex items-center justify-center text-gray-400 hover:text-luxury-gold transition-all"
                       aria-label="Instagram"
                     >
-                      <span className="material-icons" style={{ fontSize: '20px' }}>photo_camera</span>
+                      <span className="material-icons" style={{ fontSize: '16px' }}>photo_camera</span>
                     </a>
                   )}
                   {propertyConfig.socialMedia.facebook && (
@@ -79,10 +98,10 @@ export default function Footer() {
                       href={propertyConfig.socialMedia.facebook}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-gray-300 hover:text-luxury-gold transition-colors"
+                      className="w-9 h-9 border border-gray-700 hover:border-luxury-gold flex items-center justify-center text-gray-400 hover:text-luxury-gold transition-all"
                       aria-label="Facebook"
                     >
-                      <span className="material-icons" style={{ fontSize: '20px' }}>facebook</span>
+                      <span className="material-icons" style={{ fontSize: '16px' }}>facebook</span>
                     </a>
                   )}
                 </li>
@@ -91,15 +110,20 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 pt-8 text-center text-gray-400 text-sm">
-          <p>&copy; {new Date().getFullYear()} {propertyConfig.name}. All rights reserved.</p>
+        {/* Bottom bar */}
+        <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-gray-600 text-xs font-sans tracking-wider">
+            &copy; {new Date().getFullYear()} {propertyConfig.name}. All rights reserved.
+          </p>
+          <Link
+            href="/inquiry"
+            className="btn-primary text-[10px] py-2.5 px-6 inline-flex items-center gap-2"
+          >
+            <span className="material-icons" style={{ fontSize: '12px' }}>calendar_today</span>
+            Book Direct
+          </Link>
         </div>
       </div>
     </footer>
   )
 }
-
-
-
-
-

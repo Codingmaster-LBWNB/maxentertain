@@ -1,20 +1,22 @@
 import type { Metadata } from 'next'
-import { Inter, Playfair_Display } from 'next/font/google'
+import { Josefin_Sans, Playfair_Display } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
 import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
 import GuestChatWidget from '@/components/GuestChatWidget'
 
-const inter = Inter({ 
+const josefin = Josefin_Sans({
   subsets: ['latin'],
-  variable: '--font-inter',
+  variable: '--font-josefin',
+  weight: ['300', '400', '600', '700'],
 })
 
-const playfair = Playfair_Display({ 
+const playfair = Playfair_Display({
   subsets: ['latin'],
   variable: '--font-playfair',
   weight: ['400', '500', '600', '700'],
+  style: ['normal', 'italic'],
 })
 
 export const metadata: Metadata = {
@@ -48,7 +50,7 @@ export default function RootLayout({
   const chatEnabled = process.env.NEXT_PUBLIC_CHAT_ENABLED === 'true'
 
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${josefin.variable} ${playfair.variable}`}>
       <head>
         <link rel="icon" href={iconHref} type="image/png" />
         <link rel="icon" href="/favicon.ico" />

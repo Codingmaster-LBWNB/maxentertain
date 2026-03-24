@@ -8,88 +8,143 @@ import { propertyConfig } from '@/config/property'
 export default function Hero() {
   const safeSrc = (src: string) => (src.startsWith('data:') ? src : encodeURI(src))
   const PLACEHOLDER =
-    'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"1200\" height=\"800\"%3E%3Crect fill=\"%23ddd\" width=\"1200\" height=\"800\"/%3E%3Ctext fill=\"%23999\" font-family=\"sans-serif\" font-size=\"24\" x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\"%3EImage%20unavailable%3C/text%3E%3C/svg%3E'
+    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"%3E%3Crect fill="%23ddd" width="1200" height="800"/%3E%3C/svg%3E'
 
   const heroImage = safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/exterior2.jpg')
+
+  const stats = [
+    { icon: 'bed', label: `${propertyConfig.bedrooms} Bedrooms` },
+    { icon: 'bathtub', label: `${propertyConfig.bathrooms} Bathrooms` },
+    { icon: 'group', label: `${propertyConfig.maxGuests}+ Guests` },
+  ]
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
       {/* Ken Burns Hero Image */}
-      <div className="relative h-full w-full">
-        <div className="absolute inset-0">
-          <div className="relative w-full h-full bg-gradient-to-r from-black/55 via-black/35 to-black/20">
-            <motion.div
-              className="absolute inset-0"
-              initial={{ scale: 1.1 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 9, ease: 'easeOut' }}
-            >
-              <Image
-                src={heroImage}
-                alt={propertyConfig.name}
-                fill
-                className="object-cover"
-                priority
-                sizes="100vw"
-                quality={85}
-                unoptimized={false}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement
-                  target.src = safeSrc(propertyConfig.images[0] || PLACEHOLDER)
-                }}
-              />
-            </motion.div>
-          </div>
-        </div>
+      <div className="absolute inset-0">
+        <motion.div
+          className="absolute inset-0"
+          initial={{ scale: 1.08 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 10, ease: 'easeOut' }}
+        >
+          <Image
+            src={heroImage}
+            alt={propertyConfig.name}
+            fill
+            className="object-cover"
+            priority
+            sizes="100vw"
+            quality={90}
+            onError={(e) => {
+              const target = e.target as HTMLImageElement
+              target.src = safeSrc(propertyConfig.images[0] || PLACEHOLDER)
+            }}
+          />
+        </motion.div>
+
+        {/* Cinematic overlay: heavy left, fades to transparent right */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/15" />
+        {/* Bottom vignette */}
+        <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/70 to-transparent" />
+        {/* Top vignette */}
+        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/40 to-transparent" />
       </div>
 
-      {/* Hero Content */}
-      <div className="absolute inset-0 z-10 flex items-center justify-center">
-        <div className="container-custom px-4 text-center">
-          <div className="mx-auto max-w-4xl bg-black/15 backdrop-blur-md rounded-3xl p-8 md:p-12 shadow-2xl border border-white/10">
+      {/* Hero Content — left aligned, editorial */}
+      <div className="absolute inset-0 z-10 flex items-center">
+        <div className="container-custom px-6 md:px-8 lg:px-16 pt-16">
+          <div className="max-w-2xl xl:max-w-3xl">
+
+            {/* Location tag */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
+              className="flex items-center gap-3 mb-8"
+            >
+              <div className="h-px w-10 bg-luxury-gold" />
+              <span className="text-luxury-gold/90 text-xs font-sans font-semibold tracking-[0.3em] uppercase">
+                Mornington Peninsula, Victoria
+              </span>
+            </motion.div>
+
+            {/* Main Title */}
             <motion.h1
-              initial={{ opacity: 0, y: 28 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.3 }}
-              className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white mb-6 drop-shadow-2xl"
+              transition={{ duration: 0.9, ease: 'easeOut', delay: 0.4 }}
+              className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-6 drop-shadow-2xl"
             >
               {propertyConfig.name}
             </motion.h1>
 
+            {/* Gold rule */}
+            <motion.div
+              initial={{ opacity: 0, scaleX: 0 }}
+              animate={{ opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.65 }}
+              style={{ originX: 0 }}
+              className="h-px w-20 bg-luxury-gold mb-6"
+            />
+
+            {/* Description */}
             <motion.p
-              initial={{ opacity: 0, y: 22 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.55 }}
-              className="text-xl md:text-2xl text-white/90 mb-10 max-w-2xl mx-auto drop-shadow-lg"
+              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.75 }}
+              className="text-lg md:text-xl text-white/80 mb-8 leading-relaxed font-light max-w-lg"
             >
               {propertyConfig.description}
             </motion.p>
 
+            {/* Property stat chips */}
             <motion.div
-              initial={{ opacity: 0, y: 18 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: 'easeOut', delay: 0.8 }}
-              className="flex flex-col sm:flex-row gap-4 justify-center items-center flex-wrap"
+              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.9 }}
+              className="flex flex-wrap gap-3 mb-10"
             >
-              <Link href="/inquiry" className="btn-primary inline-flex items-center gap-2">
-                <span className="material-icons" style={{ fontSize: '20px' }}>calendar_today</span>
-                Book Directly and Save!
+              {stats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-sans font-semibold tracking-widest uppercase"
+                  style={{ borderRadius: '2px' }}
+                >
+                  <span className="material-icons text-luxury-gold" style={{ fontSize: '14px' }}>{stat.icon}</span>
+                  {stat.label}
+                </div>
+              ))}
+            </motion.div>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: 'easeOut', delay: 1.05 }}
+              className="flex flex-col sm:flex-row gap-3 flex-wrap"
+            >
+              <Link href="/inquiry" className="btn-primary inline-flex items-center gap-2 justify-center">
+                <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>
+                Book Directly &amp; Save
               </Link>
+
               {propertyConfig.booking?.airbnb && (
                 <a
                   href={propertyConfig.booking.airbnb}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#FF5A5F] hover:bg-[#E04A4F] text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-flex items-center gap-3 text-sm md:text-base"
+                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
+                  style={{ borderRadius: '2px' }}
                 >
                   <Image
                     src={safeSrc('/Airbnb picture/icons_files/airbnb_icon.jpg')}
                     alt="Airbnb"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6 object-contain"
+                    width={16}
+                    height={16}
+                    className="w-4 h-4 object-contain rounded-sm"
                   />
-                  <span>Airbnb</span>
+                  Airbnb
                 </a>
               )}
               {propertyConfig.booking?.bookingCom && (
@@ -97,16 +152,17 @@ export default function Hero() {
                   href={propertyConfig.booking.bookingCom}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#003580] hover:bg-[#002550] text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-flex items-center gap-3 text-sm md:text-base"
+                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
+                  style={{ borderRadius: '2px' }}
                 >
                   <Image
                     src={safeSrc('/Airbnb picture/icons_files/booking_icon.jpeg')}
                     alt="Booking.com"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6 object-contain bg-white rounded p-0.5"
+                    width={16}
+                    height={16}
+                    className="w-4 h-4 object-contain bg-white rounded-sm p-0.5"
                   />
-                  <span>Booking.com</span>
+                  Booking.com
                 </a>
               )}
               {propertyConfig.booking?.vrbo && (
@@ -114,51 +170,58 @@ export default function Hero() {
                   href={propertyConfig.booking.vrbo}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-[#00A699] hover:bg-[#008B7F] text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 inline-flex items-center gap-3 text-sm md:text-base"
+                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
+                  style={{ borderRadius: '2px' }}
                 >
                   <Image
                     src={safeSrc('/Airbnb picture/icons_files/vrbo.png')}
                     alt="VRBO"
-                    width={24}
-                    height={24}
-                    className="w-6 h-6 object-contain"
+                    width={16}
+                    height={16}
+                    className="w-4 h-4 object-contain"
                   />
-                  <span>VRBO</span>
+                  VRBO
                 </a>
               )}
-              {/* Desktop: scroll to photos section */}
-              <a
-                href="#gallery"
-                className="hidden md:inline-flex btn-secondary text-white border-white hover:bg-white hover:text-luxury-dark"
-              >
-                Explore Property
-              </a>
-              {/* Mobile: open dedicated photos page */}
-              <Link
-                href="/photos"
-                className="md:hidden btn-secondary text-white border-white hover:bg-white hover:text-luxury-dark"
-              >
-                Explore Property
-              </Link>
             </motion.div>
+
           </div>
         </div>
       </div>
 
-      {/* Animated Scroll Indicator */}
+      {/* Explore Property link — bottom right corner */}
       <motion.div
         className="absolute bottom-8 right-8 z-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.5, duration: 0.6 }}
+        transition={{ delay: 1.6, duration: 0.6 }}
       >
-        <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-          <motion.div
-            className="w-1 h-3 bg-white/70 rounded-full mt-2"
-            animate={{ y: [0, 12, 0], opacity: [0.7, 0.3, 0.7] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </div>
+        <a
+          href="#gallery"
+          className="hidden md:flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors group"
+        >
+          <span className="text-[10px] font-sans font-semibold tracking-[0.25em] uppercase">Explore</span>
+          <div className="w-5 h-8 border border-white/30 rounded-full flex justify-center group-hover:border-white/60 transition-colors">
+            <motion.div
+              className="w-0.5 h-2 bg-white/60 rounded-full mt-1.5"
+              animate={{ y: [0, 10, 0], opacity: [0.6, 0.2, 0.6] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </div>
+        </a>
+        <Link
+          href="/photos"
+          className="md:hidden flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors"
+        >
+          <span className="text-[10px] font-sans font-semibold tracking-[0.25em] uppercase">Photos</span>
+          <div className="w-5 h-8 border border-white/30 rounded-full flex justify-center">
+            <motion.div
+              className="w-0.5 h-2 bg-white/60 rounded-full mt-1.5"
+              animate={{ y: [0, 10, 0], opacity: [0.6, 0.2, 0.6] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </div>
+        </Link>
       </motion.div>
     </section>
   )

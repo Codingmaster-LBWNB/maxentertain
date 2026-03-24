@@ -21,11 +21,12 @@ export default function LocalArea() {
   const attractions = propertyConfig.localArea.attractions
 
   return (
-    <section id="local-area" className="section-padding bg-gradient-to-b from-luxury-light to-white scroll-mt-24 md:scroll-mt-28">
+    <section id="local-area" className="section-padding bg-white scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <div className="text-center mb-16">
+          <span className="section-label">Explore</span>
           <h2 className="heading-primary">{propertyConfig.localArea.title}</h2>
-          <p className="text-luxury text-gray-600 max-w-2xl mx-auto">
+          <p className="text-luxury max-w-2xl mx-auto">
             {propertyConfig.localArea.description}
           </p>
         </div>
@@ -43,49 +44,50 @@ export default function LocalArea() {
             return (
               <div
                 key={index}
-                className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all overflow-hidden hover:-translate-y-1 hover:scale-[1.02] will-change-transform"
+                className="group overflow-hidden bg-white border border-gray-100 hover:border-luxury-gold/30 hover:shadow-lg transition-all will-change-transform"
               >
-                {attraction.image && (
-                  <div className="relative w-full aspect-[16/10]">
+                {attraction.image ? (
+                  <div className="relative w-full aspect-[16/10] overflow-hidden">
                     <Image
                       src={attraction.image}
                       alt={attraction.name}
                       fill
-                      className="object-cover"
+                      className="object-cover group-hover:scale-105 transition-transform duration-700"
                       sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                       priority={index < 3}
                     />
+                    {/* Overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    {/* Category badge */}
+                    <div className="absolute top-3 left-3">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/40 backdrop-blur-sm text-white text-[10px] font-sans font-semibold tracking-[0.15em] uppercase">
+                        <span className="material-icons" style={{ fontSize: '11px' }}>{iconName}</span>
+                        {attraction.type}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="w-full aspect-[16/10] bg-luxury-light flex items-center justify-center">
+                    <span className="material-icons text-luxury-gold/40" style={{ fontSize: '40px' }}>{iconName}</span>
                   </div>
                 )}
 
-                <div className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-luxury-gold/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span className="material-icons text-luxury-gold" style={{ fontSize: '24px' }}>{iconName}</span>
-                    </div>
-                    <div className="flex-1">
-                      {attraction.url ? (
-                        <h3 className="font-semibold text-luxury-dark mb-1">
-                          <a
-                            href={attraction.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hover:text-luxury-gold transition-colors underline decoration-transparent hover:decoration-luxury-gold underline-offset-2"
-                          >
-                            {attraction.name}
-                          </a>
-                        </h3>
-                      ) : (
-                        <h3 className="font-semibold text-luxury-dark mb-1">{attraction.name}</h3>
-                      )}
-                      {distanceLabel && (
-                        <p className="text-sm text-gray-600 flex items-center gap-1">
-                          <span className="material-icons" style={{ fontSize: '14px' }}>location_on</span>
-                          {distanceLabel}
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                <div className="p-5">
+                  {attraction.url ? (
+                    <h3 className="font-serif font-semibold text-luxury-dark text-lg mb-1 group-hover:text-luxury-gold transition-colors">
+                      <a href={attraction.url} target="_blank" rel="noopener noreferrer">
+                        {attraction.name}
+                      </a>
+                    </h3>
+                  ) : (
+                    <h3 className="font-serif font-semibold text-luxury-dark text-lg mb-1">{attraction.name}</h3>
+                  )}
+                  {distanceLabel && (
+                    <p className="text-xs font-sans font-semibold tracking-[0.12em] uppercase text-gray-400 flex items-center gap-1">
+                      <span className="material-icons" style={{ fontSize: '12px' }}>near_me</span>
+                      {distanceLabel}
+                    </p>
+                  )}
                 </div>
               </div>
             )
@@ -93,7 +95,7 @@ export default function LocalArea() {
         </div>
 
         {/* Interactive Google Maps */}
-        <div className="mt-12 rounded-2xl overflow-hidden shadow-xl">
+        <div className="mt-12 overflow-hidden shadow-sm border border-gray-100">
           <div className="w-full h-96 relative">
             {/* Google Maps Embed - Works without API key for basic embeds */}
             <iframe

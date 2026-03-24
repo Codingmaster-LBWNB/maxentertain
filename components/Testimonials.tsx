@@ -47,26 +47,33 @@ export default function Testimonials() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.55, ease: 'easeOut', delay: (index % 3) * 0.1 }}
-      className="bg-gradient-to-br from-luxury-light to-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-shadow"
+      className="bg-white border border-gray-100 p-8 hover:border-luxury-gold/30 hover:shadow-md transition-all"
     >
-      <span className="material-icons text-luxury-gold mb-4" style={{ fontSize: '32px' }}>format_quote</span>
-      <div className="flex gap-1 mb-4">
+      {/* Stars */}
+      <div className="flex gap-0.5 mb-5">
         {Array.from({ length: testimonial.rating }).map((_, i) => (
-          <span key={i} className="material-icons text-luxury-gold" style={{ fontSize: '20px' }}>star</span>
+          <span key={i} className="material-icons text-luxury-gold" style={{ fontSize: '14px' }}>star</span>
         ))}
       </div>
-      <p className="text-gray-700 mb-6 leading-relaxed italic">
-        &ldquo;{renderHighlightedText(testimonial.comment, testimonial.highlight)}&rdquo;
+      {/* Large quote mark */}
+      <div className="text-6xl font-serif text-luxury-gold/20 leading-none mb-2 select-none">&ldquo;</div>
+      <p className="text-gray-600 mb-6 leading-relaxed font-light text-base italic -mt-4">
+        {renderHighlightedText(testimonial.comment, testimonial.highlight)}
       </p>
-      <div className="border-t pt-4">
-        <p className="font-semibold text-luxury-dark">{testimonial.name}</p>
-        <p className="text-sm text-gray-500">{testimonial.date}</p>
+      <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
+        <div className="w-8 h-8 bg-luxury-gold/10 flex items-center justify-center flex-shrink-0">
+          <span className="material-icons text-luxury-gold/60" style={{ fontSize: '16px' }}>person</span>
+        </div>
+        <div>
+          <p className="text-xs font-sans font-semibold tracking-[0.15em] uppercase text-luxury-dark">{testimonial.name}</p>
+          <p className="text-xs text-gray-400 mt-0.5">{testimonial.date}</p>
+        </div>
       </div>
     </motion.div>
   )
 
   return (
-    <section id="testimonials" className="section-padding bg-gradient-to-b from-white via-[#003580]/[0.03] to-white scroll-mt-24 md:scroll-mt-28">
+    <section id="testimonials" className="section-padding bg-[#fafaf8] scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         {/* Keep #award anchor working, but visually combine Award + Reviews */}
         <div id="award" className="mb-16">
@@ -74,8 +81,9 @@ export default function Testimonials() {
         </div>
 
         <div className="text-center mb-16">
+          <span className="section-label">Testimonials</span>
           <h2 className="heading-primary">Guest Reviews</h2>
-          <p className="text-luxury text-gray-600">
+          <p className="text-luxury">
             See what our guests have to say about their stay
           </p>
         </div>
