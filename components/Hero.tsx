@@ -52,8 +52,8 @@ export default function Hero() {
       </div>
 
       {/* Hero Content — left aligned, editorial */}
-      <div className="absolute inset-0 z-10 flex items-center">
-        <div className="container-custom px-6 md:px-8 lg:px-16 pt-16">
+      <div className="absolute inset-0 z-10 flex items-end sm:items-center">
+        <div className="container-custom px-6 md:px-8 lg:px-16 pb-20 sm:pb-0 sm:pt-16">
           <div className="max-w-2xl xl:max-w-3xl">
 
             {/* Location tag */}
@@ -74,7 +74,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease: 'easeOut', delay: 0.4 }}
-              className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-6 drop-shadow-2xl"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-5 drop-shadow-2xl"
             >
               {propertyConfig.name}
             </motion.h1>
@@ -93,7 +93,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.75 }}
-              className="text-lg md:text-xl text-white/80 mb-8 leading-relaxed font-light max-w-lg"
+              className="text-base sm:text-lg md:text-xl text-white/80 mb-5 sm:mb-8 leading-relaxed font-light max-w-lg"
             >
               {propertyConfig.description}
             </motion.p>
@@ -103,7 +103,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: 'easeOut', delay: 0.9 }}
-              className="flex flex-wrap gap-3 mb-10"
+              className="flex flex-wrap gap-2 sm:gap-3 mb-5 sm:mb-10"
             >
               {stats.map((stat) => (
                 <div

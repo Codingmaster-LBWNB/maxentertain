@@ -5,6 +5,7 @@ import './globals.css'
 import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
 import GuestChatWidget from '@/components/GuestChatWidget'
+import ThemeProvider from '@/components/ThemeProvider'
 
 const josefin = Josefin_Sans({
   subsets: ['latin'],
@@ -46,12 +47,17 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const iconHref = encodeURI('/Airbnb picture/icons_files/Icon.png')
-  // Hide by default; set NEXT_PUBLIC_CHAT_ENABLED=true when keys are ready.
   const chatEnabled = process.env.NEXT_PUBLIC_CHAT_ENABLED === 'true'
 
   return (
-    <html lang="en" className={`${josefin.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${josefin.variable} ${playfair.variable}`} suppressHydrationWarning>
       <head>
+        {/* Anti-flash: reads localStorage before React hydrates */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'||(t===null&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
+          }}
+        />
         <link rel="icon" href={iconHref} type="image/png" />
         <link rel="icon" href="/favicon.ico" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
@@ -70,16 +76,13 @@ export default function RootLayout({
         </Script>
       </head>
       <body className="font-sans antialiased">
-        <div className="relative z-[1]">
-          {children}
-          {chatEnabled ? <GuestChatWidget /> : null}
-        </div>
+        <ThemeProvider>
+          <div className="relative z-[1]">
+            {children}
+            {chatEnabled ? <GuestChatWidget /> : null}
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   )
 }
-
-
-
-
-

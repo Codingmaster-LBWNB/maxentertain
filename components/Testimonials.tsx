@@ -47,7 +47,7 @@ export default function Testimonials() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-40px' }}
       transition={{ duration: 0.55, ease: 'easeOut', delay: (index % 3) * 0.1 }}
-      className="bg-white border border-gray-100 p-8 hover:border-luxury-gold/30 hover:shadow-md transition-all"
+      className="bg-white dark:bg-[#1d1d1b] border border-gray-100 dark:border-white/7 p-8 hover:border-luxury-gold/30 dark:hover:border-luxury-gold/25 hover:shadow-md transition-all"
     >
       {/* Stars */}
       <div className="flex gap-0.5 mb-5">
@@ -57,15 +57,15 @@ export default function Testimonials() {
       </div>
       {/* Large quote mark */}
       <div className="text-6xl font-serif text-luxury-gold/20 leading-none mb-2 select-none">&ldquo;</div>
-      <p className="text-gray-600 mb-6 leading-relaxed font-light text-base italic -mt-4">
+      <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed font-light text-base italic -mt-4">
         {renderHighlightedText(testimonial.comment, testimonial.highlight)}
       </p>
-      <div className="flex items-center gap-3 pt-4 border-t border-gray-50">
+      <div className="flex items-center gap-3 pt-4 border-t border-gray-50 dark:border-white/5">
         <div className="w-8 h-8 bg-luxury-gold/10 flex items-center justify-center flex-shrink-0">
           <span className="material-icons text-luxury-gold/60" style={{ fontSize: '16px' }}>person</span>
         </div>
         <div>
-          <p className="text-xs font-sans font-semibold tracking-[0.15em] uppercase text-luxury-dark">{testimonial.name}</p>
+          <p className="text-xs font-sans font-semibold tracking-[0.15em] uppercase text-luxury-dark dark:text-white">{testimonial.name}</p>
           <p className="text-xs text-gray-400 mt-0.5">{testimonial.date}</p>
         </div>
       </div>
@@ -73,7 +73,7 @@ export default function Testimonials() {
   )
 
   return (
-    <section id="testimonials" className="section-padding bg-[#fafaf8] scroll-mt-24 md:scroll-mt-28">
+    <section id="testimonials" className="section-padding bg-[#fafaf8] dark:bg-[#0f0f0e] scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         {/* Keep #award anchor working, but visually combine Award + Reviews */}
         <div id="award" className="mb-16">

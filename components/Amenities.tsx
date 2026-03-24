@@ -86,7 +86,7 @@ export default function Amenities() {
   )
 
   return (
-    <section id="amenities" className="section-padding bg-[#fafaf8] scroll-mt-24 md:scroll-mt-28">
+    <section id="amenities" className="section-padding bg-[#fafaf8] dark:bg-[#141412] scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <div className="text-center mb-16">
           <span className="section-label">Included</span>
@@ -109,13 +109,13 @@ export default function Amenities() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.45, ease: 'easeOut', delay: Math.min(index * 0.04, 0.35) }}
-                className="bg-white border border-gray-100 p-5 hover:border-luxury-gold/40 hover:shadow-md transition-all cursor-pointer group"
+                className="bg-white dark:bg-[#1d1d1b] border border-gray-100 dark:border-white/7 p-5 hover:border-luxury-gold/40 dark:hover:border-luxury-gold/30 hover:shadow-md transition-all cursor-pointer group"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 group-hover:text-luxury-gold transition-colors">
                     <span className="material-icons text-luxury-gold/60 group-hover:text-luxury-gold transition-colors" style={{ fontSize: '22px' }}>{iconName}</span>
                   </div>
-                  <span className="text-gray-700 font-sans text-sm font-medium leading-tight">
+                  <span className="text-gray-700 dark:text-gray-300 font-sans text-sm font-medium leading-tight">
                     {amenity}
                   </span>
                 </div>

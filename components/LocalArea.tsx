@@ -21,7 +21,7 @@ export default function LocalArea() {
   const attractions = propertyConfig.localArea.attractions
 
   return (
-    <section id="local-area" className="section-padding bg-white scroll-mt-24 md:scroll-mt-28">
+    <section id="local-area" className="section-padding bg-white dark:bg-[#141412] scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <div className="text-center mb-16">
           <span className="section-label">Explore</span>
@@ -44,7 +44,7 @@ export default function LocalArea() {
             return (
               <div
                 key={index}
-                className="group overflow-hidden bg-white border border-gray-100 hover:border-luxury-gold/30 hover:shadow-lg transition-all will-change-transform"
+                className="group overflow-hidden bg-white dark:bg-[#1d1d1b] border border-gray-100 dark:border-white/7 hover:border-luxury-gold/30 dark:hover:border-luxury-gold/25 hover:shadow-lg transition-all will-change-transform"
               >
                 {attraction.image ? (
                   <div className="relative w-full aspect-[16/10] overflow-hidden">
@@ -74,13 +74,13 @@ export default function LocalArea() {
 
                 <div className="p-5">
                   {attraction.url ? (
-                    <h3 className="font-serif font-semibold text-luxury-dark text-lg mb-1 group-hover:text-luxury-gold transition-colors">
+                    <h3 className="font-serif font-semibold text-luxury-dark dark:text-white text-lg mb-1 group-hover:text-luxury-gold transition-colors">
                       <a href={attraction.url} target="_blank" rel="noopener noreferrer">
                         {attraction.name}
                       </a>
                     </h3>
                   ) : (
-                    <h3 className="font-serif font-semibold text-luxury-dark text-lg mb-1">{attraction.name}</h3>
+                    <h3 className="font-serif font-semibold text-luxury-dark dark:text-white text-lg mb-1">{attraction.name}</h3>
                   )}
                   {distanceLabel && (
                     <p className="text-xs font-sans font-semibold tracking-[0.12em] uppercase text-gray-400 flex items-center gap-1">
@@ -95,7 +95,7 @@ export default function LocalArea() {
         </div>
 
         {/* Interactive Google Maps */}
-        <div className="mt-12 overflow-hidden shadow-sm border border-gray-100">
+        <div className="mt-12 overflow-hidden shadow-sm border border-gray-100 dark:border-white/7">
           <div className="w-full h-96 relative">
             {/* Google Maps Embed - Works without API key for basic embeds */}
             <iframe
@@ -115,7 +115,7 @@ export default function LocalArea() {
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(propertyConfig.location)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-sm font-semibold text-luxury-dark hover:text-luxury-gold flex items-center gap-2"
+                className="bg-white dark:bg-[#1d1d1b] px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-sm font-semibold text-luxury-dark dark:text-white hover:text-luxury-gold flex items-center gap-2"
               >
                 <span className="material-icons" style={{ fontSize: '16px' }}>location_on</span>
                 Open in Google Maps

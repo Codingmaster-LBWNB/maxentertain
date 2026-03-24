@@ -2,6 +2,33 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── THEME VARIABLES ── */
+:root {
+  --bg:           #fafaf8;
+  --bg-alt:       #ffffff;
+  --bg-card:      #ffffff;
+  --bg-card-alt:  #fafaf8;
+  --border:       #e5e7eb;
+  --border-subtle: rgba(0,0,0,0.06);
+  --text:         #1a1a1a;
+  --text-muted:   #6b7280;
+  --text-faint:   #9ca3af;
+  --nav-bg:       rgba(255,255,255,0.96);
+}
+
+.dark {
+  --bg:           #0f0f0e;
+  --bg-alt:       #141412;
+  --bg-card:      #1d1d1b;
+  --bg-card-alt:  #222220;
+  --border:       rgba(255,255,255,0.07);
+  --border-subtle: rgba(255,255,255,0.05);
+  --text:         #ece9e4;
+  --text-muted:   #8a8882;
+  --text-faint:   #5a5856;
+  --nav-bg:       rgba(15,15,14,0.96);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -10,8 +37,9 @@
   }
 
   body {
-    @apply text-luxury-dark font-sans;
-    background-color: #fafaf8;
+    @apply font-sans;
+    color: var(--text);
+    background-color: var(--bg);
     overflow-x: hidden;
     width: 100%;
     position: relative;
@@ -81,7 +109,8 @@
   .btn-secondary {
     @apply bg-transparent border border-luxury-gold text-luxury-gold
            px-8 py-3.5 font-sans font-semibold tracking-widest uppercase text-xs
-           hover:bg-luxury-gold hover:text-white transition-all duration-300;
+           hover:bg-luxury-gold hover:text-white transition-all duration-300
+           dark:border-luxury-gold/70 dark:text-luxury-gold/80 dark:hover:border-luxury-gold dark:hover:text-white;
     border-radius: 2px;
   }
 
@@ -95,16 +124,16 @@
 
   .heading-primary {
     @apply text-4xl md:text-5xl lg:text-6xl font-serif font-bold
-           text-luxury-dark mb-6 tracking-tight;
+           text-luxury-dark dark:text-white mb-6 tracking-tight;
   }
 
   .heading-secondary {
     @apply text-3xl md:text-4xl font-serif font-semibold
-           text-luxury-dark mb-4 tracking-tight;
+           text-luxury-dark dark:text-white mb-4 tracking-tight;
   }
 
   .text-luxury {
-    @apply text-lg md:text-xl text-gray-600 leading-relaxed font-light;
+    @apply text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed font-light;
   }
 
   /* Gold rule divider */
@@ -168,12 +197,29 @@
 
 /* Reveal animation for section entrances */
 @keyframes reveal-up {
-  from {
-    opacity: 0;
-    transform: translateY(40px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(40px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── THEME TRANSITION ── */
+/* Applied by ThemeToggle during switch to smoothly cross-fade all surfaces */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition:
+    background-color 0.45s ease,
+    border-color 0.45s ease,
+    color 0.35s ease,
+    fill 0.35s ease !important;
+  transition-delay: 0s !important;
+}
+
+/* Scrollbar respects theme */
+.dark ::-webkit-scrollbar-track { background: #1a1a18; }
+.dark ::-webkit-scrollbar-thumb { background: #D4AF37; }
+
+/* Dark mode: nav bg override via CSS variable */
+.dark nav[class*="bg-white"] {
+  background-color: var(--nav-bg) !important;
 }

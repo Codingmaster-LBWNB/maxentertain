@@ -1,6 +1,8 @@
 import { ImageResponse } from 'next/og'
 import { propertyConfig } from '@/config/property'
 
+export const runtime = 'edge'
+
 export const size = {
   width: 1200,
   height: 630,

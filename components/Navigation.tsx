@@ -32,7 +32,7 @@ export default function Navigation() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled
-          ? 'bg-white/96 backdrop-blur-md shadow-sm border-b border-gray-100'
+          ? 'bg-white/96 dark:bg-[#0f0f0e]/96 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-white/8'
           : 'bg-transparent backdrop-blur-sm'
       }`}
     >
@@ -43,7 +43,7 @@ export default function Navigation() {
           <Link
             href="/"
             className={`flex items-center gap-2 md:gap-3 font-serif font-bold transition-colors flex-shrink min-w-0 overflow-hidden ${
-              isScrolled ? 'text-luxury-dark' : 'text-white drop-shadow-lg'
+              isScrolled ? 'text-luxury-dark dark:text-white' : 'text-white drop-shadow-lg'
             }`}
           >
             <span className="relative h-9 w-9 md:h-10 md:w-10 overflow-hidden rounded-full bg-white/90 ring-1 ring-black/5 flex-shrink-0">
@@ -88,7 +88,7 @@ export default function Navigation() {
                   className={`relative transition-colors font-sans text-[11px] font-semibold tracking-[0.15em] uppercase pb-0.5
                     after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-luxury-gold after:transition-all after:duration-300 hover:after:w-full
                     ${isLessImportant ? 'hidden xl:inline' : 'inline'}
-                    ${isScrolled ? 'text-gray-600 hover:text-luxury-dark' : 'text-white/80 hover:text-white'}
+                    ${isScrolled ? 'text-gray-600 dark:text-gray-400 hover:text-luxury-dark dark:hover:text-white' : 'text-white/80 hover:text-white'}
                   `}
                 >
                   {link.label}
@@ -174,7 +174,7 @@ export default function Navigation() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t shadow-lg"
+            className="md:hidden bg-white dark:bg-[#0f0f0e] border-t border-gray-100 dark:border-white/8 shadow-lg"
           >
             <div className="container-custom px-4 py-4 space-y-4">
               {navLinks.map((link) => (
@@ -182,7 +182,7 @@ export default function Navigation() {
                   key={link.label}
                   href={link.mobileHref}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-gray-500 hover:text-luxury-dark transition-colors font-sans text-[11px] font-semibold tracking-[0.2em] uppercase py-3 border-b border-gray-50"
+                  className="block text-gray-500 dark:text-gray-400 hover:text-luxury-dark dark:hover:text-white transition-colors font-sans text-[11px] font-semibold tracking-[0.2em] uppercase py-3 border-b border-gray-50 dark:border-white/5"
                 >
                   {link.label}
                 </a>

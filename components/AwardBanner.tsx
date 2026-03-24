@@ -16,7 +16,7 @@ export default function AwardBanner({ embedded = false }: { embedded?: boolean }
           transition={{ duration: 0.6 }}
           className="flex flex-col items-center text-center"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-100 text-yellow-900 border border-yellow-200 shadow-sm mb-5">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-900 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700/50 shadow-sm mb-5">
             <span className="text-sm font-semibold tracking-wide uppercase">Award recognition</span>
           </div>
 

@@ -8,6 +8,7 @@ import ImageGallery from '@/components/ImageGallery'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
 import AvailabilityInquirySync from '@/components/AvailabilityInquirySync'
+import ThemeToggle from '@/components/ThemeToggle'
 import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
 
@@ -56,6 +57,7 @@ export default function Home() {
       <LocalArea />
       <AvailabilityInquirySync />
       <Footer />
+      <ThemeToggle />
     </main>
   )
 }

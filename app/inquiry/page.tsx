@@ -6,9 +6,9 @@ export default function InquiryPage() {
   const safeSrc = (src: string) => encodeURI(src)
 
   return (
-    <main className="relative min-h-screen">
-      {/* Fixed background */}
-      <div className="fixed inset-0 -z-10">
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Background — fixed on desktop, absolute on mobile for iOS Safari compatibility */}
+      <div className="absolute inset-0 md:fixed -z-10">
         <Image
           src={safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/Backyard.jpg')}
           alt="Property background"
@@ -21,6 +21,7 @@ export default function InquiryPage() {
         <div className="absolute inset-0 bg-black/15" />
       </div>
 
+      <main className="relative min-h-screen">
       <div className="section-padding">
         <div className="container-custom">
           <Link 
@@ -57,7 +58,8 @@ export default function InquiryPage() {
           </div>
         </div>
       </div>
-    </main>
+      </main>
+    </div>
   )
 }
 
