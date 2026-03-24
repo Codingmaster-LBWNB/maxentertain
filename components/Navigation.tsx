@@ -53,6 +53,7 @@ export default function Navigation() {
                 fill
                 className="object-cover scale-110"
                 sizes="(max-width: 768px) 36px, 40px"
+                quality={100}
                 priority
               />
             </span>

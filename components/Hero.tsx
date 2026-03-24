@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
 
@@ -12,6 +13,34 @@ export default function Hero() {
 
   const heroImage = safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/exterior2.jpg')
 
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [videoOpacity, setVideoOpacity] = useState(1)
+  const fadingRef = useRef(false)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    const FADE_DURATION_MS = 900
+    const FADE_START_S = 1.5 // seconds before end to begin fade
+
+    const handleTimeUpdate = () => {
+      if (!video.duration) return
+      const remaining = video.duration - video.currentTime
+      if (remaining < FADE_START_S && !fadingRef.current) {
+        fadingRef.current = true
+        setVideoOpacity(0)
+        setTimeout(() => {
+          setVideoOpacity(1)
+          fadingRef.current = false
+        }, FADE_DURATION_MS)
+      }
+    }
+
+    video.addEventListener('timeupdate', handleTimeUpdate)
+    return () => video.removeEventListener('timeupdate', handleTimeUpdate)
+  }, [])
+
   const stats = [
     { icon: 'bed', label: `${propertyConfig.bedrooms} Bedrooms` },
     { icon: 'bathtub', label: `${propertyConfig.bathrooms} Bathrooms` },
@@ -20,28 +49,23 @@ export default function Hero() {
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Ken Burns Hero Image */}
+      {/* Video Background */}
       <div className="absolute inset-0">
-        <motion.div
-          className="absolute inset-0"
-          initial={{ scale: 1.08 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 10, ease: 'easeOut' }}
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster={heroImage}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            opacity: videoOpacity,
+            transition: 'opacity 0.9s ease-in-out',
+          }}
         >
-          <Image
-            src={heroImage}
-            alt={propertyConfig.name}
-            fill
-            className="object-cover"
-            priority
-            sizes="100vw"
-            quality={90}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement
-              target.src = safeSrc(propertyConfig.images[0] || PLACEHOLDER)
-            }}
-          />
-        </motion.div>
+          <source src={encodeURI('/Airbnb picture/videos/Video_Generation_With_Motion_And_Transition.mp4')} type="video/mp4" />
+        </video>
 
         {/* Cinematic overlay: heavy left, fades to transparent right */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/15" />
