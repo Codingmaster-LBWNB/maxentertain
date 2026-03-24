@@ -25,7 +25,7 @@ function renderHighlightedText(text: string, keywords?: string[]) {
   return parts.map((part, i) => {
     const isHit = sorted.some((k) => k.toLowerCase() === part.toLowerCase())
     return isHit ? (
-      <span key={i} className="font-semibold text-gray-900 not-italic">
+      <span key={i} className="font-semibold text-gray-900 dark:text-luxury-gold not-italic">
         {part}
       </span>
     ) : (

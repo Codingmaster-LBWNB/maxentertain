@@ -336,13 +336,13 @@ export default function InquiryForm({
                   Thank You!
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Your inquiry has been sent successfully. We&apos;ll get back to you within 24 hours.
+                  Your enquiry has been sent successfully. We&apos;ll get back to you within 24 hours.
                 </p>
                 <button
                   onClick={() => setSubmitStatus('idle')}
                   className="btn-secondary"
                 >
-                  Send Another Inquiry
+                  Send Another Enquiry
                 </button>
               </motion.div>
             ) : (
@@ -487,7 +487,7 @@ export default function InquiryForm({
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
                     <span className="material-icons text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '20px' }}>error</span>
                     <div>
-                      <p className="text-red-800 font-semibold">Error sending inquiry</p>
+                      <p className="text-red-800 font-semibold">Error sending enquiry</p>
                       <p className="text-red-600 text-sm mt-1">
                         {submitErrorMessage || 'Please check your EmailJS configuration or try again later.'}
                       </p>
@@ -516,13 +516,13 @@ export default function InquiryForm({
                   ) : (
                     <>
                       <span className="material-icons" style={{ fontSize: '20px' }}>send</span>
-                      Submit Inquiry
+                      Submit Enquiry
                     </>
                   )}
                 </button>
 
                 <p className="text-xs text-gray-500 text-center">
-                  By submitting this form, you agree to our privacy policy. We&apos;ll use your information to respond to your inquiry.
+                  By submitting this form, you agree to our privacy policy. We&apos;ll use your information to respond to your enquiry.
                 </p>
               </form>
             )}

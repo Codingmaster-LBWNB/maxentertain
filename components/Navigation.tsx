@@ -123,7 +123,7 @@ export default function Navigation() {
               className="btn-primary text-[10px] py-2.5 px-5 flex-shrink-0 inline-flex items-center gap-1.5"
             >
               <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>
-              Inquiry
+              Enquiry
             </Link>
           </div>
 
@@ -193,7 +193,7 @@ export default function Navigation() {
                 className="btn-primary w-full flex items-center justify-center gap-2 text-center"
               >
                 <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>
-                Send Inquiry
+                Send Enquiry
               </Link>
             </div>
           </motion.div>
