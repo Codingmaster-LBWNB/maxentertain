@@ -13,8 +13,15 @@ export default function Hero() {
 
   const heroImage = safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/exterior2.jpg')
 
+  const videos = [
+    '/Airbnb picture/videos/Video_Generation_With_Motion_And_Transition.mp4',
+    '/Airbnb picture/videos/Video_Walkthrough_Creation_Complete.mp4',
+    '/Airbnb picture/videos/Luxury_Home_Entertainment_Walkthrough.mp4',
+  ]
+
   const videoRef = useRef<HTMLVideoElement>(null)
   const [videoOpacity, setVideoOpacity] = useState(1)
+  const [currentIndex, setCurrentIndex] = useState(0)
   const fadingRef = useRef(false)
 
   useEffect(() => {
@@ -22,7 +29,7 @@ export default function Hero() {
     if (!video) return
 
     const FADE_DURATION_MS = 900
-    const FADE_START_S = 1.5 // seconds before end to begin fade
+    const FADE_START_S = 1.5
 
     const handleTimeUpdate = () => {
       if (!video.duration) return
@@ -31,7 +38,7 @@ export default function Hero() {
         fadingRef.current = true
         setVideoOpacity(0)
         setTimeout(() => {
-          setVideoOpacity(1)
+          setCurrentIndex((prev) => (prev + 1) % videos.length)
           fadingRef.current = false
         }, FADE_DURATION_MS)
       }
@@ -40,6 +47,14 @@ export default function Hero() {
     video.addEventListener('timeupdate', handleTimeUpdate)
     return () => video.removeEventListener('timeupdate', handleTimeUpdate)
   }, [])
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+    video.load()
+    video.play().catch(() => {})
+    setVideoOpacity(1)
+  }, [currentIndex])
 
   const stats = [
     { icon: 'bed', label: `${propertyConfig.bedrooms} Bedrooms` },
@@ -55,7 +70,6 @@ export default function Hero() {
           ref={videoRef}
           autoPlay
           muted
-          loop
           playsInline
           poster={heroImage}
           className="absolute inset-0 w-full h-full object-cover"
@@ -64,7 +78,7 @@ export default function Hero() {
             transition: 'opacity 0.9s ease-in-out',
           }}
         >
-          <source src={encodeURI('/Airbnb picture/videos/Video_Generation_With_Motion_And_Transition.mp4')} type="video/mp4" />
+          <source src={encodeURI(videos[currentIndex])} type="video/mp4" />
         </video>
 
         {/* Cinematic overlay: heavy left, fades to transparent right */}
