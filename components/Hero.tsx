@@ -2,58 +2,69 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
 
 export default function Hero() {
   const safeSrc = (src: string) => (src.startsWith('data:') ? src : encodeURI(src))
-  const PLACEHOLDER =
-    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"%3E%3Crect fill="%23ddd" width="1200" height="800"/%3E%3C/svg%3E'
 
   const heroImage = safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/exterior2.jpg')
-
-  const videos = [
-    '/Airbnb picture/videos/8370b35ea3ce86550b42129594f98e94_raw.mp4',
-    '/Airbnb picture/videos/landing_video.mp4',
-  ]
+  const landingVideoSrc = encodeURI('/Airbnb picture/videos/landing_video.mp4')
 
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [videoOpacity, setVideoOpacity] = useState(1)
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const fadingRef = useRef(false)
+  const [landingOpacity, setLandingOpacity] = useState(0)
+  const fadingOutRef = useRef(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  useEffect(() => {
-    const video = videoRef.current
-    if (!video) return
-
-    const FADE_DURATION_MS = 1000
-    const FADE_START_S = 1.5
-
-    const handleTimeUpdate = () => {
-      if (!video.duration) return
-      const remaining = video.duration - video.currentTime
-      if (remaining < FADE_START_S && !fadingRef.current) {
-        fadingRef.current = true
-        setVideoOpacity(0)
-        setTimeout(() => {
-          setCurrentIndex((prev) => (prev + 1) % videos.length)
-          fadingRef.current = false
-        }, FADE_DURATION_MS)
-      }
-    }
-
-    video.addEventListener('timeupdate', handleTimeUpdate)
-    return () => video.removeEventListener('timeupdate', handleTimeUpdate)
+  const startCycle = useCallback(() => {
+    fadingOutRef.current = false
+    // Wait 3s on the image, then fade in the video
+    timerRef.current = setTimeout(() => {
+      const video = videoRef.current
+      if (!video) return
+      video.currentTime = 0
+      video.play().catch(() => {})
+      setLandingOpacity(1)
+    }, 3000)
   }, [])
 
   useEffect(() => {
+    startCycle()
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [startCycle])
+
+  useEffect(() => {
     const video = videoRef.current
     if (!video) return
-    video.load()
-    video.play().catch(() => {})
-    setVideoOpacity(1)
-  }, [currentIndex])
+
+    const FADE_OUT_START_S = 1.0 // begin fade out 1s before end
+
+    const handleTimeUpdate = () => {
+      if (!video.duration || fadingOutRef.current) return
+      const remaining = video.duration - video.currentTime
+      if (remaining <= FADE_OUT_START_S) {
+        fadingOutRef.current = true
+        setLandingOpacity(0)
+      }
+    }
+
+    const handleEnded = () => {
+      // After fade out (1s CSS transition) finishes, restart cycle
+      timerRef.current = setTimeout(() => {
+        startCycle()
+      }, 1000)
+    }
+
+    video.addEventListener('timeupdate', handleTimeUpdate)
+    video.addEventListener('ended', handleEnded)
+    return () => {
+      video.removeEventListener('timeupdate', handleTimeUpdate)
+      video.removeEventListener('ended', handleEnded)
+    }
+  }, [startCycle])
 
   const stats = [
     { icon: 'bed', label: `${propertyConfig.bedrooms} Bedrooms` },
@@ -63,21 +74,29 @@ export default function Hero() {
 
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Video Background */}
+      {/* Background layers */}
       <div className="absolute inset-0">
+        {/* Base image — always visible */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={heroImage}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+
+        {/* Landing video — fades in/out over the image */}
         <video
           ref={videoRef}
-          autoPlay
           muted
           playsInline
-          poster={heroImage}
+          preload="auto"
           className="absolute inset-0 w-full h-full object-cover"
           style={{
-            opacity: videoOpacity,
+            opacity: landingOpacity,
             transition: 'opacity 1s ease-in-out',
           }}
         >
-          <source src={encodeURI(videos[currentIndex])} type="video/mp4" />
+          <source src={landingVideoSrc} type="video/mp4" />
         </video>
 
         {/* Cinematic overlay: heavy left, fades to transparent right */}
@@ -228,7 +247,7 @@ export default function Hero() {
 
       {/* Explore Property link — bottom right corner */}
       <motion.div
-        className="absolute bottom-8 right-8 z-20"
+        className="absolute bottom-8 left-8 z-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.6, duration: 0.6 }}
