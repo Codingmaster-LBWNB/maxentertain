@@ -14,9 +14,8 @@ export default function Hero() {
   const heroImage = safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/exterior2.jpg')
 
   const videos = [
-    '/Airbnb picture/videos/Video_Generation_With_Motion_And_Transition.mp4',
-    '/Airbnb picture/videos/Video_Walkthrough_Creation_Complete.mp4',
-    '/Airbnb picture/videos/Luxury_Home_Entertainment_Walkthrough.mp4',
+    '/Airbnb picture/videos/8370b35ea3ce86550b42129594f98e94_raw.mp4',
+    '/Airbnb picture/videos/landing_video.mp4',
   ]
 
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -28,7 +27,7 @@ export default function Hero() {
     const video = videoRef.current
     if (!video) return
 
-    const FADE_DURATION_MS = 900
+    const FADE_DURATION_MS = 1000
     const FADE_START_S = 1.5
 
     const handleTimeUpdate = () => {
@@ -75,7 +74,7 @@ export default function Hero() {
           className="absolute inset-0 w-full h-full object-cover"
           style={{
             opacity: videoOpacity,
-            transition: 'opacity 0.9s ease-in-out',
+            transition: 'opacity 1s ease-in-out',
           }}
         >
           <source src={encodeURI(videos[currentIndex])} type="video/mp4" />
