@@ -267,7 +267,7 @@ export default function Hero() {
         </a>
         <Link
           href="/photos"
-          className="md:hidden flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors"
+          className="hidden flex-col items-center gap-2 text-white/60 hover:text-white transition-colors"
         >
           <span className="text-[10px] font-sans font-semibold tracking-[0.25em] uppercase">Photos</span>
           <div className="w-5 h-8 border border-white/30 rounded-full flex justify-center">
