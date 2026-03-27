@@ -130,7 +130,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease: 'easeOut', delay: 0.4 }}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-5 drop-shadow-2xl"
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-4 lg:mb-3 drop-shadow-2xl"
             >
               {propertyConfig.name}
             </motion.h1>
@@ -141,7 +141,7 @@ export default function Hero() {
               animate={{ opacity: 1, scaleX: 1 }}
               transition={{ duration: 0.7, ease: 'easeOut', delay: 0.65 }}
               style={{ originX: 0 }}
-              className="h-px w-20 bg-luxury-gold mb-6"
+              className="h-px w-20 bg-luxury-gold mb-4 lg:mb-3"
             />
 
             {/* Description */}
@@ -149,7 +149,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.75 }}
-              className="text-base sm:text-lg md:text-xl text-white/80 mb-5 sm:mb-8 leading-relaxed font-light max-w-lg"
+              className="text-base sm:text-lg md:text-xl text-white/80 mb-4 sm:mb-6 lg:mb-4 leading-relaxed font-light max-w-lg"
             >
               {propertyConfig.description}
             </motion.p>
@@ -159,7 +159,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: 'easeOut', delay: 0.9 }}
-              className="flex flex-wrap gap-2 sm:gap-3 mb-5 sm:mb-10"
+              className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-8 lg:mb-5"
             >
               {stats.map((stat) => (
                 <div
