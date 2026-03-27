@@ -2,8 +2,16 @@ import InquiryForm from '@/components/InquiryForm'
 import Link from 'next/link'
 import Image from 'next/image'
 
-export default function InquiryPage() {
+export default function InquiryPage({
+  searchParams,
+}: {
+  searchParams?: { checkIn?: string; checkOut?: string }
+}) {
   const safeSrc = (src: string) => encodeURI(src)
+  const prefill = {
+    checkIn: searchParams?.checkIn,
+    checkOut: searchParams?.checkOut,
+  }
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -53,7 +61,7 @@ export default function InquiryPage() {
 
             {/* Right: form (narrower so it doesn't cover the whole photo) */}
             <div className="lg:col-span-7 lg:justify-self-end w-full">
-              <InquiryForm variant="glass" containerClassName="w-full max-w-xl ml-auto" />
+              <InquiryForm variant="glass" containerClassName="w-full max-w-xl ml-auto" prefill={prefill} />
             </div>
           </div>
         </div>
