@@ -86,7 +86,7 @@ export default function Amenities() {
   )
 
   return (
-    <section id="amenities" className="section-padding bg-[#fafaf8] dark:bg-[#141412] scroll-mt-24 md:scroll-mt-28">
+    <section id="amenities" className="section-padding bg-[#fafaf8] star-section-alt scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <div className="text-center mb-16">
           <span className="section-label">Included</span>

@@ -73,7 +73,7 @@ export default function Testimonials() {
   )
 
   return (
-    <section id="testimonials" className="section-padding bg-[#fafaf8] dark:bg-[#0f0f0e] scroll-mt-24 md:scroll-mt-28">
+    <section id="testimonials" className="section-padding bg-[#fafaf8] star-section scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         {/* Keep #award anchor working, but visually combine Award + Reviews */}
         <div id="award" className="mb-16">

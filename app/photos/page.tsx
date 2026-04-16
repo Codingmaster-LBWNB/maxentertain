@@ -1,12 +1,14 @@
 import Link from 'next/link'
 import PhotosGallery from '@/components/PhotosGallery'
+import StarBackground from '@/components/StarBackground'
 import { propertyConfig } from '@/config/property'
 
 export default function PhotosPage() {
   const totalPhotos = propertyConfig.images.length
 
   return (
-    <main className="min-h-screen" style={{ backgroundColor: '#0c0c0b' }}>
+    <main className="min-h-screen star-wrapper">
+      <StarBackground />
 
       {/* Page header */}
       <div className="px-4 md:px-8 lg:px-16 pt-10 pb-8 border-b border-white/5">

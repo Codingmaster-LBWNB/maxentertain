@@ -5,6 +5,8 @@ import Amenities from '@/components/Amenities'
 import Testimonials from '@/components/Testimonials'
 import LocalArea from '@/components/LocalArea'
 import ImageGallery from '@/components/ImageGallery'
+import StatsCards from '@/components/StatsCards'
+import StarBackground from '@/components/StarBackground'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
 import AvailabilityInquirySync from '@/components/AvailabilityInquirySync'
@@ -50,12 +52,17 @@ export default function Home() {
       <JsonLd data={jsonLd} />
       <Navigation />
       <Hero />
-      <ImageGallery />
-      <PropertyDetails />
-      <Amenities />
-      <Testimonials />
-      <LocalArea />
-      <AvailabilityInquirySync />
+      {/* Star-background wrapper: all sections inside will float above the star canvas */}
+      <div className="star-wrapper">
+        <StarBackground />
+        <StatsCards />
+        <ImageGallery />
+        <PropertyDetails />
+        <Amenities />
+        <Testimonials />
+        <LocalArea />
+        <AvailabilityInquirySync />
+      </div>
       <Footer />
       <ThemeToggle />
     </main>

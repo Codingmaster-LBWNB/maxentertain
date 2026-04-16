@@ -68,7 +68,7 @@ export default function ImageGallery() {
 
   return (
     <>
-      <section id="gallery" className="section-padding bg-white dark:bg-[#0f0f0e] scroll-mt-24 md:scroll-mt-28">
+      <section id="gallery" className="section-padding bg-white star-section scroll-mt-24 md:scroll-mt-28">
         <div className="container-custom">
           {/* Mobile */}
           <div className="text-center mb-12 md:hidden">

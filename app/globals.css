@@ -223,3 +223,25 @@ html.theme-transitioning *::after {
 .dark nav[class*="bg-white"] {
   background-color: var(--nav-bg) !important;
 }
+
+/* ── STAR BACKGROUND ── */
+@keyframes animStar {
+  from { transform: translateY(0px); }
+  to   { transform: translateY(-2000px); }
+}
+
+/* Wrapper that hosts the star canvas + page content */
+.star-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Every direct child of the wrapper floats above the star canvas (z-index: 0) */
+.star-wrapper > *:not(.star-bg) {
+  position: relative;
+  z-index: 1;
+}
+
+/* Dark mode: sections become semi-transparent so stars bleed through */
+.dark .star-section          { background-color: rgba(9, 10, 15, 0.80); }
+.dark .star-section-alt      { background-color: rgba(20, 20, 18, 0.82); }

@@ -21,7 +21,7 @@ export default function LocalArea() {
   const attractions = propertyConfig.localArea.attractions
 
   return (
-    <section id="local-area" className="section-padding bg-white dark:bg-[#141412] scroll-mt-24 md:scroll-mt-28">
+    <section id="local-area" className="section-padding bg-white star-section-alt scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <div className="text-center mb-16">
           <span className="section-label">Explore</span>
