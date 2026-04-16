@@ -1,188 +1,46 @@
 'use client'
 
-import { useMemo, useRef, useState } from 'react'
-import Image from 'next/image'
+import { useMemo } from 'react'
 import Link from 'next/link'
 import { propertyConfig } from '@/config/property'
-
-function moveImageToFront(images: string[], filename: string) {
-  const idx = images.findIndex((p) => p.split('/').pop() === filename)
-  if (idx <= 0) return images
-  const copy = [...images]
-  const [hit] = copy.splice(idx, 1)
-  copy.unshift(hit)
-  return copy
-}
+import DomeGallery from './DomeGallery'
 
 export default function ImageGallery() {
-  const PLACEHOLDER =
-    'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" width=\"1200\" height=\"800\"%3E%3Crect fill=\"%23ddd\" width=\"1200\" height=\"800\"/%3E%3Ctext fill=\"%23999\" font-family=\"sans-serif\" font-size=\"24\" x=\"50%25\" y=\"50%25\" text-anchor=\"middle\" dy=\".3em\"%3EImage%20unavailable%3C/text%3E%3C/svg%3E'
-
-  const safeSrc = (src: string) => (src.startsWith('data:') ? src : encodeURI(src))
-
-  const shuffle = (arr: string[], seed: number) => {
-    const copy = [...arr]
-    let s = seed >>> 0
-    const rand = () => {
-      // LCG (fast, deterministic per seed)
-      s = (1664525 * s + 1013904223) >>> 0
-      return s / 0xffffffff
-    }
-    for (let i = copy.length - 1; i > 0; i--) {
-      const j = Math.floor(rand() * (i + 1))
-      ;[copy[i], copy[j]] = [copy[j]!, copy[i]!]
-    }
-    return copy
-  }
-
-  // Lightbox removed: keep gallery as a simple, non-clickable grid
-  // Use compressed images for gallery thumbnails (faster loading)
-  const thumbnailImages = propertyConfig.imagesCompressed && propertyConfig.imagesCompressed.length > 0
+  const gallerySource = propertyConfig.imagesCompressed && propertyConfig.imagesCompressed.length > 0
     ? propertyConfig.imagesCompressed
     : propertyConfig.images
-  // Use HD images for lightbox (full quality when viewing)
-  const hdImages = propertyConfig.images.length > 0 
-    ? propertyConfig.images 
-    : [PLACEHOLDER]
-
-  // Randomize gallery photos once per page load.
-  const [seed] = useState(() => Math.floor(Math.random() * 1_000_000_000))
-  const images = useMemo(() => {
-    const base = thumbnailImages.length > 0 ? thumbnailImages : hdImages
-    return shuffle(base, seed)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seed])
-  const orderedHdImages = useMemo(() => shuffle(hdImages, seed), [hdImages, seed])
-  
-  // Get HD image for lightbox
-  const getHdImage = (index: number) => {
-    return orderedHdImages[index] || images[index] || PLACEHOLDER
-  }
-
-  // (lightbox handlers removed)
-  const mobileScrollerRef = useRef<HTMLDivElement | null>(null)
-  const [mobileIndex, setMobileIndex] = useState(0)
-  const totalImages = images.length
-  const DESKTOP_VISIBLE = 9
-  const desktopImages = images.slice(0, DESKTOP_VISIBLE)
+  const domeImages = useMemo(
+    () => gallerySource.map((src, index) => ({ src: encodeURI(src), alt: `${propertyConfig.name} - Photo ${index + 1}` })),
+    [gallerySource]
+  )
 
   return (
-    <>
-      <section id="gallery" className="section-padding bg-white star-section scroll-mt-24 md:scroll-mt-28">
-        <div className="container-custom">
-          {/* Mobile */}
-          <div className="text-center mb-12 md:hidden">
-            <h2 className="heading-primary">Photo Gallery</h2>
-            <p className="text-luxury text-gray-600">
-              Take a closer look at our beautiful property
-            </p>
-
-            <div className="mt-6">
-              <Link href="/photos" className="btn-secondary inline-flex">
-                View all photos
-              </Link>
-            </div>
-          </div>
-
-          {/* Desktop: remove “gradually appearing” animation */}
-          <div className="hidden md:block text-center mb-12">
-            <h2 className="heading-primary">Photo Gallery</h2>
-            <p className="text-luxury text-gray-600">
-              Take a closer look at our beautiful property
-            </p>
-          </div>
-
-          {/* Mobile: 1-photo-at-a-time carousel (swipe + dots + count, no scrollbar) */}
-          <div className="md:hidden">
-            <div className="rounded-xl overflow-hidden">
-              <div
-                ref={mobileScrollerRef}
-                className="no-scrollbar flex w-full overflow-x-auto overflow-y-hidden snap-x snap-mandatory scroll-smooth"
-                onScroll={() => {
-                  const el = mobileScrollerRef.current
-                  if (!el) return
-                  const nextIdx = Math.round(el.scrollLeft / el.clientWidth)
-                  const clamped = Math.max(0, Math.min(totalImages - 1, nextIdx))
-                  if (clamped !== mobileIndex) setMobileIndex(clamped)
-                }}
-              >
-                {images.map((image, index) => (
-                  <Link
-                    key={index}
-                    href="/photos"
-                    className="relative aspect-[4/3] w-full shrink-0 snap-center overflow-hidden"
-                    aria-label={`Open all photos (photo ${index + 1})`}
-                  >
-                    <Image
-                      src={safeSrc(image)}
-                      alt={`${propertyConfig.name} - Photo ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes="100vw"
-                      loading="lazy"
-                      quality={70}
-                      unoptimized={false}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement
-                        const hdFallback = getHdImage(index)
-                        target.src = safeSrc(hdFallback || PLACEHOLDER)
-                      }}
-                    />
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop: current grid */}
-          <div className="hidden md:block">
-            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-              {desktopImages.map((image, index) => (
-                <Link
-                  key={index}
-                  href="/photos"
-                  aria-label={`Open all photos (photo ${index + 1})`}
-                  className="relative aspect-[4/3] rounded-xl overflow-hidden"
-                >
-                  <Image
-                    src={safeSrc(image)}
-                    alt={`${propertyConfig.name} - Gallery Image ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 1200px) 50vw, 33vw"
-                    loading="lazy"
-                    quality={70}
-                    unoptimized={false}
-                    placeholder="blur"
-                    blurDataURL="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='300'%3E%3Crect fill='%23ddd' width='400' height='300'/%3E%3C/svg%3E"
-                    onError={(e) => {
-                      // Fallback to HD version if compressed fails
-                      const target = e.target as HTMLImageElement
-                      const hdFallback = getHdImage(index)
-                      if (hdFallback && hdFallback !== PLACEHOLDER) {
-                        target.src = safeSrc(hdFallback)
-                      } else {
-                        target.src =
-                          'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="800" height="600"%3E%3Crect fill="%23ddd" width="800" height="600"/%3E%3Ctext fill="%23999" font-family="sans-serif" font-size="20" x="50%25" y="50%25" text-anchor="middle" dy=".3em"%3EProperty Image%3C/text%3E%3C/svg%3E'
-                      }
-                    }}
-                  />
-                </Link>
-              ))}
-            </div>
-
-            {images.length > DESKTOP_VISIBLE && (
-              <div className="mt-8 flex items-center justify-center gap-4">
-                <Link href="/photos" className="btn-primary">
-                  View all photos
-                </Link>
-              </div>
-            )}
-          </div>
+    <section id="gallery" className="section-padding bg-white star-section scroll-mt-24 md:scroll-mt-28">
+      <div className="container-custom">
+        <div className="text-center mb-12">
+          <h2 className="heading-primary">Photo Gallery</h2>
+          <p className="text-luxury text-gray-600">Take a closer look at our beautiful property</p>
         </div>
-      </section>
-    </>
+
+        <div className="w-full h-[70vh] min-h-[540px] max-h-[820px] rounded-2xl overflow-hidden bg-[#120F17]">
+          <DomeGallery
+            images={domeImages}
+            grayscale={false}
+            fit={0.48}
+            minRadius={560}
+            openedImageWidth="360px"
+            openedImageHeight="420px"
+            imageBorderRadius="18px"
+            openedImageBorderRadius="22px"
+          />
+        </div>
+
+        <div className="mt-8 flex items-center justify-center gap-4">
+          <Link href="/photos" className="btn-primary">
+            View all photos
+          </Link>
+        </div>
+      </div>
+    </section>
   )
 }
-
-
