@@ -24,7 +24,8 @@ export default function PhotosGallery() {
 
   const toThumb = (src: string) => {
     if (!propertyConfig.imagesCompressed || propertyConfig.imagesCompressed.length === 0) return src
-    const candidate = src.replace('/images/', '/images/compressed/')
+    // Insert /compressed/ before filename and normalize extension to .jpg
+    const candidate = src.replace(/\/([^/]+)$/, (_, fname) => `/compressed/${fname.replace(/\.[^.]+$/, '.jpg')}`)
     return compressedSet.has(candidate) ? candidate : src
   }
 
