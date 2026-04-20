@@ -8,7 +8,7 @@ export default function PhotosPage() {
 
   return (
     <main className="min-h-screen star-wrapper">
-      <StarBackground />
+      <StarBackground density="light" />
 
       {/* Page header */}
       <div className="px-4 md:px-8 lg:px-16 pt-10 pb-8 border-b border-white/5">

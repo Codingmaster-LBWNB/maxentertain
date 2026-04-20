@@ -4,10 +4,14 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboa
 import Image from 'next/image'
 import { propertyConfig } from '@/config/property'
 
-export default function PhotosGallery() {
-  const PLACEHOLDER =
-    'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"%3E%3Crect fill="%23222" width="1200" height="800"/%3E%3C/svg%3E'
+const PLACEHOLDER = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"%3E%3Crect fill="%23222" width="1200" height="800"/%3E%3C/svg%3E'
+const BLUR_PLACEHOLDER = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjMiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjMiIGZpbGw9IiMxYTFhMWEiLz48L3N2Zz4='
 
+function onImageLoad(e: React.SyntheticEvent<HTMLImageElement>) {
+  (e.target as HTMLImageElement).style.opacity = '1'
+}
+
+export default function PhotosGallery() {
   const safeSrc = (src: string) => (src.startsWith('data:') ? src : encodeURI(src))
 
   const sections = useMemo(() => {
@@ -168,10 +172,14 @@ export default function PhotosGallery() {
                         src={safeSrc(p.thumbSrc)}
                         alt={`${propertyConfig.name} - ${section.title}`}
                         fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="object-cover group-hover:scale-105"
+                        style={{ opacity: 0, transition: 'opacity 0.4s ease, transform 0.7s ease' }}
                         sizes="50vw"
                         loading="lazy"
-                        quality={72}
+                        quality={60}
+                        placeholder="blur"
+                        blurDataURL={BLUR_PLACEHOLDER}
+                        onLoad={onImageLoad}
                         onError={(e) => { (e.target as HTMLImageElement).src = safeSrc(p.hdSrc || PLACEHOLDER) }}
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-400" />
@@ -210,10 +218,15 @@ export default function PhotosGallery() {
                             src={safeSrc(p.thumbSrc)}
                             alt={`${propertyConfig.name} - ${section.title}`}
                             fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="object-cover group-hover:scale-105"
+                            style={{ opacity: 0, transition: 'opacity 0.4s ease, transform 0.7s ease' }}
                             sizes={isFeatured ? '50vw' : '25vw'}
-                            loading={idx < 6 ? 'eager' : 'lazy'}
-                            quality={isFeatured ? 80 : 70}
+                            priority={idx < 4}
+                            loading={idx < 4 ? undefined : 'lazy'}
+                            quality={isFeatured ? 72 : 60}
+                            placeholder="blur"
+                            blurDataURL={BLUR_PLACEHOLDER}
+                            onLoad={onImageLoad}
                             onError={(e) => { (e.target as HTMLImageElement).src = safeSrc(p.hdSrc || PLACEHOLDER) }}
                           />
                           {/* Hover overlay */}
@@ -261,10 +274,14 @@ export default function PhotosGallery() {
                             src={safeSrc(p.thumbSrc)}
                             alt={`${propertyConfig.name} - ${section.title}`}
                             fill
-                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="object-cover group-hover:scale-105"
+                            style={{ opacity: 0, transition: 'opacity 0.4s ease, transform 0.7s ease' }}
                             sizes="25vw"
                             loading="lazy"
-                            quality={70}
+                            quality={60}
+                            placeholder="blur"
+                            blurDataURL={BLUR_PLACEHOLDER}
+                            onLoad={onImageLoad}
                             onError={(e) => { (e.target as HTMLImageElement).src = safeSrc(p.hdSrc || PLACEHOLDER) }}
                           />
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-500" />
@@ -363,8 +380,12 @@ export default function PhotosGallery() {
               alt={`${propertyConfig.name} - Photo ${activeIndex + 1}`}
               fill
               className="object-contain"
+              style={{ opacity: 0, transition: 'opacity 0.3s ease' }}
               sizes="90vw"
               priority
+              placeholder="blur"
+              blurDataURL={BLUR_PLACEHOLDER}
+              onLoad={onImageLoad}
             />
           </div>
 

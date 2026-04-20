@@ -21,10 +21,10 @@ function generateStars(count: number, seed: number): string {
  * Renders the dark-space gradient + three tiers of animated stars.
  * Each tier uses TWO layers offset by 2000 px so the loop is seamless.
  */
-export default function StarBackground() {
-  const s1 = useMemo(() => generateStars(700, 42),  [])
-  const s2 = useMemo(() => generateStars(200, 137), [])
-  const s3 = useMemo(() => generateStars(100, 891), [])
+export default function StarBackground({ density = 'full' }: { density?: 'full' | 'light' }) {
+  const s1 = useMemo(() => generateStars(density === 'light' ? 350 : 700, 42),  [density])
+  const s2 = useMemo(() => generateStars(density === 'light' ? 100 : 200, 137), [density])
+  const s3 = useMemo(() => generateStars(density === 'light' ? 50  : 100, 891), [density])
 
   const layer = (
     size: number,
