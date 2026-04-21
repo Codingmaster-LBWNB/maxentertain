@@ -6,6 +6,7 @@ import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import ShareButton from '@/components/ShareButton'
 import ThemeToggle from '@/components/ThemeToggle'
+import { trackClick } from '@/lib/analytics'
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -122,6 +123,7 @@ export default function Navigation() {
 
             <Link
               href="/inquiry"
+              onClick={() => trackClick('Enquiry', { location: 'Nav' })}
               className="btn-primary text-[10px] py-2.5 px-5 flex-shrink-0 inline-flex items-center gap-1.5"
             >
               <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>

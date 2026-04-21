@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { trackClick } from '@/lib/analytics'
 
 type Role = 'user' | 'assistant'
 type ChatMessage = { id: string; role: Role; content: string; time: string }
@@ -141,6 +142,7 @@ export default function GuestChatWidget() {
     const trimmed = text.trim()
     if (!trimmed || isSending) return
 
+    trackClick('Chat Message Sent')
     setIsSending(true)
     setError('')
     setInput('')
@@ -447,7 +449,7 @@ export default function GuestChatWidget() {
         {/* Floating trigger button */}
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => { const next = !open; setOpen(next); if (next) trackClick('Chat Opened') }}
           aria-label={open ? 'Close MAX Assistant' : 'Chat with MAX'}
           className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl shadow-luxury-gold/20 transition-transform hover:scale-105 active:scale-95"
           style={{ background: 'linear-gradient(135deg, #D4AF37, #B8960C)' }}

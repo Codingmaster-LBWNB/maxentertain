@@ -5,8 +5,11 @@ import Link from 'next/link'
 import { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
+import { useSectionTime } from '@/hooks/useSectionTime'
+import { trackClick } from '@/lib/analytics'
 
 export default function Hero() {
+  const sectionRef = useSectionTime('Hero')
   const safeSrc = (src: string) => (src.startsWith('data:') ? src : encodeURI(src))
 
   const heroImage = safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/exterior2.jpg')
@@ -73,7 +76,7 @@ export default function Hero() {
   ]
 
   return (
-    <section className="relative h-screen w-full overflow-hidden">
+    <section ref={sectionRef} className="relative h-screen w-full overflow-hidden">
       {/* Background layers */}
       <div className="absolute inset-0">
         {/* Base image — always visible */}
@@ -180,7 +183,7 @@ export default function Hero() {
               transition={{ duration: 0.7, ease: 'easeOut', delay: 1.05 }}
               className="flex flex-col sm:flex-row gap-3 flex-wrap"
             >
-              <Link href="/inquiry" className="btn-primary inline-flex items-center gap-2 justify-center">
+              <Link href="/inquiry" onClick={() => trackClick('Book Directly', { location: 'Hero' })} className="btn-primary inline-flex items-center gap-2 justify-center">
                 <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>
                 Book Directly &amp; Save
               </Link>
@@ -190,6 +193,7 @@ export default function Hero() {
                   href={propertyConfig.booking.airbnb}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackClick('Airbnb', { location: 'Hero' })}
                   className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
                   style={{ borderRadius: '2px' }}
                 >
@@ -208,6 +212,7 @@ export default function Hero() {
                   href={propertyConfig.booking.bookingCom}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackClick('Booking.com', { location: 'Hero' })}
                   className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
                   style={{ borderRadius: '2px' }}
                 >
@@ -226,6 +231,7 @@ export default function Hero() {
                   href={propertyConfig.booking.vrbo}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() => trackClick('VRBO', { location: 'Hero' })}
                   className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
                   style={{ borderRadius: '2px' }}
                 >

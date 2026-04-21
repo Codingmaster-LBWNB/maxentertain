@@ -7,6 +7,7 @@ import { propertyConfig } from '@/config/property'
 import { emailJsConfig } from '@/config/emailjs'
 import { useAvailability } from '@/hooks/useAvailability'
 import DatePicker from '@/components/DatePicker'
+import { trackClick } from '@/lib/analytics'
 
 // Note: this component runs client-side. We init EmailJS in an effect to match
 // @emailjs/browser v4 API and to ensure it only runs in the browser.
@@ -238,6 +239,7 @@ export default function InquiryForm({
 
       // Google Ads conversion: fire only after successful submit.
       trackGoogleAdsLeadConversion()
+      trackClick('Enquiry Submitted', { location: 'Inquiry Form' })
 
       setSubmitStatus('success')
       setFormData({

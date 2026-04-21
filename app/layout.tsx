@@ -6,6 +6,7 @@ import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
 import GuestChatWidget from '@/components/GuestChatWidget'
 import ThemeProvider from '@/components/ThemeProvider'
+import { Analytics } from '@vercel/analytics/react'
 
 const josefin = Josefin_Sans({
   subsets: ['latin'],
@@ -82,6 +83,7 @@ export default function RootLayout({
             {chatEnabled ? <GuestChatWidget /> : null}
           </div>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )

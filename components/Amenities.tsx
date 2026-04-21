@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
+import { useSectionTime } from '@/hooks/useSectionTime'
 const amenityIcons: Record<string, string> = {
   // Internet & Tech
   'Wi-Fi': 'wifi',
@@ -76,6 +77,7 @@ const getIcon = (amenity: string): string => {
 }
 
 export default function Amenities() {
+  const sectionRef = useSectionTime('Amenities')
   const INITIAL_VISIBLE = 12
   const [showAll, setShowAll] = useState(false)
 
@@ -86,7 +88,7 @@ export default function Amenities() {
   )
 
   return (
-    <section id="amenities" className="section-padding bg-[#fafaf8] star-section-alt scroll-mt-24 md:scroll-mt-28">
+    <section ref={sectionRef} id="amenities" className="section-padding bg-[#fafaf8] star-section-alt scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <div className="text-center mb-16">
           <span className="section-label">Included</span>

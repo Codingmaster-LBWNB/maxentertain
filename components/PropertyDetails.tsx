@@ -3,8 +3,10 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
+import { useSectionTime } from '@/hooks/useSectionTime'
 
 export default function PropertyDetails() {
+  const sectionRef = useSectionTime('Property Details')
   const details = [
     { icon: 'bed', label: 'Bedrooms', value: propertyConfig.bedrooms },
     { icon: 'bathtub', label: 'Bathrooms', value: propertyConfig.bathrooms },
@@ -21,7 +23,7 @@ export default function PropertyDetails() {
   )
 
   return (
-    <section id="details" className="section-padding bg-white star-section scroll-mt-24 md:scroll-mt-28">
+    <section ref={sectionRef} id="details" className="section-padding bg-white star-section scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { propertyConfig } from '@/config/property'
+import { useSectionTime } from '@/hooks/useSectionTime'
 
 const attractionIcons: Record<string, string> = {
   restaurant: 'restaurant',
@@ -18,10 +19,11 @@ function formatKm(km: number) {
 }
 
 export default function LocalArea() {
+  const sectionRef = useSectionTime('Local Area')
   const attractions = propertyConfig.localArea.attractions
 
   return (
-    <section id="local-area" className="section-padding bg-white star-section-alt scroll-mt-24 md:scroll-mt-28">
+    <section ref={sectionRef} id="local-area" className="section-padding bg-white star-section-alt scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <div className="text-center mb-16">
           <span className="section-label">Explore</span>

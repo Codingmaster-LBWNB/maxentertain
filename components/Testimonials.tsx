@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
 import AwardBanner from '@/components/AwardBanner'
+import { useSectionTime } from '@/hooks/useSectionTime'
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -35,6 +36,7 @@ function renderHighlightedText(text: string, keywords?: string[]) {
 }
 
 export default function Testimonials() {
+  const sectionRef = useSectionTime('Reviews')
   const [isExpandedMobile, setIsExpandedMobile] = useState(false)
   const testimonials = propertyConfig.testimonials
   const firstFour = testimonials.slice(0, 4)
@@ -73,7 +75,7 @@ export default function Testimonials() {
   )
 
   return (
-    <section id="testimonials" className="section-padding bg-[#fafaf8] star-section scroll-mt-24 md:scroll-mt-28">
+    <section ref={sectionRef} id="testimonials" className="section-padding bg-[#fafaf8] star-section scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         {/* Keep #award anchor working, but visually combine Award + Reviews */}
         <div id="award" className="mb-16">
