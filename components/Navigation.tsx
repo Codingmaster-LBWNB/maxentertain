@@ -5,6 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import ShareButton from '@/components/ShareButton'
+import ThemeToggle from '@/components/ThemeToggle'
 
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -126,6 +127,8 @@ export default function Navigation() {
               <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>
               Enquiry
             </Link>
+
+            <ThemeToggle transparent={!isScrolled} />
           </div>
 
           {/* Mobile actions */}
@@ -147,6 +150,8 @@ export default function Navigation() {
                   : 'bg-white/10 text-white border-white/20 hover:bg-white/15'
               }`}
             />
+
+            <ThemeToggle transparent={!isScrolled} />
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

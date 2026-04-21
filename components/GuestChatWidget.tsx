@@ -1,81 +1,119 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 type Role = 'user' | 'assistant'
-type ChatMessage = { id: string; role: Role; content: string }
+type ChatMessage = { id: string; role: Role; content: string; time: string }
 
 function uid() {
   return `${Date.now()}_${Math.random().toString(16).slice(2)}`
 }
+function getTime() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+const SUGGESTED = [
+  'Check-in & check-out times?',
+  'Is the pool heated?',
+  'Pet friendly?',
+  'Max guests allowed?',
+  'Kids entertainment?',
+  'House rules?',
+  'Distance to the beach?',
+]
+
+function TypingDots() {
+  return (
+    <div className="flex items-center gap-1 px-0.5 py-0.5">
+      {(['-0.3s', '-0.15s', '0s'] as const).map((delay, i) => (
+        <span
+          key={i}
+          className="animate-bounce-dot"
+          style={{
+            display: 'inline-block',
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            backgroundColor: '#D4AF37',
+            animationDelay: delay,
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+function BotAvatar({ size = 28 }: { size?: number }) {
+  return (
+    <div
+      className="flex items-center justify-center text-white font-serif font-bold flex-shrink-0 rounded-full"
+      style={{
+        width: size,
+        height: size,
+        fontSize: size * 0.38,
+        background: 'linear-gradient(135deg, #D4AF37, #8B7355)',
+      }}
+    >
+      M
+    </div>
+  )
+}
 
 export default function GuestChatWidget() {
-  const suggested = useMemo(
-    () => [
-      'What time is check-in and check-out?',
-      'Is the pool heated?',
-      'Is this place pet friendly?',
-      'How many guests can the property accommodate?',
-      'What entertainment is available for kids?',
-      'What are the house rules?',
-      'How far is it to the beach?',
-    ],
-    []
-  )
-
   const [open, setOpen] = useState(false)
+  const [panelVisible, setPanelVisible] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: uid(),
       role: 'assistant',
       content:
-        'Hi! Ask me anything about the property (amenities, policies, bedrooms, nearby, etc.). If I don’t have the info, I’ll point you to the enquiry form.',
+        "Hi! I'm MAX, your virtual concierge. Ask me anything about the property — amenities, house rules, nearby attractions, and more.",
+      time: getTime(),
     },
   ])
   const [input, setInput] = useState('')
   const [isSending, setIsSending] = useState(false)
-  const [error, setError] = useState<string>('')
+  const [error, setError] = useState('')
+  const [hasSent, setHasSent] = useState(false)
 
-  const panelRef = useRef<HTMLDivElement | null>(null)
-  const closeBtnRef = useRef<HTMLButtonElement | null>(null)
-  const inputRef = useRef<HTMLTextAreaElement | null>(null)
-  const listRef = useRef<HTMLDivElement | null>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLTextAreaElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
     const el = listRef.current
-    if (!el) return
-    el.scrollTop = el.scrollHeight
+    if (el) el.scrollTop = el.scrollHeight
   }
 
   useEffect(() => {
-    if (!open) return
-    // Focus input when opened.
-    setTimeout(() => inputRef.current?.focus(), 0)
+    if (open) {
+      const t = setTimeout(() => setPanelVisible(true), 10)
+      return () => clearTimeout(t)
+    } else {
+      setPanelVisible(false)
+    }
   }, [open])
 
   useEffect(() => {
-    if (!open) return
-    scrollToBottom()
+    if (open) setTimeout(() => inputRef.current?.focus(), 320)
+  }, [open])
+
+  useEffect(() => {
+    if (open) scrollToBottom()
   }, [open, messages.length])
 
   useEffect(() => {
     if (!open) return
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false)
-      }
-
-      // Minimal focus trap inside the panel.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false)
       if (e.key === 'Tab') {
-        const focusables = panelRef.current?.querySelectorAll<HTMLElement>(
-          'button, textarea, a[href], [tabindex]:not([tabindex="-1"])'
+        const els = panelRef.current?.querySelectorAll<HTMLElement>(
+          'button,textarea,a[href],[tabindex]:not([tabindex="-1"])'
         )
-        if (!focusables || focusables.length === 0) return
-        const first = focusables[0]
-        const last = focusables[focusables.length - 1]
-        const active = document.activeElement as HTMLElement | null
-
+        if (!els?.length) return
+        const first = els[0]
+        const last = els[els.length - 1]
+        const active = document.activeElement as HTMLElement
         if (e.shiftKey && active === first) {
           e.preventDefault()
           last.focus()
@@ -85,22 +123,17 @@ export default function GuestChatWidget() {
         }
       }
     }
-
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
   const clearChat = () => {
     setMessages([
-      {
-        id: uid(),
-        role: 'assistant',
-        content:
-          'Chat cleared. Ask me anything about the property (amenities, policies, bedrooms, nearby, etc.).',
-      },
+      { id: uid(), role: 'assistant', content: 'Chat cleared. How can I help you?', time: getTime() },
     ])
     setError('')
     setInput('')
+    setHasSent(false)
     setTimeout(() => inputRef.current?.focus(), 0)
   }
 
@@ -111,37 +144,41 @@ export default function GuestChatWidget() {
     setIsSending(true)
     setError('')
     setInput('')
+    setHasSent(true)
 
-    const nextMessages: ChatMessage[] = [...messages, { id: uid(), role: 'user', content: trimmed }]
-    setMessages(nextMessages)
+    const userMsg: ChatMessage = { id: uid(), role: 'user', content: trimmed, time: getTime() }
+    const next = [...messages, userMsg]
+    setMessages(next)
 
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          messages: nextMessages.map((m) => ({ role: m.role, content: m.content })),
-        }),
+        body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
       })
 
       if (!res.ok) {
-        const retryAfter = res.headers.get('retry-after')
+        const ra = res.headers.get('retry-after')
         const body = await res.json().catch(() => null)
-        const msg =
+        throw new Error(
           res.status === 429
-            ? `Too many requests. Please try again in ${retryAfter ?? 'a moment'} seconds.`
-            : body?.error || 'Something went wrong. Please try again.'
-        throw new Error(msg)
+            ? `Too many requests. Please wait ${ra ?? 'a moment'}.`
+            : body?.error || 'Something went wrong.'
+        )
       }
 
       const data = (await res.json()) as { reply?: string }
-      const reply = (data.reply || '').trim()
       setMessages((prev) => [
         ...prev,
-        { id: uid(), role: 'assistant', content: reply || 'Sorry — I couldn’t generate a response.' },
+        {
+          id: uid(),
+          role: 'assistant',
+          content: (data.reply || '').trim() || "Sorry, I couldn't generate a response.",
+          time: getTime(),
+        },
       ])
     } catch (e: any) {
-      setError(e?.message || 'Something went wrong. Please try again.')
+      setError(e?.message || 'Something went wrong.')
     } finally {
       setIsSending(false)
       setTimeout(() => {
@@ -151,143 +188,286 @@ export default function GuestChatWidget() {
     }
   }
 
+  const MAX_CHARS = 500
+  const remaining = MAX_CHARS - input.length
+
   return (
-    <div className="fixed bottom-5 right-5 z-[90]">
-      {!open ? (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-full bg-luxury-gold text-white px-4 py-3 shadow-xl hover:shadow-2xl transition-shadow"
-          aria-label="Open chat"
-        >
-          <span className="material-icons" style={{ fontSize: '18px' }}>chat</span>
-          <span className="text-sm font-semibold">Chat</span>
-        </button>
-      ) : (
-        <div
-          ref={panelRef}
-          className="w-[92vw] max-w-sm md:max-w-md h-[70vh] md:h-[560px] bg-white rounded-2xl shadow-2xl ring-1 ring-black/10 overflow-hidden flex flex-col"
-          role="dialog"
-          aria-modal="false"
-          aria-label="Guest chat"
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between gap-3 px-4 py-3 bg-gray-50 border-b">
-            <div className="min-w-0">
-              <div className="text-sm font-semibold text-luxury-dark truncate">Ask about the property</div>
-              <div className="text-xs text-gray-600 truncate">Property-only answers</div>
-            </div>
+    <>
+      <div className="fixed bottom-5 right-5 z-[90] flex flex-col items-end gap-3">
+        {/* Panel */}
+        {open && (
+          <div
+            ref={panelRef}
+            style={{
+              transform: panelVisible ? 'scale(1) translateY(0)' : 'scale(0.94) translateY(18px)',
+              opacity: panelVisible ? 1 : 0,
+              transition:
+                'transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease',
+              transformOrigin: 'bottom right',
+              background: 'linear-gradient(160deg, #1c1a14 0%, #0d0c09 100%)',
+            }}
+            className="w-[92vw] max-w-sm md:max-w-[400px] h-[72vh] md:h-[580px] flex flex-col rounded-2xl overflow-hidden border border-luxury-gold/20 shadow-2xl shadow-black/70"
+            role="dialog"
+            aria-modal="false"
+            aria-label="MAX Assistant"
+          >
+            {/* Gold hairline */}
+            <div
+              className="h-px w-full flex-shrink-0"
+              style={{
+                background:
+                  'linear-gradient(90deg, transparent 0%, #D4AF37 40%, #D4AF37 60%, transparent 100%)',
+              }}
+            />
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={clearChat}
-                className="p-2 rounded-lg hover:bg-black/5 transition-colors"
-                aria-label="Clear chat"
-                title="Clear chat"
-              >
-                <span className="material-icons text-gray-700" style={{ fontSize: '18px' }}>delete</span>
-              </button>
-              <button
-                ref={closeBtnRef}
-                type="button"
-                onClick={() => setOpen(false)}
-                className="p-2 rounded-lg hover:bg-black/5 transition-colors"
-                aria-label="Close chat"
-                title="Close"
-              >
-                <span className="material-icons text-gray-700" style={{ fontSize: '18px' }}>close</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Messages */}
-          <div ref={listRef} className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-            {messages.map((m) => (
-              <div key={m.id} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
+            {/* Header */}
+            <div
+              className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+              style={{
+                background: 'rgba(255,255,255,0.025)',
+                borderBottom: '1px solid rgba(212,175,55,0.1)',
+              }}
+            >
+              {/* Avatar with pulse */}
+              <div className="relative flex-shrink-0">
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
-                    m.role === 'user'
-                      ? 'bg-luxury-gold text-white rounded-br-md'
-                      : 'bg-gray-100 text-gray-900 rounded-bl-md'
+                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-serif font-bold"
+                  style={{
+                    background: 'linear-gradient(135deg, #D4AF37, #8B7355)',
+                    fontSize: '15px',
+                  }}
+                >
+                  M
+                </div>
+                <span
+                  className="absolute inset-0 rounded-full animate-ring-pulse"
+                  style={{ border: '2px solid rgba(212,175,55,0.5)' }}
+                />
+              </div>
+
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-semibold text-white/90 tracking-wide truncate">
+                  MAX Assistant
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
+                  <span className="text-[11px] text-white/35 truncate">
+                    Online · Property concierge
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-0.5 flex-shrink-0">
+                <button
+                  type="button"
+                  onClick={clearChat}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/5 transition-all"
+                  aria-label="Clear chat"
+                  title="Clear chat"
+                >
+                  <span className="material-icons" style={{ fontSize: '16px' }}>
+                    delete_outline
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-white/30 hover:text-white/60 hover:bg-white/5 transition-all"
+                  aria-label="Close chat"
+                  title="Close"
+                >
+                  <span className="material-icons" style={{ fontSize: '18px' }}>
+                    close
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div
+              ref={listRef}
+              className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
+              style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(212,175,55,0.15) transparent' }}
+            >
+              {messages.map((m) => (
+                <div
+                  key={m.id}
+                  className={`flex gap-2 animate-fade-in ${
+                    m.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                   }`}
                 >
-                  {m.content}
+                  {m.role === 'assistant' && <BotAvatar size={28} />}
+
+                  <div
+                    className={`flex flex-col gap-0.5 ${m.role === 'user' ? 'items-end' : 'items-start'}`}
+                    style={{ maxWidth: '82%' }}
+                  >
+                    <div
+                      className={`px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl ${
+                        m.role === 'user' ? 'text-white rounded-tr-sm' : 'text-white/80 rounded-tl-sm'
+                      }`}
+                      style={
+                        m.role === 'user'
+                          ? { background: 'linear-gradient(135deg, #D4AF37, #B8960C)' }
+                          : {
+                              background: 'rgba(255,255,255,0.07)',
+                              border: '1px solid rgba(255,255,255,0.06)',
+                            }
+                      }
+                    >
+                      {m.content}
+                    </div>
+                    <span className="text-[10px] text-white/20 px-1">{m.time}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
-
-            {isSending && (
-              <div className="flex justify-start">
-                <div className="bg-gray-100 text-gray-700 rounded-2xl rounded-bl-md px-3 py-2 text-sm inline-flex items-center gap-2">
-                  <span className="material-icons animate-spin" style={{ fontSize: '16px' }}>autorenew</span>
-                  <span>Thinking…</span>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl px-3 py-2 text-xs">
-                {error}
-              </div>
-            )}
-          </div>
-
-          {/* Suggested */}
-          <div className="px-4 pb-2">
-            <div className="flex flex-wrap gap-2">
-              {suggested.slice(0, 4).map((q) => (
-                <button
-                  key={q}
-                  type="button"
-                  onClick={() => send(q)}
-                  className="text-xs px-3 py-1.5 rounded-full border bg-white hover:border-luxury-gold hover:text-luxury-gold transition-colors"
-                >
-                  {q}
-                </button>
               ))}
-            </div>
-          </div>
 
-          {/* Input */}
-          <form
-            className="p-4 pt-3 border-t bg-white"
-            onSubmit={(e) => {
-              e.preventDefault()
-              send(input)
-            }}
+              {isSending && (
+                <div className="flex gap-2 flex-row animate-fade-in">
+                  <BotAvatar size={28} />
+                  <div
+                    className="px-3.5 py-3 rounded-2xl rounded-tl-sm"
+                    style={{
+                      background: 'rgba(255,255,255,0.07)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    <TypingDots />
+                  </div>
+                </div>
+              )}
+
+              {error && (
+                <div
+                  className="rounded-xl px-3.5 py-2.5 text-xs text-red-300/90"
+                  style={{
+                    background: 'rgba(239,68,68,0.08)',
+                    border: '1px solid rgba(239,68,68,0.18)',
+                  }}
+                >
+                  {error}
+                </div>
+              )}
+            </div>
+
+            {/* Quick replies */}
+            {!hasSent && (
+              <div className="px-4 pb-3 flex-shrink-0">
+                <p className="text-[10px] text-white/20 mb-2 uppercase tracking-widest">
+                  Quick questions
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {SUGGESTED.slice(0, 4).map((q) => (
+                    <button
+                      key={q}
+                      type="button"
+                      onClick={() => send(q)}
+                      className="text-[11px] px-3 py-1.5 rounded-full text-white/45 bg-white/5 border border-white/8 hover:text-luxury-gold hover:border-luxury-gold/40 hover:bg-luxury-gold/8 transition-all"
+                    >
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Input */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                send(input)
+              }}
+              className="px-4 pb-4 pt-3 flex-shrink-0"
+              style={{ borderTop: '1px solid rgba(212,175,55,0.1)' }}
+            >
+              <div className="flex items-end gap-2">
+                <div className="flex-1 relative">
+                  <textarea
+                    ref={inputRef}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))}
+                    placeholder="Ask me anything…"
+                    rows={2}
+                    className="w-full resize-none rounded-xl text-sm text-white/85 placeholder-white/25 bg-white/5 border border-white/8 focus:border-luxury-gold/40 focus:bg-luxury-gold/[0.04] focus:outline-none transition-all px-3 py-2.5"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault()
+                        send(input)
+                      }
+                    }}
+                  />
+                  {input.length > 0 && (
+                    <span
+                      className={`absolute bottom-2 right-2.5 text-[10px] transition-colors ${
+                        remaining < 50 ? 'text-amber-400/70' : 'text-white/20'
+                      }`}
+                    >
+                      {remaining}
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSending || input.trim().length === 0}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center text-white transition-all disabled:opacity-25 disabled:cursor-not-allowed flex-shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #D4AF37, #B8960C)',
+                    boxShadow:
+                      !isSending && input.trim().length > 0
+                        ? '0 0 20px rgba(212,175,55,0.35)'
+                        : 'none',
+                  }}
+                  aria-label="Send message"
+                >
+                  <span
+                    className={`material-icons ${isSending ? 'animate-spin' : ''}`}
+                    style={{ fontSize: '18px' }}
+                  >
+                    {isSending ? 'autorenew' : 'send'}
+                  </span>
+                </button>
+              </div>
+
+              <div className="mt-2 text-center">
+                <span className="text-[10px] text-white/20">
+                  For bookings →{' '}
+                  <a
+                    href="/inquiry"
+                    className="text-luxury-gold/40 hover:text-luxury-gold/70 transition-colors underline-offset-2 hover:underline"
+                  >
+                    Enquiry form
+                  </a>
+                </span>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Floating trigger button */}
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={open ? 'Close MAX Assistant' : 'Chat with MAX'}
+          className="relative w-14 h-14 rounded-full flex items-center justify-center shadow-xl shadow-luxury-gold/20 transition-transform hover:scale-105 active:scale-95"
+          style={{ background: 'linear-gradient(135deg, #D4AF37, #B8960C)' }}
+        >
+          {!open && (
+            <span
+              className="absolute inset-0 rounded-full animate-ring-pulse"
+              style={{ background: 'rgba(212,175,55,0.35)' }}
+            />
+          )}
+          <span
+            className={`material-icons text-white relative z-10 transition-transform duration-300 ${
+              open ? 'rotate-0' : 'rotate-0'
+            }`}
+            style={{ fontSize: '24px' }}
           >
-            <div className="flex items-end gap-2">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your question…"
-                rows={2}
-                className="flex-1 resize-none rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-luxury-gold"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    send(input)
-                  }
-                }}
-              />
-              <button
-                type="submit"
-                disabled={isSending || input.trim().length === 0}
-                className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-luxury-gold text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Send message"
-              >
-                {isSending ? <span className="material-icons animate-spin" style={{ fontSize: '18px' }}>autorenew</span> : <span className="material-icons" style={{ fontSize: '18px' }}>send</span>}
-              </button>
-            </div>
-            <div className="mt-2 text-[11px] text-gray-500">
-              Do not share personal or payment information. For bookings, use the enquiry form.
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+            {open ? 'close' : 'chat'}
+          </span>
+        </button>
+      </div>
+    </>
   )
 }
-

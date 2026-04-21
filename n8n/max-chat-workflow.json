@@ -1,0 +1,148 @@
+{
+  "name": "MAX Entertain – AI Chat Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "max-chat",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f3a1b2c4-1001-4000-a001-000000000001",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300],
+      "webhookId": "max-entertain-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─── Build Anthropic API request body ────────────────────────────────────────\n// Incoming payload from maxentertain.com chat widget:\n//   message    – current user message (string)\n//   history    – previous messages [{ role, content }]\n//   context    – compact property info text (injected by the Next.js API route)\n//   sessionId  – client IP used for session tracking\n\nconst data = $input.first().json;\nconst message   = String(data.message   || '').slice(0, 2000);\nconst history   = Array.isArray(data.history) ? data.history : [];\nconst context   = String(data.context   || '');\nconst sessionId = String(data.sessionId || 'unknown');\n\nif (!message) {\n  throw new Error('Empty message received');\n}\n\nconst systemPrompt = [\n  'You are MAX, the virtual concierge for MAX Entertain Beachside Retreat — a luxury vacation rental in Tootgarook, Victoria, Australia.',\n  'Answer questions ONLY using the property information in the CONTEXT section below.',\n  'If information is not covered by the context, say so politely and suggest the guest contacts the host via the enquiry form at /inquiry.',\n  'NEVER invent prices, availability, contact numbers, or policies not in the context.',\n  'Keep responses concise, warm, and helpful. Use bullet points where appropriate.',\n  'If asked about topics unrelated to the property, politely redirect to property questions.',\n  '',\n  'CONTEXT:',\n  context\n].join('\\n');\n\n// Build messages array — no system role in Anthropic format (system is separate)\nconst messages = [\n  ...history\n    .filter(m => m.role === 'user' || m.role === 'assistant')\n    .slice(-18)  // keep last 18 turns for context window safety\n    .map(m => ({ role: m.role, content: String(m.content).slice(0, 2000) })),\n  { role: 'user', content: message }\n];\n\nconst requestBody = JSON.stringify({\n  model: 'claude-haiku-4-5',\n  system: systemPrompt,\n  messages,\n  max_tokens: 700,\n  temperature: 0.2\n});\n\nreturn [{ json: { requestBody, sessionId } }];"
+      },
+      "id": "f3a1b2c4-1002-4000-a001-000000000002",
+      "name": "Build Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $json.requestBody }}",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "fullResponse": false
+            }
+          }
+        }
+      },
+      "id": "f3a1b2c4-1003-4000-a001-000000000003",
+      "name": "Call Anthropic",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "anthropic-header-credential",
+          "name": "Anthropic API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract the assistant reply from the Anthropic response\nconst data = $input.first().json;\n\n// Handle API-level errors returned in the response body\nif (data.type === 'error' || data.error) {\n  const errMsg = data.error?.message || 'API error';\n  console.error('Anthropic error:', errMsg);\n  return [{ json: { reply: \"I'm experiencing a technical issue right now. Please try again or contact us via the enquiry form at /inquiry.\" } }];\n}\n\nconst reply =\n  data?.content?.[0]?.text?.trim() ||\n  \"I'm sorry, I couldn't generate a response. Please contact the host via the enquiry form at /inquiry.\";\n\nreturn [{ json: { reply } }];"
+      },
+      "id": "f3a1b2c4-1004-4000-a001-000000000004",
+      "name": "Extract Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ reply: $json.reply }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "f3a1b2c4-1005-4000-a001-000000000005",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1160, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ─── OpenAI alternative ──────────────────────────────────────────────────────\n// Swap this node for 'Build Prompt' if you prefer GPT over Claude.\n// 1. Point Call AI node URL to: https://api.openai.com/v1/chat/completions\n// 2. Set credential header name to 'Authorization' and value to 'Bearer YOUR_KEY'\n// 3. Change Extract Reply to use: data?.choices?.[0]?.message?.content\n\nconst data = $input.first().json;\nconst message   = String(data.message   || '').slice(0, 2000);\nconst history   = Array.isArray(data.history) ? data.history : [];\nconst context   = String(data.context   || '');\nconst sessionId = String(data.sessionId || 'unknown');\n\nif (!message) throw new Error('Empty message');\n\nconst systemPrompt = [\n  'You are MAX, the virtual concierge for MAX Entertain Beachside Retreat — a luxury vacation rental in Tootgarook, Victoria, Australia.',\n  'Answer questions ONLY using the property information in the CONTEXT section below.',\n  'If information is not covered by the context, say so politely and suggest the guest contacts the host via the enquiry form at /inquiry.',\n  'NEVER invent prices, availability, contact numbers, or policies not in the context.',\n  'Keep responses concise, warm, and helpful. Use bullet points where appropriate.',\n  '',\n  'CONTEXT:',\n  context\n].join('\\n');\n\n// OpenAI: system message goes inside the messages array\nconst messages = [\n  { role: 'system', content: systemPrompt },\n  ...history\n    .filter(m => m.role === 'user' || m.role === 'assistant')\n    .slice(-18)\n    .map(m => ({ role: m.role, content: String(m.content).slice(0, 2000) })),\n  { role: 'user', content: message }\n];\n\nconst requestBody = JSON.stringify({\n  model: 'gpt-4o-mini',\n  messages,\n  max_tokens: 700,\n  temperature: 0.2\n});\n\nreturn [{ json: { requestBody, sessionId } }];"
+      },
+      "id": "f3a1b2c4-1006-4000-a001-000000000006",
+      "name": "Build Prompt (OpenAI alt)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 560],
+      "disabled": true,
+      "notes": "OpenAI/GPT alternative. Enable this and disable 'Build Prompt' to switch from Claude to GPT-4o-mini. Also update the Call AI URL and credential."
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Build Prompt", "type": "main", "index": 0 }]
+      ]
+    },
+    "Build Prompt": {
+      "main": [
+        [{ "node": "Call Anthropic", "type": "main", "index": 0 }]
+      ]
+    },
+    "Call Anthropic": {
+      "main": [
+        [{ "node": "Extract Reply", "type": "main", "index": 0 }]
+      ]
+    },
+    "Extract Reply": {
+      "main": [
+        [{ "node": "Respond to Webhook", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "versionId": "1",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "id": "max-entertain-chat-v1",
+  "tags": [
+    { "name": "maxentertain" },
+    { "name": "chat" },
+    { "name": "ai" }
+  ]
+}

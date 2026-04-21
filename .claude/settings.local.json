@@ -7,7 +7,8 @@
       "Bash(npm list *)",
       "Bash(node scripts/compress-images.mjs)",
       "Bash(awk '{sum+=$1} END {print \"HD total:\", sum, \"KB\"}')",
-      "Bash(awk '{sum+=$1} END {print \"Compressed total:\", sum, \"KB\"}')"
+      "Bash(awk '{sum+=$1} END {print \"Compressed total:\", sum, \"KB\"}')",
+      "Skill(claude-api)"
     ]
   }
 }

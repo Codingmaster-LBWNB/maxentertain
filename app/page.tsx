@@ -10,7 +10,6 @@ import StarBackground from '@/components/StarBackground'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
 import AvailabilityInquirySync from '@/components/AvailabilityInquirySync'
-import ThemeToggle from '@/components/ThemeToggle'
 import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
 
@@ -64,7 +63,6 @@ export default function Home() {
         <AvailabilityInquirySync />
       </div>
       <Footer />
-      <ThemeToggle />
     </main>
   )
 }

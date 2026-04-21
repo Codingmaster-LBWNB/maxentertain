@@ -2,7 +2,7 @@
 
 import { useTheme } from '@/components/ThemeProvider'
 
-export default function ThemeToggle() {
+export default function ThemeToggle({ transparent = false }: { transparent?: boolean }) {
   const { theme, setTheme } = useTheme()
 
   const switchTo = (next: 'light' | 'dark', e: React.MouseEvent<HTMLButtonElement>) => {
@@ -62,7 +62,7 @@ export default function ThemeToggle() {
 
   return (
     <div
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-0 shadow-2xl"
+      className="flex items-center gap-0 shadow-lg flex-shrink-0"
       style={{ borderRadius: '999px' }}
       role="group"
       aria-label="Theme switcher"
@@ -75,10 +75,12 @@ export default function ThemeToggle() {
         aria-pressed={isLight}
         title="Light mode"
         className={`
-          relative flex items-center justify-center w-11 h-11 transition-all duration-300
+          relative flex items-center justify-center w-9 h-9 transition-all duration-300
           ${isLight
             ? 'bg-luxury-gold text-white shadow-lg'
-            : 'bg-white/90 dark:bg-white/10 text-gray-400 dark:text-white/30 hover:text-luxury-gold dark:hover:text-luxury-gold'
+            : transparent
+              ? 'bg-white/10 text-white/70 hover:text-white'
+              : 'bg-white/90 dark:bg-white/10 text-gray-400 dark:text-white/30 hover:text-luxury-gold dark:hover:text-luxury-gold'
           }
         `}
         style={{ borderRadius: '999px 0 0 999px', border: '1px solid rgba(212,175,55,0.3)' }}
@@ -107,10 +109,12 @@ export default function ThemeToggle() {
         aria-pressed={isDark}
         title="Dark mode"
         className={`
-          relative flex items-center justify-center w-11 h-11 transition-all duration-300
+          relative flex items-center justify-center w-9 h-9 transition-all duration-300
           ${isDark
             ? 'bg-luxury-gold text-white shadow-lg'
-            : 'bg-white/90 dark:bg-white/10 text-gray-400 dark:text-white/30 hover:text-luxury-gold dark:hover:text-luxury-gold'
+            : transparent
+              ? 'bg-white/10 text-white/70 hover:text-white'
+              : 'bg-white/90 dark:bg-white/10 text-gray-400 dark:text-white/30 hover:text-luxury-gold dark:hover:text-luxury-gold'
           }
         `}
         style={{ borderRadius: '0 999px 999px 0', border: '1px solid rgba(212,175,55,0.3)', borderLeft: 'none' }}
