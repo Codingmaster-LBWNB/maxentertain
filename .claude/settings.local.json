@@ -13,7 +13,12 @@
       "Read(//c/Users/Darkspede/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/.claude/skills/ui-ux-pro-max/**)",
       "Bash(python scripts/search.py \"luxury vacation rental hospitality premium\" --design-system -f markdown)",
       "Bash(python \"C:\\\\Users\\\\Darkspede\\\\.claude\\\\plugins\\\\cache\\\\ui-ux-pro-max-skill\\\\ui-ux-pro-max\\\\2.5.0\\\\src\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"luxury vacation rental hospitality premium award\" --design-system -f markdown)",
-      "Bash(python \"C:\\\\Users\\\\Darkspede\\\\.claude\\\\plugins\\\\cache\\\\ui-ux-pro-max-skill\\\\ui-ux-pro-max\\\\2.5.0\\\\src\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"stats counter animation card luxury\" --domain ux -n 6)"
+      "Bash(python \"C:\\\\Users\\\\Darkspede\\\\.claude\\\\plugins\\\\cache\\\\ui-ux-pro-max-skill\\\\ui-ux-pro-max\\\\2.5.0\\\\src\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"stats counter animation card luxury\" --domain ux -n 6)",
+      "Bash(mkdir -p .claude/skills)",
+      "Bash(powershell -Command \"Expand-Archive -Path '.claude\\\\str-operator.skill' -DestinationPath '.claude\\\\skills\\\\' -Force\")",
+      "Bash(cp .claude/str-operator.skill .claude/str-operator.zip)",
+      "Bash(powershell -Command \"Expand-Archive -Path '.claude\\\\str-operator.zip' -DestinationPath '.claude\\\\skills\\\\' -Force\")",
+      "Bash(rm .claude/str-operator.zip)"
     ]
   }
 }
