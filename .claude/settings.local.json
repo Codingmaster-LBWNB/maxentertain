@@ -8,7 +8,12 @@
       "Bash(node scripts/compress-images.mjs)",
       "Bash(awk '{sum+=$1} END {print \"HD total:\", sum, \"KB\"}')",
       "Bash(awk '{sum+=$1} END {print \"Compressed total:\", sum, \"KB\"}')",
-      "Skill(claude-api)"
+      "Skill(claude-api)",
+      "Bash(python3 *)",
+      "Read(//c/Users/Darkspede/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/.claude/skills/ui-ux-pro-max/**)",
+      "Bash(python scripts/search.py \"luxury vacation rental hospitality premium\" --design-system -f markdown)",
+      "Bash(python \"C:\\\\Users\\\\Darkspede\\\\.claude\\\\plugins\\\\cache\\\\ui-ux-pro-max-skill\\\\ui-ux-pro-max\\\\2.5.0\\\\src\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"luxury vacation rental hospitality premium award\" --design-system -f markdown)",
+      "Bash(python \"C:\\\\Users\\\\Darkspede\\\\.claude\\\\plugins\\\\cache\\\\ui-ux-pro-max-skill\\\\ui-ux-pro-max\\\\2.5.0\\\\src\\\\ui-ux-pro-max\\\\scripts\\\\search.py\" \"stats counter animation card luxury\" --domain ux -n 6)"
     ]
   }
 }

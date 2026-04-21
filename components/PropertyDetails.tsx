@@ -38,30 +38,151 @@ export default function PropertyDetails() {
           </div>
         </motion.div>
 
-        {/* Property Stats — editorial horizontal bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mb-20"
-        >
-          <div className="border border-gray-100 dark:border-white/7 bg-white dark:bg-[#1d1d1b] shadow-sm">
-            <div className="grid grid-cols-3 divide-x divide-gray-100 dark:divide-white/7">
-              {details.map((detail, index) => (
-                <div key={index} className="text-center py-10 px-4 group hover:bg-luxury-gold/5 transition-colors">
-                  <div className="inline-flex items-center justify-center w-10 h-10 mb-4">
-                    <span className="material-icons text-luxury-gold/70" style={{ fontSize: '24px' }}>{detail.icon}</span>
+        {/* Property Stats — 3 distinct floating cards */}
+        <div className="grid grid-cols-3 gap-4 md:gap-5 mb-20">
+          {details.map((detail, index) => {
+            const themes = [
+              {
+                // Bedrooms — warm amber
+                bg: 'linear-gradient(145deg, #fefce8 0%, #fef9c3 60%, #fef3c7 100%)',
+                bgDark: 'linear-gradient(145deg, #1c1505 0%, #231a06 60%, #1c1505 100%)',
+                border: 'rgba(217,119,6,0.3)',
+                borderDark: 'rgba(217,119,6,0.25)',
+                glow: 'rgba(245,158,11,0.12)',
+                glowDark: 'rgba(217,119,6,0.2)',
+                iconBg: 'rgba(245,158,11,0.15)',
+                iconBgDark: 'rgba(217,119,6,0.2)',
+                iconBorder: 'rgba(245,158,11,0.4)',
+                iconColor: '#d97706',
+                iconColorDark: '#f59e0b',
+                numColor: '#92400e',
+                numColorDark: '#fde68a',
+                labelColor: '#b45309',
+                labelColorDark: '#fbbf24',
+                accentLine: 'rgba(245,158,11,0.5)',
+              },
+              {
+                // Bathrooms — cool sapphire
+                bg: 'linear-gradient(145deg, #f0f9ff 0%, #e0f2fe 60%, #f0f9ff 100%)',
+                bgDark: 'linear-gradient(145deg, #05101a 0%, #081624 60%, #05101a 100%)',
+                border: 'rgba(14,165,233,0.3)',
+                borderDark: 'rgba(14,165,233,0.22)',
+                glow: 'rgba(14,165,233,0.1)',
+                glowDark: 'rgba(14,165,233,0.18)',
+                iconBg: 'rgba(14,165,233,0.14)',
+                iconBgDark: 'rgba(14,165,233,0.18)',
+                iconBorder: 'rgba(14,165,233,0.35)',
+                iconColor: '#0284c7',
+                iconColorDark: '#38bdf8',
+                numColor: '#075985',
+                numColorDark: '#bae6fd',
+                labelColor: '#0369a1',
+                labelColorDark: '#7dd3fc',
+                accentLine: 'rgba(14,165,233,0.5)',
+              },
+              {
+                // Max Guests — luxury gold
+                bg: 'linear-gradient(145deg, #fffbeb 0%, #fef3c7 60%, #fffbeb 100%)',
+                bgDark: 'linear-gradient(145deg, #130f02 0%, #1a1403 60%, #130f02 100%)',
+                border: 'rgba(212,175,55,0.35)',
+                borderDark: 'rgba(212,175,55,0.28)',
+                glow: 'rgba(212,175,55,0.12)',
+                glowDark: 'rgba(212,175,55,0.22)',
+                iconBg: 'rgba(212,175,55,0.15)',
+                iconBgDark: 'rgba(212,175,55,0.2)',
+                iconBorder: 'rgba(212,175,55,0.45)',
+                iconColor: '#92700a',
+                iconColorDark: '#D4AF37',
+                numColor: '#78350f',
+                numColorDark: '#fde68a',
+                labelColor: '#92700a',
+                labelColorDark: '#D4AF37',
+                accentLine: 'rgba(212,175,55,0.55)',
+              },
+            ]
+            const t = themes[index]!
+
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 36 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.65, delay: 0.15 + index * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -4, transition: { duration: 0.25 } }}
+                className="relative group cursor-default"
+              >
+                {/* Light mode card */}
+                <div
+                  className="relative overflow-hidden rounded-2xl flex flex-col items-center text-center px-3 md:px-6 py-8 md:py-10 dark:hidden"
+                  style={{
+                    background: t.bg,
+                    border: `1px solid ${t.border}`,
+                    boxShadow: `0 4px 24px ${t.glow}, 0 1px 0 rgba(255,255,255,0.8) inset`,
+                  }}
+                >
+                  <div className="absolute top-0 left-[20%] right-[20%] h-px"
+                    style={{ background: `linear-gradient(90deg, transparent, ${t.accentLine}, transparent)` }} />
+
+                  <div
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center mb-4 md:mb-5 transition-transform duration-300 group-hover:scale-110"
+                    style={{ background: t.iconBg, border: `1px solid ${t.iconBorder}` }}
+                  >
+                    <span className="material-icons" style={{ fontSize: '20px', color: t.iconColor }}>{detail.icon}</span>
                   </div>
-                  <div className="text-4xl md:text-5xl font-serif font-bold text-luxury-dark dark:text-white mb-1">
+
+                  <div
+                    className="text-3xl md:text-5xl font-serif font-bold leading-none mb-2"
+                    style={{ color: t.numColor }}
+                  >
                     {detail.value}
                   </div>
-                  <div className="text-xs font-sans font-semibold tracking-[0.2em] uppercase text-gray-400 dark:text-gray-500">{detail.label}</div>
+
+                  <div
+                    className="text-[9px] md:text-[10px] font-sans font-bold tracking-[0.2em] uppercase"
+                    style={{ color: t.labelColor }}
+                  >
+                    {detail.label}
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+
+                {/* Dark mode card */}
+                <div
+                  className="relative overflow-hidden rounded-2xl flex-col items-center text-center px-3 md:px-6 py-8 md:py-10 hidden dark:flex"
+                  style={{
+                    background: t.bgDark,
+                    border: `1px solid ${t.borderDark}`,
+                    boxShadow: `0 4px 32px ${t.glowDark}, inset 0 1px 0 rgba(255,255,255,0.06)`,
+                  }}
+                >
+                  <div className="absolute top-0 left-[20%] right-[20%] h-px"
+                    style={{ background: `linear-gradient(90deg, transparent, ${t.accentLine}, transparent)` }} />
+
+                  <div
+                    className="w-10 h-10 md:w-12 md:h-12 rounded-xl flex items-center justify-center mb-4 md:mb-5 transition-transform duration-300 group-hover:scale-110"
+                    style={{ background: t.iconBgDark, border: `1px solid ${t.iconBorder}` }}
+                  >
+                    <span className="material-icons" style={{ fontSize: '20px', color: t.iconColorDark }}>{detail.icon}</span>
+                  </div>
+
+                  <div
+                    className="text-3xl md:text-5xl font-serif font-bold leading-none mb-2"
+                    style={{ color: t.numColorDark }}
+                  >
+                    {detail.value}
+                  </div>
+
+                  <div
+                    className="text-[9px] md:text-[10px] font-sans font-bold tracking-[0.2em] uppercase"
+                    style={{ color: t.labelColorDark }}
+                  >
+                    {detail.label}
+                  </div>
+                </div>
+              </motion.div>
+            )
+          })}
+        </div>
 
         {/* Description */}
         <motion.div
