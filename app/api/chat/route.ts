@@ -6,12 +6,11 @@ export const dynamic = 'force-dynamic'
 
 type ClientMessage = { role: 'user' | 'assistant'; content: string }
 
-const DEFAULT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6'
 const MAX_MESSAGES = 20
 const MIN_CHARS_PER_MESSAGE = 2
 const MAX_CHARS_PER_MESSAGE = 2000
 const MAX_TOTAL_CHARS = 12000
-const MAX_BODY_BYTES = 50_000      // reject bodies larger than 50 KB before JSON parse
+const MAX_BODY_BYTES = 50_000
 const N8N_TIMEOUT_MS = 9000
 
 type Bucket = { count: number; resetAtMs: number }
@@ -31,13 +30,12 @@ function getClientIp(req: NextRequest): string {
 }
 
 function checkOrigin(req: NextRequest): boolean {
-  // In production, only allow requests originating from the same site
   if (process.env.NODE_ENV !== 'production') return true
   const siteUrl =
     process.env.NEXT_PUBLIC_BASE_URL ||
     process.env.NEXT_PUBLIC_SITE_URL ||
     process.env.SITE_URL
-  if (!siteUrl) return true // no site URL configured — allow
+  if (!siteUrl) return true
   const origin = req.headers.get('origin') || req.headers.get('referer') || ''
   try {
     return new URL(origin).origin === new URL(siteUrl).origin
@@ -46,7 +44,6 @@ function checkOrigin(req: NextRequest): boolean {
   }
 }
 
-// Strip null bytes and non-printable control characters (keep tab/newline/CR)
 function sanitizeText(text: string): string {
   return text.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
 }
@@ -114,20 +111,6 @@ function compactPropertyContext(): string {
   ].join('\n')
 }
 
-function systemPrompt(): string {
-  return [
-    'You are the guest FAQ assistant for a vacation rental property website.',
-    'You MUST answer using ONLY the information provided in the CONTEXT.',
-    'If the question is not answered by the context, say you do not have that information and suggest contacting the host via /inquiry.',
-    'Do not invent policies, prices, availability, discounts, or addresses beyond what is provided.',
-    'Keep answers concise, friendly, and practical. Use bullet points when helpful.',
-    'If the user asks for something unrelated to the property, politely refuse and redirect back to property questions.',
-    '',
-    'CONTEXT:',
-    compactPropertyContext(),
-  ].join('\n')
-}
-
 function validateMessages(input: unknown): ClientMessage[] {
   if (!Array.isArray(input)) throw new Error('Invalid messages')
   const msgs = input
@@ -142,7 +125,6 @@ function validateMessages(input: unknown): ClientMessage[] {
         m.content.trim().length >= MIN_CHARS_PER_MESSAGE
     )
 
-  // Last message must be from the user (Anthropic API requirement)
   if (msgs.length > 0 && msgs[msgs.length - 1]!.role !== 'user') {
     throw Object.assign(new Error('Last message must be from user'), { status: 400 })
   }
@@ -170,32 +152,23 @@ function validateMessages(input: unknown): ClientMessage[] {
   return msgs
 }
 
-// --- N8N integration ---
-// Tries the N8N_WEBHOOK_URL if configured. N8N workflow should accept:
-//   { message, sessionId, history, context }
-// and return one of:
-//   { reply } | { output } | { text } | { message } | [{ reply }] (array wrapping)
-async function tryN8n(
-  messages: ClientMessage[],
-  sessionId: string
-): Promise<string | null> {
+async function callN8n(messages: ClientMessage[], sessionId: string): Promise<string> {
   const webhookUrl = process.env.N8N_WEBHOOK_URL
-  if (!webhookUrl) return null
+  if (!webhookUrl) throw Object.assign(new Error('N8N_WEBHOOK_URL not configured'), { status: 503 })
 
-  const lastMessage = messages[messages.length - 1]
-  if (!lastMessage) return null
+  const lastMessage = messages[messages.length - 1]!
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)
 
   try {
-    const n8nHeaders: Record<string, string> = { 'content-type': 'application/json' }
-    const n8nSecret = process.env.N8N_WEBHOOK_SECRET
-    if (n8nSecret) n8nHeaders['x-webhook-secret'] = n8nSecret
+    const headers: Record<string, string> = { 'content-type': 'application/json' }
+    const secret = process.env.N8N_WEBHOOK_SECRET
+    if (secret) headers['x-webhook-secret'] = secret
 
     const res = await fetch(webhookUrl, {
       method: 'POST',
-      headers: n8nHeaders,
+      headers,
       body: JSON.stringify({
         message: lastMessage.content,
         sessionId,
@@ -205,79 +178,28 @@ async function tryN8n(
       signal: controller.signal,
     })
 
-    if (!res.ok) return null
+    if (!res.ok) throw new Error(`N8N responded with ${res.status}`)
 
     const raw: unknown = await res.json()
-
-    // Handle array wrapper N8N sometimes adds
     const data: unknown = Array.isArray(raw) ? raw[0] : raw
-    if (!data || typeof data !== 'object') return null
+    if (!data || typeof data !== 'object') throw new Error('Empty response from N8N')
 
     const d = data as Record<string, unknown>
-    const reply =
-      d.reply ?? d.output ?? d.text ?? d.message ?? d.answer ?? d.response ?? null
+    const reply = d.reply ?? d.output ?? d.text ?? d.message ?? d.answer ?? d.response ?? null
 
-    if (typeof reply === 'string' && reply.trim()) {
-      return reply.trim()
-    }
-    return null
-  } catch {
-    return null
+    if (typeof reply === 'string' && reply.trim()) return reply.trim()
+    throw new Error('No reply field in N8N response')
   } finally {
     clearTimeout(timer)
   }
 }
 
-// --- Claude fallback ---
-async function callClaude(messages: ClientMessage[]): Promise<string> {
-  const apiKey = process.env.ANTHROPIC_API_KEY
-  if (!apiKey) throw Object.assign(new Error('Server not configured (missing ANTHROPIC_API_KEY)'), { status: 500 })
-
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: DEFAULT_MODEL,
-      max_tokens: 700,
-      temperature: 0.2,
-      system: systemPrompt(),
-      messages: messages.map((m) => ({
-        role: m.role,
-        content: [{ type: 'text', text: m.content }],
-      })),
-    }),
-  })
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '')
-    throw Object.assign(new Error('Anthropic request failed'), {
-      status: 502,
-      detail: text.slice(0, 500),
-    })
-  }
-
-  const data: any = await res.json()
-  const parts: string[] = Array.isArray(data?.content)
-    ? data.content
-        .filter((c: any) => c?.type === 'text' && typeof c?.text === 'string')
-        .map((c: any) => c.text)
-    : []
-
-  return parts.join('').trim()
-}
-
 export async function POST(req: NextRequest) {
   try {
-    // Origin check — block cross-site requests in production
     if (!checkOrigin(req)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    // Body size limit — reject before JSON parse to prevent memory abuse
     const contentLength = Number(req.headers.get('content-length') ?? 0)
     if (contentLength > MAX_BODY_BYTES) {
       return NextResponse.json({ error: 'Request too large' }, { status: 413 })
@@ -296,14 +218,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message too short or empty' }, { status: 400 })
     }
 
-    // Try N8N first, fall back to Claude
-    let reply = await tryN8n(messages, ip)
-
-    if (!reply) {
-      reply = await callClaude(messages)
-    }
-
-    return NextResponse.json({ reply: reply || "Sorry, I couldn't generate a response." })
+    const reply = await callN8n(messages, ip)
+    return NextResponse.json({ reply })
   } catch (err: any) {
     const status = typeof err?.status === 'number' ? err.status : 500
     if (status === 429) {
@@ -315,9 +231,9 @@ export async function POST(req: NextRequest) {
     if (status === 400) {
       return NextResponse.json({ error: err.message || 'Bad request' }, { status: 400 })
     }
-    if (status === 500 && err.message?.includes('ANTHROPIC_API_KEY')) {
-      return NextResponse.json({ error: err.message }, { status: 500 })
-    }
-    return NextResponse.json({ error: 'Chat failed' }, { status })
+    return NextResponse.json(
+      { error: 'MAX is unavailable right now. Please try again later or use the enquiry form.' },
+      { status: 503 }
+    )
   }
 }

@@ -18,7 +18,14 @@
       "Bash(powershell -Command \"Expand-Archive -Path '.claude\\\\str-operator.skill' -DestinationPath '.claude\\\\skills\\\\' -Force\")",
       "Bash(cp .claude/str-operator.skill .claude/str-operator.zip)",
       "Bash(powershell -Command \"Expand-Archive -Path '.claude\\\\str-operator.zip' -DestinationPath '.claude\\\\skills\\\\' -Force\")",
-      "Bash(rm .claude/str-operator.zip)"
+      "Bash(rm .claude/str-operator.zip)",
+      "Read(//c/Users/Darkspede/.claude/plugins/cache/ui-ux-pro-max-skill/ui-ux-pro-max/2.5.0/**)",
+      "Bash(python skills/ui-ux-pro-max/scripts/search.py \"luxury beachfront rental property holiday retreat premium\" --design-system -p \"MaxEntertain\")",
+      "Bash(python cli/assets/scripts/search.py \"luxury beachfront rental property holiday retreat premium\" --design-system -p \"MaxEntertain\")",
+      "Bash(python cli/assets/scripts/search.py \"luxury hotel property premium warm sand coastal\" --domain color -n 3)",
+      "Bash(python cli/assets/scripts/search.py \"glassmorphism liquid glass premium\" --domain style -n 2)",
+      "Bash(npm uninstall *)",
+      "Bash(npx kill-port *)"
     ]
   }
 }

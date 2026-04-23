@@ -205,17 +205,32 @@ export default function PropertyDetails() {
               <div className="h-px w-12 bg-luxury-gold/60"></div>
             </div>
           </div>
-          <div className="bg-white dark:bg-[#1d1d1b] p-8 md:p-14 border border-gray-100 dark:border-white/7 shadow-sm">
-            <div className="text-gray-700 dark:text-gray-300">
-              <div className="text-base md:text-lg lg:text-xl font-sans font-light tracking-wide">
+
+          {/* About box — premium card */}
+          <div className="relative overflow-hidden rounded-2xl"
+            style={{
+              background: 'linear-gradient(160deg, #ffffff 0%, #fafaf7 100%)',
+              border: '1px solid rgba(212,175,55,0.18)',
+              boxShadow: '0 4px 40px rgba(212,175,55,0.07), 0 1px 0 rgba(255,255,255,0.9) inset',
+            }}
+          >
+            {/* Gold hairline top */}
+            <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent 0%, #D4AF37 30%, #D4AF37 70%, transparent 100%)' }} />
+            {/* Gold left accent bar */}
+            <div className="absolute left-0 top-8 bottom-8 w-[3px] rounded-full" style={{ background: 'linear-gradient(180deg, transparent, #D4AF37 30%, #D4AF37 70%, transparent)' }} />
+
+            {/* Dark mode overlay */}
+            <div className="hidden dark:block absolute inset-0 rounded-2xl pointer-events-none"
+              style={{ background: 'linear-gradient(160deg, #1a1810 0%, #111008 100%)', border: '1px solid rgba(212,175,55,0.14)' }} />
+
+            <div className="relative p-8 md:p-14 pl-10 md:pl-16">
+              <div className="text-gray-700 dark:text-gray-300 text-base md:text-lg lg:text-xl font-sans font-light tracking-wide leading-relaxed">
                 {visibleAboutLines.map((line, index) => {
                   const trimmedLine = line.trim()
-                  
-                  // Style headings (lines ending with ? or :, or short uppercase lines)
-                  if (trimmedLine.endsWith('?') || 
+                  if (trimmedLine.endsWith('?') ||
                       (trimmedLine.endsWith(':') && !trimmedLine.startsWith('-')) ||
-                      (trimmedLine.length > 0 && 
-                       trimmedLine.length < 50 && 
+                      (trimmedLine.length > 0 &&
+                       trimmedLine.length < 50 &&
                        !trimmedLine.startsWith('-') &&
                        trimmedLine === trimmedLine.toUpperCase() &&
                        trimmedLine.split(' ').length <= 5)) {
@@ -225,7 +240,6 @@ export default function PropertyDetails() {
                       </h4>
                     )
                   }
-                  // Style bullet points
                   if (trimmedLine.startsWith('-')) {
                     return (
                       <div key={index} className="flex items-start gap-3 pl-2 mb-2">
@@ -234,32 +248,26 @@ export default function PropertyDetails() {
                       </div>
                     )
                   }
-                  // Regular paragraphs
                   if (trimmedLine.length > 0) {
-                    return (
-                      <p key={index} className="mb-6 leading-relaxed last:mb-0">
-                        {trimmedLine}
-                      </p>
-                    )
+                    return <p key={index} className="mb-6 leading-relaxed last:mb-0">{trimmedLine}</p>
                   }
-                  // Empty lines for spacing
                   return <div key={index} className="h-4" />
                 })}
               </div>
-            </div>
 
-            {aboutLines.length > ABOUT_MAX_LINES && (
-              <div className="mt-8 flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => setShowAllAbout((v) => !v)}
-                  className="btn-secondary"
-                  aria-expanded={showAllAbout}
-                >
-                  {showAllAbout ? 'Show less' : 'Show more'}
-                </button>
-              </div>
-            )}
+              {aboutLines.length > ABOUT_MAX_LINES && (
+                <div className="mt-8 flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllAbout((v) => !v)}
+                    className="btn-secondary"
+                    aria-expanded={showAllAbout}
+                  >
+                    {showAllAbout ? 'Show less' : 'Show more'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </motion.div>
 
@@ -269,25 +277,65 @@ export default function PropertyDetails() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="max-w-4xl mx-auto mt-16 grid md:grid-cols-2 gap-8"
+          className="max-w-4xl mx-auto mt-8 grid md:grid-cols-2 gap-6"
         >
-          <div className="bg-white dark:bg-[#1d1d1b] border border-gray-100 dark:border-white/7 p-8">
-            <h4 className="text-xs font-sans font-semibold tracking-[0.2em] uppercase text-luxury-gold mb-5">
-              Check-in & Check-out
-            </h4>
-            <p className="text-gray-700 dark:text-gray-300 mb-2">
-              <span className="font-semibold">Check-in:</span> {propertyConfig.policies.checkIn}
-            </p>
-            <p className="text-gray-700 dark:text-gray-300">
-              <span className="font-semibold">Check-out:</span> {propertyConfig.policies.checkOut}
-            </p>
-          </div>
-          <div className="bg-white dark:bg-[#1d1d1b] border border-gray-100 dark:border-white/7 p-8">
-            <h4 className="text-xs font-sans font-semibold tracking-[0.2em] uppercase text-luxury-gold mb-5">
-              Cancellation Policy
-            </h4>
-            <p className="text-gray-600 dark:text-gray-400 font-light leading-relaxed">{propertyConfig.policies.cancellation}</p>
-          </div>
+          {[
+            {
+              icon: 'schedule',
+              label: 'Check-in & Check-out',
+              content: (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <span className="material-icons text-luxury-gold/70" style={{ fontSize: '18px' }}>login</span>
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">
+                      <span className="font-semibold text-luxury-dark dark:text-white">Check-in:</span>{' '}
+                      {propertyConfig.policies.checkIn}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="material-icons text-luxury-gold/70" style={{ fontSize: '18px' }}>logout</span>
+                    <span className="text-gray-700 dark:text-gray-300 text-sm">
+                      <span className="font-semibold text-luxury-dark dark:text-white">Check-out:</span>{' '}
+                      {propertyConfig.policies.checkOut}
+                    </span>
+                  </div>
+                </div>
+              ),
+            },
+            {
+              icon: 'policy',
+              label: 'Cancellation Policy',
+              content: (
+                <p className="text-gray-600 dark:text-gray-400 text-sm font-light leading-relaxed">
+                  {propertyConfig.policies.cancellation}
+                </p>
+              ),
+            },
+          ].map((card, i) => (
+            <div key={i} className="relative overflow-hidden rounded-xl group"
+              style={{
+                background: 'linear-gradient(145deg, #ffffff, #fafaf7)',
+                border: '1px solid rgba(212,175,55,0.15)',
+                boxShadow: '0 2px 20px rgba(212,175,55,0.06)',
+              }}
+            >
+              <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, #D4AF37 40%, #D4AF37 60%, transparent)' }} />
+              <div className="hidden dark:block absolute inset-0 rounded-xl pointer-events-none"
+                style={{ background: 'linear-gradient(145deg, #1a1810, #111008)', border: '1px solid rgba(212,175,55,0.12)' }} />
+              <div className="relative p-7">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                    <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>{card.icon}</span>
+                  </div>
+                  <h4 className="text-[10px] font-sans font-bold tracking-[0.22em] uppercase text-luxury-gold">
+                    {card.label}
+                  </h4>
+                </div>
+                {card.content}
+              </div>
+            </div>
+          ))}
         </motion.div>
 
         {/* House Rules */}
@@ -297,19 +345,41 @@ export default function PropertyDetails() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.8 }}
-            className="max-w-4xl mx-auto mt-8"
+            className="max-w-4xl mx-auto mt-6"
           >
-            <h4 className="text-xl font-serif font-semibold mb-4 text-luxury-dark dark:text-white">
-              House Rules
-            </h4>
-            <ul className="grid md:grid-cols-2 gap-3">
-              {propertyConfig.policies.houseRules.map((rule, index) => (
-                <li key={index} className="flex items-start gap-3 text-gray-700 dark:text-gray-300">
-                  <span className="text-luxury-gold mt-1">✓</span>
-                  <span>{rule}</span>
-                </li>
-              ))}
-            </ul>
+            <div className="relative overflow-hidden rounded-2xl"
+              style={{
+                background: 'linear-gradient(160deg, #ffffff, #fafaf7)',
+                border: '1px solid rgba(212,175,55,0.15)',
+                boxShadow: '0 2px 24px rgba(212,175,55,0.06)',
+              }}
+            >
+              <div className="h-px w-full" style={{ background: 'linear-gradient(90deg, transparent, #D4AF37 30%, #D4AF37 70%, transparent)' }} />
+              <div className="hidden dark:block absolute inset-0 rounded-2xl pointer-events-none"
+                style={{ background: 'linear-gradient(160deg, #1a1810, #111008)', border: '1px solid rgba(212,175,55,0.12)' }} />
+              <div className="relative p-7 md:p-10">
+                <div className="flex items-center gap-3 mb-7">
+                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
+                    <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>gavel</span>
+                  </div>
+                  <h4 className="text-[10px] font-sans font-bold tracking-[0.22em] uppercase text-luxury-gold">
+                    House Rules
+                  </h4>
+                </div>
+                <ul className="grid md:grid-cols-2 gap-3">
+                  {propertyConfig.policies.houseRules.map((rule, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5"
+                        style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)' }}>
+                        <span className="material-icons text-luxury-gold" style={{ fontSize: '12px' }}>check</span>
+                      </div>
+                      <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{rule}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
           </motion.div>
         )}
       </div>

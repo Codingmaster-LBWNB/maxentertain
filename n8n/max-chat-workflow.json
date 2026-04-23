@@ -17,10 +17,10 @@
     },
     {
       "parameters": {
-        "jsCode": "// ─── Build Anthropic API request body ────────────────────────────────────────\n// Incoming payload from maxentertain.com chat widget:\n//   message    – current user message (string)\n//   history    – previous messages [{ role, content }]\n//   context    – compact property info text (injected by the Next.js API route)\n//   sessionId  – client IP used for session tracking\n\nconst data = $input.first().json;\nconst message   = String(data.message   || '').slice(0, 2000);\nconst history   = Array.isArray(data.history) ? data.history : [];\nconst context   = String(data.context   || '');\nconst sessionId = String(data.sessionId || 'unknown');\n\nif (!message) {\n  throw new Error('Empty message received');\n}\n\nconst systemPrompt = [\n  'You are MAX, the virtual concierge for MAX Entertain Beachside Retreat — a luxury vacation rental in Tootgarook, Victoria, Australia.',\n  'Answer questions ONLY using the property information in the CONTEXT section below.',\n  'If information is not covered by the context, say so politely and suggest the guest contacts the host via the enquiry form at /inquiry.',\n  'NEVER invent prices, availability, contact numbers, or policies not in the context.',\n  'Keep responses concise, warm, and helpful. Use bullet points where appropriate.',\n  'If asked about topics unrelated to the property, politely redirect to property questions.',\n  '',\n  'CONTEXT:',\n  context\n].join('\\n');\n\n// Build messages array — no system role in Anthropic format (system is separate)\nconst messages = [\n  ...history\n    .filter(m => m.role === 'user' || m.role === 'assistant')\n    .slice(-18)  // keep last 18 turns for context window safety\n    .map(m => ({ role: m.role, content: String(m.content).slice(0, 2000) })),\n  { role: 'user', content: message }\n];\n\nconst requestBody = JSON.stringify({\n  model: 'claude-haiku-4-5',\n  system: systemPrompt,\n  messages,\n  max_tokens: 700,\n  temperature: 0.2\n});\n\nreturn [{ json: { requestBody, sessionId } }];"
+        "jsCode": "// ─── Sanitize & Build Gemini Request ─────────────────────────────────────────\nconst raw = $input.first().json;\nlet data = raw.body ?? raw;\nif (typeof data === 'string') {\n  try { data = JSON.parse(data); } catch(e) {}\n}\n\nconst message   = String(data.message   || '').trim().slice(0, 2000);\nconst history   = Array.isArray(data.history) ? data.history : [];\nconst sessionId = String(data.sessionId || 'unknown');\n\nif (!message || message.length < 2) {\n  throw new Error('Empty or too-short message. Keys received: ' + JSON.stringify(Object.keys(data)));\n}\n\n// ─── System prompt built from property profile ────────────────────────────────\nconst PROPERTY_FACTS = `\nProperty: MAX Entertain Beachside Retreat — Amazing Backyard\nAddress: 1975 Point Nepean Road, Tootgarook VIC 3941 (Mornington Peninsula, ~1.5 hrs from Melbourne CBD)\nConfig: 6 bedrooms, 5 ensuites, 2 half-baths, sleeps 16+ guests\nSleeping: 4 King beds, 2 Bunk beds, 2 Singles, 2 Sofa beds, 3 cots available\nLocation: 10 metres from beach (across a road — not directly on sand)\nWebsite: maxentertain.com | Direct booking saves guests 15%+\n\nSignature features:\n- Solar-heated pool + spa (usable most of the year)\n- Home theatre with 120\" projector\n- Arcade & driving games, Nintendo Switch, karaoke\n- Trampoline, mini golf, ping pong, pool table, foosball\n- Under-tile heating, in-ceiling speakers\n- Secure electric gate\n- Pets welcome (must be disclosed at booking)\n\nCheck-in: 3:00 PM | Check-out: 10:00 AM\n\nCancellation policy:\n- More than 14 days before check-in: full refund\n- 7–14 days before check-in: 50% refund\n- Less than 7 days before check-in: no refund\n\nHouse rules:\n- No parties or schoolies\n- Noise alarms monitored\n- Outdoor areas: 7am–11pm only\n- Mornington Peninsula Shire Short Stay Accommodation Code of Conduct applies\n\nAwards & social proof:\n- Airbnb Host Awards 2024: Best Family Friendly Stay\n- Booking.com Traveller Review Awards 2026\n- 120+ five-star reviews, 1000+ guests per year\n\nNearby attractions:\n- Moonah Links, National Golf Club, The Dunes (all within 10 min)\n- Mornington Peninsula wineries, hot springs, beaches\n- Sorrento, Portsea, Red Hill Market\n\nHost: Jason (responsive, named in all guest reviews)\nContact / enquiry form: maxentertain.com/inquiry\nOTA listings: Airbnb, Booking.com, VRBO\n`;\n\nconst systemInstruction = [\n  'You are MAX, the virtual concierge for MAX Entertain Beachside Retreat on the Mornington Peninsula, Victoria, Australia.',\n  'You help guests with questions about the property, amenities, local area, policies, and bookings.',\n  'ALWAYS reply in the same language the guest used. If the guest writes in Chinese, reply in Chinese. If in Japanese, reply in Japanese. Etc.',\n  '',\n  'Rules:',\n  '- Answer using ONLY the facts in PROPERTY FACTS below. Never invent prices, availability, addresses, or policies.',\n  '- If a question is not covered, say so honestly and direct the guest to the enquiry form at maxentertain.com/inquiry or to contact Jason directly.',\n  '- Be warm, concise, and helpful. Use bullet points for lists.',\n  '- Do NOT use markdown formatting. No **bold**, no *italic*, no headers. Plain text only.',\n  '- If asked about something unrelated to the property or local area, politely redirect.',\n  '- When guests ask about booking, always mention the direct-book discount: \"Book directly at maxentertain.com and save 15%+ vs OTA prices.\"',\n  '',\n  'PROPERTY FACTS:',\n  PROPERTY_FACTS\n].join('\\n');\n\n// Build Gemini contents array (role: 'model' for assistant turns)\nconst contents = [\n  ...history\n    .filter(m => m.role === 'user' || m.role === 'assistant')\n    .slice(-18)\n    .map(m => ({\n      role: m.role === 'assistant' ? 'model' : 'user',\n      parts: [{ text: String(m.content).slice(0, 2000) }]\n    })),\n  { role: 'user', parts: [{ text: message }] }\n];\n\nconst requestBody = JSON.stringify({\n  system_instruction: { parts: [{ text: systemInstruction }] },\n  contents,\n  generationConfig: {\n    maxOutputTokens: 700,\n    temperature: 0.2\n  }\n});\n\nreturn [{ json: { requestBody, sessionId } }];"
       },
       "id": "f3a1b2c4-1002-4000-a001-000000000002",
-      "name": "Build Prompt",
+      "name": "Sanitize",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [440, 300]
@@ -28,16 +28,12 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.anthropic.com/v1/messages",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "anthropic-version",
-              "value": "2023-06-01"
-            },
             {
               "name": "content-type",
               "value": "application/json"
@@ -49,7 +45,7 @@
         "rawContentType": "application/json",
         "body": "={{ $json.requestBody }}",
         "options": {
-          "timeout": 30000,
+          "timeout": 25000,
           "response": {
             "response": {
               "fullResponse": false
@@ -58,20 +54,20 @@
         }
       },
       "id": "f3a1b2c4-1003-4000-a001-000000000003",
-      "name": "Call Anthropic",
+      "name": "Call Gemini",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [680, 300],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "anthropic-header-credential",
-          "name": "Anthropic API Key"
+          "id": "gemini-header-credential",
+          "name": "Gemini API Key"
         }
       }
     },
     {
       "parameters": {
-        "jsCode": "// Extract the assistant reply from the Anthropic response\nconst data = $input.first().json;\n\n// Handle API-level errors returned in the response body\nif (data.type === 'error' || data.error) {\n  const errMsg = data.error?.message || 'API error';\n  console.error('Anthropic error:', errMsg);\n  return [{ json: { reply: \"I'm experiencing a technical issue right now. Please try again or contact us via the enquiry form at /inquiry.\" } }];\n}\n\nconst reply =\n  data?.content?.[0]?.text?.trim() ||\n  \"I'm sorry, I couldn't generate a response. Please contact the host via the enquiry form at /inquiry.\";\n\nreturn [{ json: { reply } }];"
+        "jsCode": "// ─── Extract reply from Gemini response ──────────────────────────────────────\nconst data = $input.first().json;\n\nif (data.error) {\n  console.error('Gemini error:', data.error?.message || JSON.stringify(data.error));\n  return [{ json: { reply: \"MAX is unavailable right now. Please try again shortly or reach us via the enquiry form at maxentertain.com/inquiry.\" } }];\n}\n\n// Check for safety blocks\nconst candidate = data?.candidates?.[0];\nif (candidate?.finishReason === 'SAFETY') {\n  return [{ json: { reply: \"I can't help with that. For property questions, feel free to ask anything about the retreat!\" } }];\n}\n\nconst raw_reply = candidate?.content?.parts?.[0]?.text || \"I'm sorry, I couldn't generate a response. Please contact Jason via the enquiry form at maxentertain.com/inquiry.\";\nconst reply = raw_reply.replace(/\\*\\*/g, '').replace(/\\*/g, '').replace(/#{1,6} /g, '').trim();\n\nreturn [{ json: { reply } }];"
       },
       "id": "f3a1b2c4-1004-4000-a001-000000000004",
       "name": "Extract Reply",
@@ -84,49 +80,29 @@
         "respondWith": "json",
         "responseBody": "={{ JSON.stringify({ reply: $json.reply }) }}",
         "options": {
-          "responseCode": 200
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
         }
       },
       "id": "f3a1b2c4-1005-4000-a001-000000000005",
-      "name": "Respond to Webhook",
+      "name": "Respond",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
       "position": [1160, 300]
-    },
-    {
-      "parameters": {
-        "jsCode": "// ─── OpenAI alternative ──────────────────────────────────────────────────────\n// Swap this node for 'Build Prompt' if you prefer GPT over Claude.\n// 1. Point Call AI node URL to: https://api.openai.com/v1/chat/completions\n// 2. Set credential header name to 'Authorization' and value to 'Bearer YOUR_KEY'\n// 3. Change Extract Reply to use: data?.choices?.[0]?.message?.content\n\nconst data = $input.first().json;\nconst message   = String(data.message   || '').slice(0, 2000);\nconst history   = Array.isArray(data.history) ? data.history : [];\nconst context   = String(data.context   || '');\nconst sessionId = String(data.sessionId || 'unknown');\n\nif (!message) throw new Error('Empty message');\n\nconst systemPrompt = [\n  'You are MAX, the virtual concierge for MAX Entertain Beachside Retreat — a luxury vacation rental in Tootgarook, Victoria, Australia.',\n  'Answer questions ONLY using the property information in the CONTEXT section below.',\n  'If information is not covered by the context, say so politely and suggest the guest contacts the host via the enquiry form at /inquiry.',\n  'NEVER invent prices, availability, contact numbers, or policies not in the context.',\n  'Keep responses concise, warm, and helpful. Use bullet points where appropriate.',\n  '',\n  'CONTEXT:',\n  context\n].join('\\n');\n\n// OpenAI: system message goes inside the messages array\nconst messages = [\n  { role: 'system', content: systemPrompt },\n  ...history\n    .filter(m => m.role === 'user' || m.role === 'assistant')\n    .slice(-18)\n    .map(m => ({ role: m.role, content: String(m.content).slice(0, 2000) })),\n  { role: 'user', content: message }\n];\n\nconst requestBody = JSON.stringify({\n  model: 'gpt-4o-mini',\n  messages,\n  max_tokens: 700,\n  temperature: 0.2\n});\n\nreturn [{ json: { requestBody, sessionId } }];"
-      },
-      "id": "f3a1b2c4-1006-4000-a001-000000000006",
-      "name": "Build Prompt (OpenAI alt)",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [440, 560],
-      "disabled": true,
-      "notes": "OpenAI/GPT alternative. Enable this and disable 'Build Prompt' to switch from Claude to GPT-4o-mini. Also update the Call AI URL and credential."
     }
   ],
   "connections": {
-    "Webhook": {
-      "main": [
-        [{ "node": "Build Prompt", "type": "main", "index": 0 }]
-      ]
-    },
-    "Build Prompt": {
-      "main": [
-        [{ "node": "Call Anthropic", "type": "main", "index": 0 }]
-      ]
-    },
-    "Call Anthropic": {
-      "main": [
-        [{ "node": "Extract Reply", "type": "main", "index": 0 }]
-      ]
-    },
-    "Extract Reply": {
-      "main": [
-        [{ "node": "Respond to Webhook", "type": "main", "index": 0 }]
-      ]
-    }
+    "Webhook":       { "main": [[{ "node": "Sanitize",      "type": "main", "index": 0 }]] },
+    "Sanitize":      { "main": [[{ "node": "Call Gemini",   "type": "main", "index": 0 }]] },
+    "Call Gemini":   { "main": [[{ "node": "Extract Reply", "type": "main", "index": 0 }]] },
+    "Extract Reply": { "main": [[{ "node": "Respond",       "type": "main", "index": 0 }]] }
   },
   "active": false,
   "settings": {
@@ -135,7 +111,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "errorWorkflow": ""
   },
-  "versionId": "1",
+  "versionId": "3",
   "meta": {
     "templateCredsSetupCompleted": false
   },
