@@ -111,7 +111,7 @@ export default function Calendar({
     : null
 
   return (
-    <section id="calendar" className="section-padding bg-white scroll-mt-24 md:scroll-mt-28">
+    <section id="calendar" className="section-padding bg-white dark:bg-[#0f0f0e] scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

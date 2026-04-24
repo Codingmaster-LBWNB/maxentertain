@@ -85,7 +85,7 @@ export default function StatsCards() {
   ]
 
   return (
-    <section ref={ref} className="relative py-12 md:py-16 bg-white dark:bg-[#0f0f0e] star-section overflow-hidden">
+    <section ref={ref} className="relative py-12 md:py-16 bg-[#fafaf8] dark:bg-[#0f0f0e] star-section overflow-hidden">
       <div className="container-custom">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 max-w-3xl mx-auto">
 

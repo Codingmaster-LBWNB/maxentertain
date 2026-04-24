@@ -88,8 +88,7 @@ export default function Amenities() {
   )
 
   return (
-    <section ref={sectionRef} id="amenities" className="section-padding scroll-mt-24 md:scroll-mt-28"
-      style={{ background: 'linear-gradient(180deg, #0f0e0b 0%, #141208 100%)' }}>
+    <section ref={sectionRef} id="amenities" className="amenity-section section-padding scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -99,8 +98,8 @@ export default function Amenities() {
           className="text-center mb-16"
         >
           <span className="section-label">Included</span>
-          <h2 className="heading-primary" style={{ color: '#fff' }}>Amenities &amp; Features</h2>
-          <p className="max-w-2xl mx-auto text-white/40 font-sans font-light">
+          <h2 className="heading-primary">Amenities &amp; Features</h2>
+          <p className="max-w-2xl mx-auto text-gray-500 dark:text-white/40 font-sans font-light">
             Everything you need for a comfortable and memorable stay
           </p>
           <div className="flex items-center justify-center gap-3 mt-5">
@@ -121,12 +120,8 @@ export default function Amenities() {
                 viewport={{ once: true, margin: '-40px' }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: Math.min(index * 0.035, 0.3) }}
                 whileHover={{ y: -3, transition: { duration: 0.2 } }}
-                className="group relative overflow-hidden rounded-xl cursor-default"
-                style={{
-                  background: 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  backdropFilter: 'blur(8px)',
-                }}
+                className="amenity-card group relative overflow-hidden rounded-xl cursor-default"
+                style={{ backdropFilter: 'blur(8px)' }}
               >
                 {/* Gold hairline top — brightens on hover */}
                 <div className="h-px w-full transition-opacity duration-300 opacity-0 group-hover:opacity-100"
@@ -146,7 +141,7 @@ export default function Amenities() {
                     <span className="material-icons transition-colors duration-300 text-luxury-gold/60 group-hover:text-luxury-gold"
                       style={{ fontSize: '20px' }}>{iconName}</span>
                   </div>
-                  <span className="text-white/60 group-hover:text-white/90 font-sans text-sm font-medium leading-tight transition-colors duration-200">
+                  <span className="text-gray-600 dark:text-white/60 group-hover:text-gray-900 dark:group-hover:text-white/90 font-sans text-sm font-medium leading-tight transition-colors duration-200">
                     {amenity}
                   </span>
                 </div>
