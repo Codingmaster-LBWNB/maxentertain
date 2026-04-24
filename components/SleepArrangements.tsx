@@ -70,14 +70,16 @@ export default function SleepArrangements() {
     return () => window.removeEventListener('keydown', onKey)
   }, [activeIndex])
 
-  // Scroll lock when lightbox open
+  // Scroll lock when lightbox open — only apply/save on first open, not on bedroom navigation
   useEffect(() => {
     if (activeIndex !== null) {
-      savedScroll.current = window.scrollY
-      document.body.style.overflow = 'hidden'
-      document.body.style.top = `-${savedScroll.current}px`
-      document.body.style.position = 'fixed'
-      document.body.style.width = '100%'
+      if (document.body.style.position !== 'fixed') {
+        savedScroll.current = window.scrollY
+        document.body.style.overflow = 'hidden'
+        document.body.style.top = `-${savedScroll.current}px`
+        document.body.style.position = 'fixed'
+        document.body.style.width = '100%'
+      }
     } else {
       document.body.style.overflow = ''
       document.body.style.position = ''
