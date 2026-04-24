@@ -7,7 +7,7 @@ import LocalArea from '@/components/LocalArea'
 import ImageGallery from '@/components/ImageGallery'
 import SleepArrangements from '@/components/SleepArrangements'
 import StatsCards from '@/components/StatsCards'
-import Galaxy from '@/components/Galaxy'
+import StarBackground from '@/components/StarBackground'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
 import AvailabilityInquirySync from '@/components/AvailabilityInquirySync'
@@ -52,17 +52,9 @@ export default function Home() {
       <JsonLd data={jsonLd} />
       <Navigation />
       <Hero />
-      {/* Background wrapper: all sections inside float above the animated galaxy */}
+      {/* Star-background wrapper: all sections inside will float above the star canvas */}
       <div className="star-wrapper">
-        <Galaxy
-          className="star-bg absolute inset-0 pointer-events-none"
-          mouseInteraction={false}
-          density={1.2}
-          glowIntensity={0.35}
-          saturation={0.8}
-          hueShift={220}
-          transparent={false}
-        />
+        <StarBackground />
         <StatsCards />
         <ImageGallery />
         <SleepArrangements />
