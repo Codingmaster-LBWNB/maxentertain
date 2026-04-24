@@ -25,7 +25,17 @@
       "Bash(python cli/assets/scripts/search.py \"luxury hotel property premium warm sand coastal\" --domain color -n 3)",
       "Bash(python cli/assets/scripts/search.py \"glassmorphism liquid glass premium\" --domain style -n 2)",
       "Bash(npm uninstall *)",
-      "Bash(npx kill-port *)"
+      "Bash(npx kill-port *)",
+      "Bash(room)",
+      "Bash(master)",
+      "Bash(b2)",
+      "Bash(b3)",
+      "Bash(b4)",
+      "Bash(b5)",
+      "Bash(b6)",
+      "Bash(bunk)",
+      "Bash(single)",
+      "Bash(king\")"
     ]
   }
 }

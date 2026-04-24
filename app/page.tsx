@@ -5,6 +5,7 @@ import Amenities from '@/components/Amenities'
 import Testimonials from '@/components/Testimonials'
 import LocalArea from '@/components/LocalArea'
 import ImageGallery from '@/components/ImageGallery'
+import SleepArrangements from '@/components/SleepArrangements'
 import StatsCards from '@/components/StatsCards'
 import StarBackground from '@/components/StarBackground'
 import Footer from '@/components/Footer'
@@ -56,6 +57,7 @@ export default function Home() {
         <StarBackground />
         <StatsCards />
         <ImageGallery />
+        <SleepArrangements />
         <PropertyDetails />
         <Amenities />
         <Testimonials />
