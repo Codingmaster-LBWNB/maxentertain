@@ -78,19 +78,13 @@ function Lightbox({ index, onClose, onPrev, onNext }: {
         </button>
       </div>
 
-      {/* Image — layoutId matches the card, so framer-motion morphs between them */}
-      <div className="flex-1 flex items-center justify-center min-h-0 px-14 md:px-20 py-4 relative">
-        <button type="button" onClick={onPrev} disabled={index === 0} aria-label="Previous"
-          className="absolute left-3 md:left-5 z-10 w-11 h-11 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}>
-          <span className="material-icons" style={{ fontSize: '24px' }}>chevron_left</span>
-        </button>
-
+      {/* Image — full width, no side padding, no round arrow buttons */}
+      <div className="flex-1 flex items-center justify-center min-h-0 py-4">
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={index}
             layoutId={`bedroom-img-${index}`}
-            className="relative w-full h-full max-w-4xl"
+            className="relative w-full h-full max-w-5xl px-4"
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
             <Image
@@ -103,12 +97,6 @@ function Lightbox({ index, onClose, onPrev, onNext }: {
             />
           </motion.div>
         </AnimatePresence>
-
-        <button type="button" onClick={onNext} disabled={index === BEDROOMS.length - 1} aria-label="Next"
-          className="absolute right-3 md:right-5 z-10 w-11 h-11 rounded-full flex items-center justify-center transition-all disabled:opacity-20"
-          style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.12)', color: '#fff' }}>
-          <span className="material-icons" style={{ fontSize: '24px' }}>chevron_right</span>
-        </button>
       </div>
 
       {/* Bottom bar */}
@@ -118,15 +106,27 @@ function Lightbox({ index, onClose, onPrev, onNext }: {
         <p className="text-sm font-sans mt-1" style={{ color: 'rgba(212,175,55,0.75)' }}>{room.beds}</p>
         <p className="text-xs text-white/30 font-sans mt-0.5">Sleeps {room.sleeps}</p>
 
-        {/* Mobile prev/next */}
-        <div className="flex items-center justify-center gap-8 mt-4 md:hidden">
-          <button type="button" onClick={onPrev} disabled={index === 0}
-            className="flex items-center gap-1 text-sm font-sans text-white/50 disabled:opacity-20">
-            <span className="material-icons" style={{ fontSize: '18px' }}>chevron_left</span> Prev
+        {/* Prev / Next — large, always visible on all screen sizes */}
+        <div className="flex items-center justify-center gap-4 mt-5">
+          <button
+            type="button"
+            onClick={onPrev}
+            disabled={index === 0}
+            className="flex items-center gap-2 px-6 py-3 rounded-full font-sans font-semibold text-base transition-all disabled:opacity-25"
+            style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: '#fff' }}
+          >
+            <span className="material-icons" style={{ fontSize: '20px' }}>chevron_left</span>
+            Prev
           </button>
-          <button type="button" onClick={onNext} disabled={index === BEDROOMS.length - 1}
-            className="flex items-center gap-1 text-sm font-sans text-white/50 disabled:opacity-20">
-            Next <span className="material-icons" style={{ fontSize: '18px' }}>chevron_right</span>
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={index === BEDROOMS.length - 1}
+            className="flex items-center gap-2 px-6 py-3 rounded-full font-sans font-semibold text-base transition-all disabled:opacity-25"
+            style={{ background: 'rgba(212,175,55,0.15)', border: '1px solid rgba(212,175,55,0.45)', color: '#D4AF37' }}
+          >
+            Next
+            <span className="material-icons" style={{ fontSize: '20px' }}>chevron_right</span>
           </button>
         </div>
 

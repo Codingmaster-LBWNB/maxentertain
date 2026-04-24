@@ -26,7 +26,7 @@ function renderHighlightedText(text: string, keywords?: string[]) {
   return parts.map((part, i) => {
     const isHit = sorted.some((k) => k.toLowerCase() === part.toLowerCase())
     return isHit ? (
-      <span key={i} className="font-semibold text-gray-900 dark:text-luxury-gold not-italic">
+      <span key={i} className="font-semibold text-luxury-gold not-italic">
         {part}
       </span>
     ) : (
@@ -42,53 +42,105 @@ export default function Testimonials() {
   const firstFour = testimonials.slice(0, 4)
   const rest = testimonials.slice(4)
 
-  const ReviewCard = ({ testimonial, index }: { testimonial: (typeof testimonials)[number]; index: number }) => (
-    <motion.div
-      key={`${testimonial.name}-${testimonial.date}-${index}`}
-      initial={{ opacity: 0, y: 32 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-40px' }}
-      transition={{ duration: 0.55, ease: 'easeOut', delay: (index % 3) * 0.1 }}
-      className="bg-white dark:bg-[#1d1d1b] border border-gray-100 dark:border-white/7 p-8 hover:border-luxury-gold/30 dark:hover:border-luxury-gold/25 hover:shadow-md transition-all"
-    >
-      {/* Stars */}
-      <div className="flex gap-0.5 mb-5">
-        {Array.from({ length: testimonial.rating }).map((_, i) => (
-          <span key={i} className="material-icons text-luxury-gold" style={{ fontSize: '14px' }}>star</span>
-        ))}
-      </div>
-      {/* Large quote mark */}
-      <div className="text-6xl font-serif text-luxury-gold/20 leading-none mb-2 select-none">&ldquo;</div>
-      <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed font-light text-base italic -mt-4">
-        {renderHighlightedText(testimonial.comment, testimonial.highlight)}
-      </p>
-      <div className="flex items-center gap-3 pt-4 border-t border-gray-50 dark:border-white/5">
-        <div className="w-8 h-8 bg-luxury-gold/10 flex items-center justify-center flex-shrink-0">
-          <span className="material-icons text-luxury-gold/60" style={{ fontSize: '16px' }}>person</span>
+  const ReviewCard = ({ testimonial, index }: { testimonial: (typeof testimonials)[number]; index: number }) => {
+    const initial = testimonial.name.charAt(0).toUpperCase()
+    return (
+      <motion.div
+        key={`${testimonial.name}-${testimonial.date}-${index}`}
+        initial={{ opacity: 0, y: 32 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-40px' }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: (index % 3) * 0.09 }}
+        className="group relative overflow-hidden rounded-2xl flex flex-col"
+        style={{
+          background: 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
+          border: '1px solid rgba(255,255,255,0.07)',
+          backdropFilter: 'blur(10px)',
+        }}
+      >
+        {/* Gold left accent bar */}
+        <div className="absolute left-0 top-6 bottom-6 w-[2px] rounded-full"
+          style={{ background: 'linear-gradient(180deg, transparent, #D4AF37 30%, #D4AF37 70%, transparent)' }} />
+
+        {/* Hover border glow */}
+        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+          style={{ boxShadow: 'inset 0 0 0 1px rgba(212,175,55,0.3)' }} />
+
+        <div className="p-7 pl-8 flex flex-col flex-1">
+          {/* Stars + rating */}
+          <div className="flex items-center gap-2 mb-5">
+            <div className="flex gap-0.5">
+              {Array.from({ length: testimonial.rating }).map((_, i) => (
+                <span key={i} className="material-icons text-luxury-gold" style={{ fontSize: '13px' }}>star</span>
+              ))}
+            </div>
+            <span className="text-[10px] font-sans font-bold tracking-[0.15em] text-luxury-gold/60 uppercase ml-1">
+              {testimonial.rating}.0
+            </span>
+          </div>
+
+          {/* Decorative quote */}
+          <div className="font-serif font-bold leading-none select-none mb-3"
+            style={{ fontSize: '56px', color: 'rgba(212,175,55,0.15)', lineHeight: 1 }}>
+            &ldquo;
+          </div>
+
+          {/* Review text */}
+          <p className="text-white/55 leading-relaxed font-sans font-light text-sm flex-1 -mt-2 mb-6 italic">
+            {renderHighlightedText(testimonial.comment, testimonial.highlight)}
+          </p>
+
+          {/* Author */}
+          <div className="flex items-center gap-3 pt-5"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            {/* Gold initial avatar */}
+            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm"
+              style={{
+                background: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))',
+                border: '1px solid rgba(212,175,55,0.35)',
+                color: '#D4AF37',
+              }}>
+              {initial}
+            </div>
+            <div>
+              <p className="text-xs font-sans font-semibold tracking-[0.15em] uppercase text-white/80">
+                {testimonial.name}
+              </p>
+              <p className="text-[10px] text-white/25 font-sans mt-0.5">{testimonial.date}</p>
+            </div>
+          </div>
         </div>
-        <div>
-          <p className="text-xs font-sans font-semibold tracking-[0.15em] uppercase text-luxury-dark dark:text-white">{testimonial.name}</p>
-          <p className="text-xs text-gray-400 mt-0.5">{testimonial.date}</p>
-        </div>
-      </div>
-    </motion.div>
-  )
+      </motion.div>
+    )
+  }
 
   return (
-    <section ref={sectionRef} id="testimonials" className="section-padding bg-[#fafaf8] star-section scroll-mt-24 md:scroll-mt-28">
+    <section ref={sectionRef} id="testimonials" className="section-padding scroll-mt-24 md:scroll-mt-28"
+      style={{ background: 'linear-gradient(180deg, #141208 0%, #0f0e0b 100%)' }}>
       <div className="container-custom">
         {/* Keep #award anchor working, but visually combine Award + Reviews */}
         <div id="award" className="mb-16">
           <AwardBanner embedded />
         </div>
 
-        <div className="text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
           <span className="section-label">Testimonials</span>
-          <h2 className="heading-primary">Guest Reviews</h2>
-          <p className="text-luxury">
+          <h2 className="heading-primary" style={{ color: '#fff' }}>Guest Reviews</h2>
+          <p className="text-white/40 font-sans font-light max-w-xl mx-auto">
             See what our guests have to say about their stay
           </p>
-        </div>
+          <div className="flex items-center justify-center gap-3 mt-5">
+            <div className="h-px w-12 bg-luxury-gold/50" />
+            <div className="w-1.5 h-1.5 bg-luxury-gold rotate-45" />
+            <div className="h-px w-12 bg-luxury-gold/50" />
+          </div>
+        </motion.div>
 
         <div className="grid md:grid-cols-3 gap-8">
           {firstFour.map((testimonial, index) => (

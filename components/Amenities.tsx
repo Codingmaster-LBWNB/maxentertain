@@ -88,36 +88,65 @@ export default function Amenities() {
   )
 
   return (
-    <section ref={sectionRef} id="amenities" className="section-padding bg-[#fafaf8] star-section-alt scroll-mt-24 md:scroll-mt-28">
+    <section ref={sectionRef} id="amenities" className="section-padding scroll-mt-24 md:scroll-mt-28"
+      style={{ background: 'linear-gradient(180deg, #0f0e0b 0%, #141208 100%)' }}>
       <div className="container-custom">
-        <div className="text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
           <span className="section-label">Included</span>
-          <h2 className="heading-primary">Amenities &amp; Features</h2>
-          <p className="text-luxury max-w-2xl mx-auto">
+          <h2 className="heading-primary" style={{ color: '#fff' }}>Amenities &amp; Features</h2>
+          <p className="max-w-2xl mx-auto text-white/40 font-sans font-light">
             Everything you need for a comfortable and memorable stay
           </p>
-        </div>
+          <div className="flex items-center justify-center gap-3 mt-5">
+            <div className="h-px w-12 bg-luxury-gold/50" />
+            <div className="w-1.5 h-1.5 bg-luxury-gold rotate-45" />
+            <div className="h-px w-12 bg-luxury-gold/50" />
+          </div>
+        </motion.div>
 
-        <div
-          id="amenities-grid"
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-        >
+        <div id="amenities-grid" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {visibleAmenities.map((amenity, index) => {
             const iconName = getIcon(amenity)
             return (
               <motion.div
                 key={amenity}
-                initial={{ opacity: 0, y: 24 }}
+                initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.45, ease: 'easeOut', delay: Math.min(index * 0.04, 0.35) }}
-                className="bg-white dark:bg-[#1d1d1b] border border-gray-100 dark:border-white/7 p-5 hover:border-luxury-gold/40 dark:hover:border-luxury-gold/30 hover:shadow-md transition-all cursor-pointer group"
+                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1], delay: Math.min(index * 0.035, 0.3) }}
+                whileHover={{ y: -3, transition: { duration: 0.2 } }}
+                className="group relative overflow-hidden rounded-xl cursor-default"
+                style={{
+                  background: 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.02) 100%)',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  backdropFilter: 'blur(8px)',
+                }}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 group-hover:text-luxury-gold transition-colors">
-                    <span className="material-icons text-luxury-gold/60 group-hover:text-luxury-gold transition-colors" style={{ fontSize: '22px' }}>{iconName}</span>
+                {/* Gold hairline top — brightens on hover */}
+                <div className="h-px w-full transition-opacity duration-300 opacity-0 group-hover:opacity-100"
+                  style={{ background: 'linear-gradient(90deg, transparent, #D4AF37 40%, #D4AF37 60%, transparent)' }} />
+
+                {/* Hover glow */}
+                <div className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                  style={{ boxShadow: 'inset 0 0 0 1px rgba(212,175,55,0.25), 0 8px 32px rgba(212,175,55,0.08)' }} />
+
+                <div className="p-5 flex items-center gap-4">
+                  {/* Icon badge */}
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 group-hover:scale-110"
+                    style={{
+                      background: 'rgba(212,175,55,0.1)',
+                      border: '1px solid rgba(212,175,55,0.2)',
+                    }}>
+                    <span className="material-icons transition-colors duration-300 text-luxury-gold/60 group-hover:text-luxury-gold"
+                      style={{ fontSize: '20px' }}>{iconName}</span>
                   </div>
-                  <span className="text-gray-700 dark:text-gray-300 font-sans text-sm font-medium leading-tight">
+                  <span className="text-white/60 group-hover:text-white/90 font-sans text-sm font-medium leading-tight transition-colors duration-200">
                     {amenity}
                   </span>
                 </div>
