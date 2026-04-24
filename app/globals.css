@@ -242,6 +242,8 @@ html.theme-transitioning *::after {
   z-index: 1;
 }
 
-/* Dark mode: sections become semi-transparent so stars bleed through */
-.dark .star-section          { background-color: rgba(9, 10, 15, 0.80); }
-.dark .star-section-alt      { background-color: rgba(20, 20, 18, 0.82); }
+/* Sections become semi-transparent so galaxy background is visible */
+.star-section          { background-color: rgba(250, 250, 248, 0.78); }
+.star-section-alt      { background-color: rgba(255, 255, 255, 0.76); }
+.dark .star-section    { background-color: rgba(9, 10, 15, 0.80); }
+.dark .star-section-alt { background-color: rgba(20, 20, 18, 0.82); }
