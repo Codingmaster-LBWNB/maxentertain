@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
 import AwardBanner from '@/components/AwardBanner'
 import { useSectionTime } from '@/hooks/useSectionTime'
+import SectionWavesBackground from '@/components/SectionWavesBackground'
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -115,8 +116,13 @@ export default function Testimonials() {
   }
 
   return (
-    <section ref={sectionRef} id="testimonials" className="section-padding scroll-mt-24 md:scroll-mt-28"
-      style={{ background: 'linear-gradient(180deg, #141208 0%, #0f0e0b 100%)' }}>
+    <section
+      ref={sectionRef}
+      id="testimonials"
+      className="section-padding scroll-mt-24 md:scroll-mt-28 section-with-waves testimonials-transition-bridge"
+      style={{ background: 'linear-gradient(180deg, #141208 0%, #0f0e0b 100%)' }}
+    >
+      <SectionWavesBackground variant="dark" className="testimonials-waves" />
       <div className="container-custom">
         {/* Keep #award anchor working, but visually combine Award + Reviews */}
         <div id="award" className="mb-16">

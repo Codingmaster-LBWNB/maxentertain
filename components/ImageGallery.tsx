@@ -9,7 +9,7 @@ export default function ImageGallery() {
       <div className="container-custom">
         <div className="text-center mb-12">
           <h2 className="heading-primary">Photo Gallery</h2>
-          <p className="text-luxury text-gray-600">Take a closer look at our beautiful property</p>
+          <p className="text-luxury text-gray-600">Compressed preview for faster loading (open photos for full quality)</p>
         </div>
       </div>
 

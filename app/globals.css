@@ -213,6 +213,21 @@
   animation: pulse-slow 3s ease-in-out infinite;
 }
 
+@keyframes shake-attention {
+  0%, 86%, 100% { transform: translateX(0) rotate(0deg); }
+  88% { transform: translateX(-1px) rotate(-1deg); }
+  90% { transform: translateX(1px) rotate(1deg); }
+  92% { transform: translateX(-1px) rotate(-1deg); }
+  94% { transform: translateX(1px) rotate(1deg); }
+  96% { transform: translateX(0) rotate(0deg); }
+}
+
+.shake-attention {
+  display: inline-block;
+  animation: shake-attention 2.4s ease-in-out infinite;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
 /* Reveal animation for section entrances */
 @keyframes reveal-up {
   from { opacity: 0; transform: translateY(40px); }
@@ -263,3 +278,94 @@ html.theme-transitioning *::after {
 /* Dark mode: sections become semi-transparent so stars bleed through */
 .dark .star-section          { background-color: rgba(9, 10, 15, 0.80); }
 .dark .star-section-alt      { background-color: rgba(20, 20, 18, 0.82); }
+
+/* ── LINE WAVES SECTION DECORATION ── */
+.section-with-waves {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.waves-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+.section-with-waves > .container-custom {
+  position: relative;
+  z-index: 2;
+}
+
+.section-with-waves::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Light-section waves should stay subtle under text-heavy content. */
+#details.section-with-waves::after {
+  background:
+    linear-gradient(180deg, rgba(250, 250, 248, 0.88) 0%, rgba(250, 250, 248, 0.78) 35%, rgba(250, 250, 248, 0.86) 100%);
+}
+
+.dark #details.section-with-waves::after {
+  background:
+    linear-gradient(180deg, rgba(16, 15, 12, 0.82) 0%, rgba(15, 14, 11, 0.7) 40%, rgba(16, 15, 12, 0.84) 100%);
+}
+
+.testimonials-waves {
+  opacity: 0.55;
+}
+
+.testimonials-transition-bridge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(247, 244, 239, 0.18) 0%,
+      rgba(20, 18, 8, 0.22) 12%,
+      rgba(15, 14, 11, 0.0) 50%,
+      rgba(15, 14, 11, 0.2) 86%,
+      rgba(250, 250, 248, 0.14) 100%
+    );
+}
+
+.dark .testimonials-transition-bridge::before {
+  background:
+    linear-gradient(
+      180deg,
+      rgba(28, 26, 20, 0.22) 0%,
+      rgba(20, 18, 8, 0.3) 12%,
+      rgba(15, 14, 11, 0.0) 50%,
+      rgba(15, 14, 11, 0.28) 86%,
+      rgba(20, 20, 18, 0.24) 100%
+    );
+}
+
+.local-area-section {
+  position: relative;
+}
+
+.local-area-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(15, 14, 11, 0.16) 0%, rgba(250, 250, 248, 0) 100%);
+}
+
+.dark .local-area-section::before {
+  background: linear-gradient(180deg, rgba(15, 14, 11, 0.26) 0%, rgba(20, 20, 18, 0) 100%);
+}

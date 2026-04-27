@@ -10,7 +10,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: 'light',
+  theme: 'dark',
   setTheme: () => {},
 })
 
@@ -19,22 +19,18 @@ export function useTheme() {
 }
 
 export default function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light')
+  const [theme] = useState<Theme>('dark')
 
-  // On mount, read the class already applied by the anti-flash script
+  // Force dark mode at runtime regardless of previous preference.
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark')
-    setThemeState(isDark ? 'dark' : 'light')
+    document.documentElement.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
   }, [])
 
-  const setTheme = (t: Theme) => {
-    setThemeState(t)
-    localStorage.setItem('theme', t)
-    if (t === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
+  const setTheme = (_t: Theme) => {
+    // Keep API compatible while disabling light theme switching.
+    document.documentElement.classList.add('dark')
+    localStorage.setItem('theme', 'dark')
   }
 
   return (

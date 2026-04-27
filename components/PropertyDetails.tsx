@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
 import { useSectionTime } from '@/hooks/useSectionTime'
+import SectionWavesBackground from '@/components/SectionWavesBackground'
 
 export default function PropertyDetails() {
   const sectionRef = useSectionTime('Property Details')
@@ -23,7 +24,12 @@ export default function PropertyDetails() {
   )
 
   return (
-    <section ref={sectionRef} id="details" className="section-padding bg-white star-section scroll-mt-24 md:scroll-mt-28">
+    <section
+      ref={sectionRef}
+      id="details"
+      className="section-padding bg-white star-section scroll-mt-24 md:scroll-mt-28 section-with-waves"
+    >
+      <SectionWavesBackground variant="light" />
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

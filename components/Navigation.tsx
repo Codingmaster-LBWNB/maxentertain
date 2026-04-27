@@ -5,7 +5,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import ShareButton from '@/components/ShareButton'
-import ThemeToggle from '@/components/ThemeToggle'
 import { trackClick } from '@/lib/analytics'
 
 export default function Navigation() {
@@ -130,7 +129,6 @@ export default function Navigation() {
               Enquiry
             </Link>
 
-            <ThemeToggle transparent={!isScrolled} />
           </div>
 
           {/* Mobile actions */}
@@ -152,8 +150,6 @@ export default function Navigation() {
                   : 'bg-white/10 text-white border-white/20 hover:bg-white/15'
               }`}
             />
-
-            <ThemeToggle transparent={!isScrolled} />
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

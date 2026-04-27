@@ -111,7 +111,7 @@ export default function Calendar({
     : null
 
   return (
-    <section id="calendar" className="section-padding bg-white dark:bg-[#0f0f0e] scroll-mt-24 md:scroll-mt-28">
+    <section id="calendar" className="section-padding bg-white dark:bg-[#1a1a18] scroll-mt-24 md:scroll-mt-28">
       <div className="container-custom">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -127,7 +127,7 @@ export default function Calendar({
           {/* Direct booking savings badge */}
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-luxury-gold/10 border border-luxury-gold/30 rounded-sm">
             <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>savings</span>
-            <span className="text-sm font-sans font-semibold text-luxury-dark tracking-wide">
+            <span className="text-sm font-sans font-semibold text-white tracking-wide shake-attention">
               Book directly &amp; save 15%+ vs Airbnb / Booking.com
             </span>
           </div>
