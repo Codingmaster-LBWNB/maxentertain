@@ -362,7 +362,6 @@ export default function InquiryForm({
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.name ? 'border-red-500' : 'border-gray-300'
                       } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85`}
-                      placeholder="John Doe"
                     />
                     {errors.name && (
                       <p className="text-red-500 text-sm mt-1">{errors.name}</p>
@@ -381,7 +380,6 @@ export default function InquiryForm({
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
                       } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85`}
-                      placeholder="john@example.com"
                     />
                     {errors.email && (
                       <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -401,7 +399,6 @@ export default function InquiryForm({
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.phone ? 'border-red-500' : 'border-gray-300'
                     } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85`}
-                    placeholder="+61 123 456 789"
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
@@ -478,7 +475,6 @@ export default function InquiryForm({
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.message ? 'border-red-500' : 'border-gray-300'
                     } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all resize-none bg-white/85`}
-                    placeholder="Tell us about your stay or any special requests..."
                   />
                   {errors.message && (
                     <p className="text-red-500 text-sm mt-1">{errors.message}</p>
