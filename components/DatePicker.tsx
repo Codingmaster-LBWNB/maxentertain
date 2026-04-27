@@ -29,6 +29,7 @@ export default function DatePicker({
   minExclusive = false,
   error,
   disabled = false,
+  forceDarkText = false,
 }: {
   id: string
   label: string
@@ -39,6 +40,7 @@ export default function DatePicker({
   minExclusive?: boolean
   error?: string
   disabled?: boolean
+  forceDarkText?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -97,7 +99,7 @@ export default function DatePicker({
 
   return (
     <div ref={rootRef} className="relative">
-      <label htmlFor={id} className="block text-sm font-semibold text-gray-700 mb-2">
+      <label htmlFor={id} className={`block text-sm font-semibold mb-2 ${forceDarkText ? 'text-black' : 'text-gray-700'}`}>
         {label} *
       </label>
 
@@ -112,10 +114,10 @@ export default function DatePicker({
           error ? 'border-red-500' : 'border-gray-300'
         } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 disabled:opacity-50 disabled:cursor-not-allowed`}
       >
-        <span className={displayValue ? 'text-gray-900' : 'text-gray-400'}>
+        <span className={displayValue ? 'text-black' : forceDarkText ? 'text-black' : 'text-gray-400'}>
           {displayValue || 'YYYY-MM-DD'}
         </span>
-        <span className="material-icons text-gray-500" style={{ fontSize: '18px' }}>calendar_today</span>
+        <span className={`material-icons ${forceDarkText ? 'text-black' : 'text-gray-500'}`} style={{ fontSize: '18px' }}>calendar_today</span>
       </button>
 
       {error && <p className="text-red-500 text-sm mt-1">{error}</p>}

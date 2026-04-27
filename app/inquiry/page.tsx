@@ -25,8 +25,7 @@ export default function InquiryPage({
           className="object-cover"
           sizes="100vw"
         />
-        {/* Dark overlay for readability */}
-        <div className="absolute inset-0 bg-black/15" />
+        {/* Keep full-colour background; readability handled by the form card styling */}
       </div>
 
       <main className="relative min-h-screen">

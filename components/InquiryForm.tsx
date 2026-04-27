@@ -323,7 +323,7 @@ export default function InquiryForm({
           <div
             className={
               isGlass
-                ? 'bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-12 border border-white/25'
+                ? 'bg-white/88 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-12 border border-white/40'
                 : 'bg-white rounded-2xl shadow-xl p-8 md:p-12'
             }
           >
@@ -351,7 +351,7 @@ export default function InquiryForm({
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label htmlFor="name" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
                       Full Name *
                     </label>
                     <input
@@ -361,7 +361,7 @@ export default function InquiryForm({
                       onChange={(e) => handleChange('name', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.name ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85`}
+                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black`}
                     />
                     {errors.name && (
                       <p className="text-red-500 text-sm mt-1">{errors.name}</p>
@@ -369,7 +369,7 @@ export default function InquiryForm({
                   </div>
 
                   <div>
-                    <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                    <label htmlFor="email" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
                       Email Address *
                     </label>
                     <input
@@ -379,7 +379,7 @@ export default function InquiryForm({
                       onChange={(e) => handleChange('email', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85`}
+                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black`}
                     />
                     {errors.email && (
                       <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -388,7 +388,7 @@ export default function InquiryForm({
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="phone" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
                     Phone Number *
                   </label>
                   <input
@@ -398,7 +398,7 @@ export default function InquiryForm({
                     onChange={(e) => handleChange('phone', e.target.value)}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.phone ? 'border-red-500' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85`}
+                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black`}
                   />
                   {errors.phone && (
                     <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
@@ -416,6 +416,7 @@ export default function InquiryForm({
                       minDateStr={todayStr}
                       error={errors.checkIn}
                       disabled={availability.isLoading}
+                      forceDarkText={isGlass}
                     />
                   </div>
 
@@ -430,16 +431,17 @@ export default function InquiryForm({
                       minExclusive={Boolean(formData.checkIn)}
                       error={errors.checkOut}
                       disabled={availability.isLoading || !formData.checkIn}
+                      forceDarkText={isGlass}
                     />
                   </div>
                 </div>
 
-                <p className="text-xs text-gray-500">
+                <p className={`text-xs ${isGlass ? 'text-black' : 'text-gray-500'}`}>
                   Dates are validated against live availability. Unavailable dates are disabled.
                 </p>
 
                 <div>
-                  <label htmlFor="guests" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="guests" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
                     Number of Guests *
                   </label>
                   <select
@@ -448,7 +450,7 @@ export default function InquiryForm({
                     onChange={(e) => handleChange('guests', e.target.value)}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.guests ? 'border-red-500' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85`}
+                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black`}
                   >
                     <option value="">Select number of guests</option>
                     {Array.from({ length: propertyConfig.maxGuests }, (_, i) => i + 1).map((num) => (
@@ -464,7 +466,7 @@ export default function InquiryForm({
                 </div>
 
                 <div>
-                  <label htmlFor="message" className="block text-sm font-semibold text-gray-700 mb-2">
+                  <label htmlFor="message" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
                     Message *
                   </label>
                   <textarea
@@ -474,7 +476,7 @@ export default function InquiryForm({
                     rows={4}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.message ? 'border-red-500' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all resize-none bg-white/85`}
+                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all resize-none bg-white/85 text-black`}
                   />
                   {errors.message && (
                     <p className="text-red-500 text-sm mt-1">{errors.message}</p>
@@ -519,7 +521,7 @@ export default function InquiryForm({
                   )}
                 </button>
 
-                <p className="text-xs text-gray-500 text-center">
+                <p className={`text-xs text-center ${isGlass ? 'text-gray-700' : 'text-gray-500'}`}>
                   By submitting this form, you agree to our privacy policy. We&apos;ll use your information to respond to your enquiry.
                 </p>
               </form>
@@ -528,20 +530,20 @@ export default function InquiryForm({
 
           {/* Contact Information */}
           <div className="mt-8 text-center">
-            <p className="text-gray-600 mb-4">Or contact us directly:</p>
+            <p className={isGlass ? 'text-white/95 mb-4 drop-shadow' : 'text-gray-600 mb-4'}>Or contact us directly:</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a
                 href={`mailto:${propertyConfig.contact.email}`}
-                className="text-luxury-gold hover:underline font-semibold"
+                className={isGlass ? 'text-luxury-gold hover:underline font-semibold drop-shadow' : 'text-luxury-gold hover:underline font-semibold'}
               >
                 {propertyConfig.contact.email}
               </a>
               {propertyConfig.contact.phone && (
                 <>
-                  <span className="text-gray-400">•</span>
+                  <span className={isGlass ? 'text-white/70' : 'text-gray-400'}>•</span>
                   <a
                     href={`tel:${propertyConfig.contact.phone}`}
-                    className="text-luxury-gold hover:underline font-semibold"
+                    className={isGlass ? 'text-luxury-gold hover:underline font-semibold drop-shadow' : 'text-luxury-gold hover:underline font-semibold'}
                   >
                     {propertyConfig.contact.phone}
                   </a>
