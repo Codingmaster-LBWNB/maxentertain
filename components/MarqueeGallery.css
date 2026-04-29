@@ -20,14 +20,10 @@
   animation: marquee-right 44s linear infinite;
 }
 
-.marquee-track:hover {
-  animation-play-state: paused;
-}
-
 .marquee-item {
   flex-shrink: 0;
-  width: 340px;
-  height: 240px;
+  width: 380px;
+  height: 270px;
   border-radius: 14px;
   overflow: hidden;
   background: #e5e7eb;
@@ -57,12 +53,18 @@
 
 @media (max-width: 768px) {
   .marquee-item {
-    width: 240px;
-    height: 170px;
+    width: 270px;
+    height: 192px;
     border-radius: 10px;
   }
 
   .marquee-track {
     gap: 8px;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .marquee-track:hover {
+    animation-play-state: paused;
   }
 }

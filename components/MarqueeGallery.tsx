@@ -31,6 +31,19 @@ const ROW_2 = [
   { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/kayak.JPG'),                  alt: 'Kayak' },
 ]
 
+const ROW_3 = [
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/Backyard1.jpg'),              alt: 'Backyard seating' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/Backyard4.jpg'),              alt: 'Backyard pool view' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/Balcony.jpg'),                alt: 'Balcony' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/Living 1.jpg'),               alt: 'Living area' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/living & dining2.jpg'),       alt: 'Living and dining space' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/Bedroom3.jpg'),               alt: 'Bedroom 3' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/Bedroom5.jpg'),               alt: 'Bedroom 5' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/Theater.jpg'),                alt: 'Home theater' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/reaction_stick_machine.jpg'), alt: 'Reaction stick game' },
+  { src: toCompressed('/Airbnb picture/1975 Point Nepean Road- HD/backyard9.jpg'),              alt: 'Backyard lawn' },
+]
+
 interface MarqueeRowProps {
   images: { src: string; alt: string }[]
   direction: 'left' | 'right'
@@ -68,9 +81,10 @@ function MarqueeRow({ images, direction }: MarqueeRowProps) {
 
 export default function MarqueeGallery() {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3.5">
       <MarqueeRow images={ROW_1} direction="left" />
       <MarqueeRow images={ROW_2} direction="right" />
+      <MarqueeRow images={ROW_3} direction="left" />
     </div>
   )
 }
