@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { trackClick } from '@/lib/analytics'
 
@@ -22,6 +23,8 @@ const SUGGESTED = [
   'House rules?',
   'Distance to the beach?',
 ]
+
+const CHATBOT_ICON = encodeURI('/Airbnb picture/icons_files/ai-chatbot-3d-icon-png-download-12363070.webp')
 
 function TypingDots() {
   return (
@@ -47,15 +50,20 @@ function TypingDots() {
 function BotAvatar({ size = 28 }: { size?: number }) {
   return (
     <div
-      className="flex items-center justify-center text-white font-serif font-bold flex-shrink-0 rounded-full"
+      className="relative flex items-center justify-center flex-shrink-0 rounded-full overflow-hidden bg-white"
       style={{
         width: size,
         height: size,
-        fontSize: size * 0.38,
-        background: 'linear-gradient(135deg, #D4AF37, #8B7355)',
+        boxShadow: '0 0 0 1px rgba(212,175,55,0.35)',
       }}
     >
-      M
+      <Image
+        src={CHATBOT_ICON}
+        alt="MAX Assistant"
+        fill
+        className="object-cover"
+        sizes={`${size}px`}
+      />
     </div>
   )
 }
@@ -233,13 +241,18 @@ export default function GuestChatWidget() {
               {/* Avatar with pulse */}
               <div className="relative flex-shrink-0">
                 <div
-                  className="w-10 h-10 rounded-full flex items-center justify-center text-white font-serif font-bold"
+                  className="relative w-10 h-10 rounded-full overflow-hidden bg-white"
                   style={{
-                    background: 'linear-gradient(135deg, #D4AF37, #8B7355)',
-                    fontSize: '15px',
+                    boxShadow: '0 0 0 1px rgba(212,175,55,0.4)',
                   }}
                 >
-                  M
+                  <Image
+                    src={CHATBOT_ICON}
+                    alt="MAX Assistant"
+                    fill
+                    className="object-cover"
+                    sizes="40px"
+                  />
                 </div>
                 <span
                   className="absolute inset-0 rounded-full animate-ring-pulse"
@@ -460,14 +473,21 @@ export default function GuestChatWidget() {
               style={{ background: 'rgba(212,175,55,0.35)' }}
             />
           )}
-          <span
-            className={`material-icons text-white relative z-10 transition-transform duration-300 ${
-              open ? 'rotate-0' : 'rotate-0'
-            }`}
-            style={{ fontSize: '24px' }}
-          >
-            {open ? 'close' : 'chat'}
-          </span>
+          {open ? (
+            <span className="material-icons text-white relative z-10" style={{ fontSize: '24px' }}>
+              close
+            </span>
+          ) : (
+            <span className="relative z-10 w-11 h-11 rounded-full overflow-hidden bg-white">
+              <Image
+                src={CHATBOT_ICON}
+                alt="Chat with MAX"
+                fill
+                className="object-cover"
+                sizes="44px"
+              />
+            </span>
+          )}
         </button>
       </div>
     </>
