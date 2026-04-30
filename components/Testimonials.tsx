@@ -54,9 +54,10 @@ export default function Testimonials() {
         transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: (index % 3) * 0.09 }}
         className="group relative overflow-hidden rounded-2xl flex flex-col"
         style={{
-          background: 'linear-gradient(145deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.015) 100%)',
-          border: '1px solid rgba(255,255,255,0.07)',
+          background: 'linear-gradient(145deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.04) 100%)',
+          border: '1px solid rgba(255,255,255,0.14)',
           backdropFilter: 'blur(10px)',
+          boxShadow: '0 18px 55px rgba(0,0,0,0.24)',
         }}
       >
         {/* Gold left accent bar */}
@@ -67,15 +68,15 @@ export default function Testimonials() {
         <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
           style={{ boxShadow: 'inset 0 0 0 1px rgba(212,175,55,0.3)' }} />
 
-        <div className="p-7 pl-8 flex flex-col flex-1">
+        <div className="p-7 pl-8 md:p-8 md:pl-9 flex flex-col flex-1">
           {/* Stars + rating */}
           <div className="flex items-center gap-2 mb-5">
             <div className="flex gap-0.5">
               {Array.from({ length: testimonial.rating }).map((_, i) => (
-                <span key={i} className="material-icons text-luxury-gold" style={{ fontSize: '13px' }}>star</span>
+                <span key={i} className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>star</span>
               ))}
             </div>
-            <span className="text-[10px] font-sans font-bold tracking-[0.15em] text-luxury-gold/60 uppercase ml-1">
+            <span className="text-[11px] font-sans font-bold tracking-[0.15em] text-luxury-gold/85 uppercase ml-1">
               {testimonial.rating}.0
             </span>
           </div>
@@ -87,13 +88,13 @@ export default function Testimonials() {
           </div>
 
           {/* Review text */}
-          <p className="text-white/55 leading-relaxed font-sans font-light text-sm flex-1 -mt-2 mb-6 italic">
+          <p className="text-white/85 leading-relaxed font-sans text-base md:text-[17px] flex-1 -mt-2 mb-7 italic">
             {renderHighlightedText(testimonial.comment, testimonial.highlight)}
           </p>
 
           {/* Author */}
           <div className="flex items-center gap-3 pt-5"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+            style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}>
             {/* Gold initial avatar */}
             <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm"
               style={{
@@ -104,10 +105,10 @@ export default function Testimonials() {
               {initial}
             </div>
             <div>
-              <p className="text-xs font-sans font-semibold tracking-[0.15em] uppercase text-white/80">
+              <p className="text-sm font-sans font-semibold tracking-[0.14em] uppercase text-white/90">
                 {testimonial.name}
               </p>
-              <p className="text-[10px] text-white/25 font-sans mt-0.5">{testimonial.date}</p>
+              <p className="text-xs text-white/55 font-sans mt-0.5">{testimonial.date}</p>
             </div>
           </div>
         </div>
@@ -138,7 +139,7 @@ export default function Testimonials() {
         >
           <span className="section-label">Testimonials</span>
           <h2 className="heading-primary" style={{ color: '#fff' }}>Guest Reviews</h2>
-          <p className="text-white/40 font-sans font-light max-w-xl mx-auto">
+          <p className="text-white/70 font-sans text-base md:text-lg max-w-xl mx-auto">
             See what our guests have to say about their stay
           </p>
           <div className="flex items-center justify-center gap-3 mt-5">
