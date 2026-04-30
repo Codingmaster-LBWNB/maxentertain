@@ -99,7 +99,7 @@ export default function Amenities() {
         >
           <span className="section-label">Included</span>
           <h2 className="heading-primary">Amenities &amp; Features</h2>
-          <p className="max-w-2xl mx-auto text-gray-500 dark:text-white/40 font-sans font-light">
+          <p className="max-w-2xl mx-auto text-lg md:text-xl text-gray-700 dark:text-white/75 font-sans leading-relaxed">
             Everything you need for a comfortable and memorable stay
           </p>
           <div className="flex items-center justify-center gap-3 mt-5">
@@ -141,7 +141,7 @@ export default function Amenities() {
                     <span className="material-icons transition-colors duration-300 text-luxury-gold/60 group-hover:text-luxury-gold"
                       style={{ fontSize: '20px' }}>{iconName}</span>
                   </div>
-                  <span className="text-gray-600 dark:text-white/60 group-hover:text-gray-900 dark:group-hover:text-white/90 font-sans text-sm font-medium leading-tight transition-colors duration-200">
+                  <span className="text-gray-800 dark:text-white/85 group-hover:text-gray-950 dark:group-hover:text-white font-sans text-base font-medium leading-tight transition-colors duration-200">
                     {amenity}
                   </span>
                 </div>

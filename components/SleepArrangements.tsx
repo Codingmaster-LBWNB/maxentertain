@@ -75,17 +75,17 @@ export default function SleepArrangements() {
                     sizes="(max-width: 1024px) 50vw, 33vw"
                   />
                   <div
-                    className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold font-sans"
+                    className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-bold font-sans"
                     style={{ background: 'rgba(212,175,55,0.92)', color: '#1a1400', backdropFilter: 'blur(6px)' }}
                   >
-                    <span className="material-icons" style={{ fontSize: '13px' }}>person</span>
+                    <span className="material-icons" style={{ fontSize: '15px' }}>person</span>
                     Sleeps {room.sleeps}
                   </div>
                 </div>
 
                 <div className="relative z-10 p-5">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-serif font-semibold text-base text-luxury-dark dark:text-white">{room.name}</h3>
+                    <h3 className="font-serif font-semibold text-xl text-luxury-dark dark:text-white">{room.name}</h3>
                   </div>
                   <div className="flex items-center gap-2 mb-3">
                     {room.icons.map((icon, idx) => (
@@ -98,7 +98,7 @@ export default function SleepArrangements() {
                       </div>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 font-sans leading-relaxed">{room.beds}</p>
+                  <p className="text-base text-gray-700 dark:text-gray-300 font-sans leading-relaxed">{room.beds}</p>
                 </div>
               </div>
             </motion.div>
@@ -111,7 +111,7 @@ export default function SleepArrangements() {
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-6 text-center text-xs text-gray-400 dark:text-gray-500 font-sans"
+          className="mt-6 text-center text-base text-gray-600 dark:text-gray-300 font-sans leading-relaxed"
         >
           <span className="material-icons align-middle mr-1 text-luxury-gold/50" style={{ fontSize: '14px' }}>info</span>
           Additional air mattresses and portable bunk beds available on request — just mention it in your enquiry.

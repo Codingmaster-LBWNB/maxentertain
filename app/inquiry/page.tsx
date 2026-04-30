@@ -48,7 +48,7 @@ export default function InquiryPage({
                 <p className="text-white/90 text-base md:text-lg drop-shadow">
                   Stay at the top-rated luxury stay on the Mornington Peninsula.
                 </p>
-                <p className="text-white/85 text-sm md:text-base mt-3 drop-shadow">
+                <p className="text-white/90 text-base md:text-lg mt-3 leading-relaxed drop-shadow">
                   Please check out the{' '}
                   <Link href="/#calendar" className="underline underline-offset-4 hover:text-white">
                     availability calendar

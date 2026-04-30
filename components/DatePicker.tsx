@@ -99,7 +99,7 @@ export default function DatePicker({
 
   return (
     <div ref={rootRef} className="relative">
-      <label htmlFor={id} className={`block text-sm font-semibold mb-2 ${forceDarkText ? 'text-black' : 'text-gray-700'}`}>
+      <label htmlFor={id} className={`block text-base font-semibold mb-2 ${forceDarkText ? 'text-black' : 'text-gray-800'}`}>
         {label} *
       </label>
 
@@ -110,17 +110,17 @@ export default function DatePicker({
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className={`w-full px-4 py-3 rounded-lg border text-left flex items-center justify-between gap-3 ${
+        className={`w-full px-4 py-3 rounded-lg border text-base text-left flex items-center justify-between gap-3 ${
           error ? 'border-red-500' : 'border-gray-300'
         } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 disabled:opacity-50 disabled:cursor-not-allowed`}
       >
-        <span className={displayValue ? 'text-black' : forceDarkText ? 'text-black' : 'text-gray-400'}>
+        <span className={displayValue ? 'text-black' : forceDarkText ? 'text-black' : 'text-gray-500'}>
           {displayValue || 'YYYY-MM-DD'}
         </span>
         <span className={`material-icons ${forceDarkText ? 'text-black' : 'text-gray-500'}`} style={{ fontSize: '18px' }}>calendar_today</span>
       </button>
 
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+      {error && <p className="text-red-600 text-base mt-1">{error}</p>}
 
       {open && (
         <div
@@ -137,7 +137,7 @@ export default function DatePicker({
             >
               ←
             </button>
-            <div className="text-sm font-semibold text-gray-800">
+            <div className="text-base font-semibold text-gray-800">
               {format(toZonedTime(month, AU_TZ), 'MMMM yyyy')}
             </div>
             <button
@@ -150,7 +150,7 @@ export default function DatePicker({
             </button>
           </div>
 
-          <div className="grid grid-cols-7 gap-1 text-xs font-semibold text-gray-600 mb-2">
+          <div className="grid grid-cols-7 gap-1 text-sm font-semibold text-gray-700 mb-2">
             {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
               <div key={d} className="text-center py-1">
                 {d}
@@ -174,7 +174,7 @@ export default function DatePicker({
                     onChange(dayStr)
                     setOpen(false)
                   }}
-                  className={`aspect-square rounded-lg text-sm font-medium transition-colors flex items-center justify-center ${
+                  className={`aspect-square rounded-lg text-base font-medium transition-colors flex items-center justify-center ${
                     !inMonth ? 'opacity-30' : ''
                   } ${
                     selected
@@ -191,7 +191,7 @@ export default function DatePicker({
             })}
           </div>
 
-          <div className="mt-3 text-[11px] text-gray-500">
+          <div className="mt-3 text-sm text-gray-600">
             Unavailable and past dates are disabled.
           </div>
         </div>

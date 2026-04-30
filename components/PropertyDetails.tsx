@@ -42,7 +42,7 @@ export default function PropertyDetails() {
           <h2 className="heading-primary">{propertyConfig.name}</h2>
           <div className="flex items-center justify-center gap-2 text-luxury-accent">
             <span className="material-icons" style={{ fontSize: '16px' }}>location_on</span>
-            <p className="text-sm font-sans font-semibold tracking-[0.15em] uppercase text-gray-500 dark:text-gray-400">{propertyConfig.location}</p>
+            <p className="text-base font-sans font-semibold tracking-[0.12em] uppercase text-gray-600 dark:text-gray-300">{propertyConfig.location}</p>
           </div>
         </motion.div>
 
@@ -147,7 +147,7 @@ export default function PropertyDetails() {
                   </div>
 
                   <div
-                    className="text-[9px] md:text-[10px] font-sans font-bold tracking-[0.2em] uppercase"
+                    className="text-xs md:text-sm font-sans font-bold tracking-[0.14em] uppercase"
                     style={{ color: t.labelColor }}
                   >
                     {detail.label}
@@ -181,7 +181,7 @@ export default function PropertyDetails() {
                   </div>
 
                   <div
-                    className="text-[9px] md:text-[10px] font-sans font-bold tracking-[0.2em] uppercase"
+                    className="text-xs md:text-sm font-sans font-bold tracking-[0.14em] uppercase"
                     style={{ color: t.labelColorDark }}
                   >
                     {detail.label}
@@ -293,14 +293,14 @@ export default function PropertyDetails() {
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <span className="material-icons text-luxury-gold/70" style={{ fontSize: '18px' }}>login</span>
-                    <span className="text-gray-700 dark:text-gray-300 text-sm">
+                    <span className="text-gray-800 dark:text-gray-200 text-base leading-relaxed">
                       <span className="font-semibold text-luxury-dark dark:text-white">Check-in:</span>{' '}
                       {propertyConfig.policies.checkIn}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="material-icons text-luxury-gold/70" style={{ fontSize: '18px' }}>logout</span>
-                    <span className="text-gray-700 dark:text-gray-300 text-sm">
+                    <span className="text-gray-800 dark:text-gray-200 text-base leading-relaxed">
                       <span className="font-semibold text-luxury-dark dark:text-white">Check-out:</span>{' '}
                       {propertyConfig.policies.checkOut}
                     </span>
@@ -312,7 +312,7 @@ export default function PropertyDetails() {
               icon: 'policy',
               label: 'Cancellation Policy',
               content: (
-                <p className="text-gray-600 dark:text-gray-400 text-sm font-light leading-relaxed">
+                <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed">
                   {propertyConfig.policies.cancellation}
                 </p>
               ),
@@ -334,7 +334,7 @@ export default function PropertyDetails() {
                     style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
                     <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>{card.icon}</span>
                   </div>
-                  <h4 className="text-[10px] font-sans font-bold tracking-[0.22em] uppercase text-luxury-gold">
+                  <h4 className="text-sm font-sans font-bold tracking-[0.16em] uppercase text-luxury-gold">
                     {card.label}
                   </h4>
                 </div>
@@ -369,7 +369,7 @@ export default function PropertyDetails() {
                     style={{ background: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.25)' }}>
                     <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>gavel</span>
                   </div>
-                  <h4 className="text-[10px] font-sans font-bold tracking-[0.22em] uppercase text-luxury-gold">
+                  <h4 className="text-sm font-sans font-bold tracking-[0.16em] uppercase text-luxury-gold">
                     House Rules
                   </h4>
                 </div>
@@ -380,7 +380,7 @@ export default function PropertyDetails() {
                         style={{ background: 'rgba(212,175,55,0.12)', border: '1px solid rgba(212,175,55,0.3)' }}>
                         <span className="material-icons text-luxury-gold" style={{ fontSize: '12px' }}>check</span>
                       </div>
-                      <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{rule}</span>
+                      <span className="text-gray-800 dark:text-gray-200 text-base leading-relaxed">{rule}</span>
                     </li>
                   ))}
                 </ul>

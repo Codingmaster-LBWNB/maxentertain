@@ -87,10 +87,10 @@ export default function Navigation() {
                 <a
                   key={link.label}
                   href={link.desktopHref}
-                  className={`relative transition-colors font-sans text-[11px] font-semibold tracking-[0.15em] uppercase pb-0.5
+                  className={`relative transition-colors font-sans text-sm font-semibold tracking-[0.1em] uppercase pb-0.5
                     after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-luxury-gold after:transition-all after:duration-300 hover:after:w-full
                     ${isLessImportant ? 'hidden xl:inline' : 'inline'}
-                    ${isScrolled ? 'text-gray-600 dark:text-gray-400 hover:text-luxury-dark dark:hover:text-white' : 'text-white/80 hover:text-white'}
+                    ${isScrolled ? 'text-gray-700 dark:text-gray-300 hover:text-luxury-dark dark:hover:text-white' : 'text-white/90 hover:text-white'}
                   `}
                 >
                   {link.label}
@@ -123,7 +123,7 @@ export default function Navigation() {
             <Link
               href="/inquiry"
               onClick={() => trackClick('Enquiry', { location: 'Nav' })}
-              className="btn-primary text-[10px] py-2.5 px-5 flex-shrink-0 inline-flex items-center gap-1.5"
+              className="btn-primary py-2.5 px-5 flex-shrink-0 inline-flex items-center gap-1.5"
             >
               <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>
               Enquiry
@@ -186,7 +186,7 @@ export default function Navigation() {
                   key={link.label}
                   href={link.mobileHref}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-gray-500 dark:text-gray-400 hover:text-luxury-dark dark:hover:text-white transition-colors font-sans text-[11px] font-semibold tracking-[0.2em] uppercase py-3 border-b border-gray-50 dark:border-white/5"
+                  className="block text-gray-700 dark:text-gray-300 hover:text-luxury-dark dark:hover:text-white transition-colors font-sans text-base font-semibold tracking-[0.12em] uppercase py-4 border-b border-gray-100 dark:border-white/8"
                 >
                   {link.label}
                 </a>

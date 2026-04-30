@@ -14,16 +14,16 @@ export default function Footer() {
 
           {/* Property Info — wider column */}
           <div className="md:col-span-5">
-            <span className="block text-[10px] font-sans font-semibold tracking-[0.3em] uppercase text-luxury-gold mb-4">
+            <span className="block text-sm font-sans font-semibold tracking-[0.18em] uppercase text-luxury-gold mb-4">
               Award Winning Retreat
             </span>
             <h3 className="text-3xl font-serif font-bold mb-4 text-white leading-tight">
               {propertyConfig.name}
             </h3>
-            <p className="text-gray-400 mb-6 font-light leading-relaxed text-sm max-w-sm">
+            <p className="text-gray-300 mb-6 leading-relaxed text-base max-w-sm">
               {propertyConfig.description}
             </p>
-            <div className="flex items-center gap-2 text-gray-500 text-xs font-sans font-semibold tracking-[0.12em] uppercase">
+            <div className="flex items-center gap-2 text-gray-300 text-sm font-sans font-semibold tracking-[0.1em] uppercase">
               <span className="material-icons text-luxury-gold/60" style={{ fontSize: '14px' }}>location_on</span>
               <span>{propertyConfig.location}</span>
             </div>
@@ -34,7 +34,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div className="md:col-span-3">
-            <h4 className="text-[10px] font-sans font-semibold tracking-[0.3em] uppercase text-luxury-gold mb-6">Quick Links</h4>
+            <h4 className="text-sm font-sans font-semibold tracking-[0.18em] uppercase text-luxury-gold mb-6">Quick Links</h4>
             <ul className="space-y-3">
               {[
                 { label: 'Property Details', href: '#details' },
@@ -46,7 +46,7 @@ export default function Footer() {
                 <li key={item.label}>
                   <Link
                     href={item.href}
-                    className="text-gray-400 hover:text-white transition-colors text-sm font-light inline-flex items-center gap-2 group"
+                    className="text-gray-300 hover:text-white transition-colors text-base inline-flex items-center gap-2 group"
                   >
                     <span className="h-px w-0 bg-luxury-gold group-hover:w-4 transition-all duration-300" />
                     {item.label}
@@ -58,25 +58,25 @@ export default function Footer() {
 
           {/* Contact */}
           <div className="md:col-span-3">
-            <h4 className="text-[10px] font-sans font-semibold tracking-[0.3em] uppercase text-luxury-gold mb-6">Contact</h4>
+            <h4 className="text-sm font-sans font-semibold tracking-[0.18em] uppercase text-luxury-gold mb-6">Contact</h4>
             <ul className="space-y-4">
               <li>
                 <a
                   href={`mailto:${propertyConfig.contact.email}`}
-                  className="flex items-start gap-3 text-gray-400 hover:text-white transition-colors group"
+                  className="flex items-start gap-3 text-gray-300 hover:text-white transition-colors group"
                 >
                   <span className="material-icons text-luxury-gold/50 group-hover:text-luxury-gold transition-colors mt-0.5" style={{ fontSize: '16px' }}>mail_outline</span>
-                  <span className="text-sm font-light break-all">{propertyConfig.contact.email}</span>
+                  <span className="text-base break-all">{propertyConfig.contact.email}</span>
                 </a>
               </li>
               {propertyConfig.contact.phone && (
                 <li>
                   <a
                     href={`tel:${propertyConfig.contact.phone}`}
-                    className="flex items-center gap-3 text-gray-400 hover:text-white transition-colors group"
+                    className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors group"
                   >
                     <span className="material-icons text-luxury-gold/50 group-hover:text-luxury-gold transition-colors" style={{ fontSize: '16px' }}>phone</span>
-                    <span className="text-sm font-light">{propertyConfig.contact.phone}</span>
+                    <span className="text-base">{propertyConfig.contact.phone}</span>
                   </a>
                 </li>
               )}
@@ -112,12 +112,12 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-gray-600 text-xs font-sans tracking-wider">
+          <p className="text-gray-400 text-sm font-sans tracking-wide">
             &copy; {new Date().getFullYear()} {propertyConfig.name}. All rights reserved.
           </p>
           <Link
             href="/inquiry"
-            className="btn-primary text-[10px] py-2.5 px-6 inline-flex items-center gap-2"
+            className="btn-primary py-2.5 px-6 inline-flex items-center gap-2"
           >
             <span className="material-icons" style={{ fontSize: '12px' }}>calendar_today</span>
             Book Direct

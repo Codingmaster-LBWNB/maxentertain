@@ -76,7 +76,7 @@ export default function Testimonials() {
                 <span key={i} className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>star</span>
               ))}
             </div>
-            <span className="text-[11px] font-sans font-bold tracking-[0.15em] text-luxury-gold/85 uppercase ml-1">
+            <span className="text-xs font-sans font-bold tracking-[0.14em] text-luxury-gold uppercase ml-1">
               {testimonial.rating}.0
             </span>
           </div>
@@ -96,7 +96,7 @@ export default function Testimonials() {
           <div className="flex items-center gap-3 pt-5"
             style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}>
             {/* Gold initial avatar */}
-            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 font-serif font-bold text-sm"
+            <div className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-serif font-bold text-base"
               style={{
                 background: 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))',
                 border: '1px solid rgba(212,175,55,0.35)',
@@ -108,7 +108,7 @@ export default function Testimonials() {
               <p className="text-sm font-sans font-semibold tracking-[0.14em] uppercase text-white/90">
                 {testimonial.name}
               </p>
-              <p className="text-xs text-white/55 font-sans mt-0.5">{testimonial.date}</p>
+              <p className="text-sm text-white/65 font-sans mt-0.5">{testimonial.date}</p>
             </div>
           </div>
         </div>

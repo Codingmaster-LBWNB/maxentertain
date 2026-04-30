@@ -127,7 +127,7 @@ export default function Calendar({
           {/* Direct booking savings badge */}
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-luxury-gold/10 border border-luxury-gold/30 rounded-sm">
             <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>savings</span>
-            <span className="text-sm font-sans font-semibold text-white tracking-wide shake-attention">
+            <span className="text-base font-sans font-semibold text-white tracking-wide shake-attention">
               Book directly &amp; save 15%+ vs Airbnb / Booking.com
             </span>
           </div>
@@ -148,21 +148,21 @@ export default function Calendar({
                 {selectionPrompt ? (
                   <>
                     <span className="material-icons text-luxury-gold" style={{ fontSize: '18px' }}>touch_app</span>
-                    <span className="text-sm font-sans font-semibold text-luxury-dark tracking-wide">{selectionPrompt}</span>
+                    <span className="text-base font-sans font-semibold text-luxury-dark tracking-wide">{selectionPrompt}</span>
                   </>
                 ) : (
-                  <div className="flex items-center gap-3 text-sm text-gray-700 font-sans">
+                  <div className="flex items-center gap-3 text-base text-gray-800 font-sans">
                     <span className="font-semibold text-luxury-dark">{checkIn && format(checkIn, 'd MMM yyyy')}</span>
                     <span className="text-luxury-gold">→</span>
                     <span className="font-semibold text-luxury-dark">{checkOut && format(checkOut, 'd MMM yyyy')}</span>
-                    <span className="text-gray-500">({summary?.totalNights} nights)</span>
+                    <span className="text-gray-600">({summary?.totalNights} nights)</span>
                   </div>
                 )}
               </div>
               {(checkIn || checkOut) && (
                 <button
                   onClick={clearDates}
-                  className="text-xs font-sans font-semibold text-gray-500 hover:text-luxury-dark underline underline-offset-2 transition-colors"
+                  className="text-sm font-sans font-semibold text-gray-600 hover:text-luxury-dark underline underline-offset-2 transition-colors"
                 >
                   Clear dates
                 </button>
@@ -193,7 +193,7 @@ export default function Calendar({
             {/* Day Names */}
             <div className="grid grid-cols-7 gap-1 mb-2">
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
-                <div key={day} className="text-center text-xs font-semibold text-gray-500 py-2">
+                <div key={day} className="text-center text-sm font-semibold text-gray-700 py-2">
                   {day}
                 </div>
               ))}
@@ -211,7 +211,7 @@ export default function Calendar({
                 const inRange = isInRange(day)
                 const isCurrentMonth = day >= monthStart && day <= monthEnd
 
-                let cellClass = 'aspect-square flex items-center justify-center text-sm font-medium transition-all select-none '
+                let cellClass = 'aspect-square flex items-center justify-center text-base font-medium transition-all select-none '
 
                 if (!isCurrentMonth) cellClass += 'opacity-20 '
 
@@ -245,7 +245,7 @@ export default function Calendar({
             </div>
 
             {/* Legend */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-6 pt-6 border-t text-xs">
+            <div className="flex flex-wrap items-center justify-center gap-4 mt-6 pt-6 border-t text-sm">
               <div className="flex items-center gap-1.5">
                 <div className="w-3.5 h-3.5 rounded bg-green-50 border border-green-300" />
                 <span className="text-gray-600">Available</span>
@@ -290,10 +290,10 @@ export default function Calendar({
                   {/* Per-tier rows */}
                   <div className="space-y-2 mb-4">
                     {grouped.map(({ tier, count, subtotal }) => (
-                      <div key={tier} className="flex items-center justify-between text-sm">
+                      <div key={tier} className="flex items-center justify-between text-base">
                         <div className="flex items-center gap-2">
                           <span className="text-gray-700">{count} × {TIER_LABELS[tier]}</span>
-                          <span className="text-gray-400 text-xs">@ ${NIGHTLY_RATES[tier].toLocaleString()}/night</span>
+                          <span className="text-gray-600 text-sm">@ ${NIGHTLY_RATES[tier].toLocaleString()}/night</span>
                         </div>
                         <span className="font-semibold text-luxury-dark">${subtotal.toLocaleString()}</span>
                       </div>
@@ -310,15 +310,15 @@ export default function Calendar({
                         ${summary.total.toLocaleString()}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center justify-between text-base text-gray-600">
                       <span>Platform estimate (Airbnb / Booking.com)</span>
                       <span className="line-through">${summary.platformEstimate.toLocaleString()}</span>
                     </div>
-                    <div className="flex items-center justify-between text-sm font-semibold text-green-700">
+                    <div className="flex items-center justify-between text-base font-semibold text-green-700">
                       <span>You save booking direct</span>
                       <span>≈ ${summary.savings.toLocaleString()}</span>
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-sm text-gray-600 mt-1">
                       All fees included. Cleaning, linen &amp; taxes — no hidden charges.
                     </p>
                   </div>
@@ -334,7 +334,7 @@ export default function Calendar({
                     </Link>
                     <button
                       onClick={clearDates}
-                      className="flex-1 inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-gray-300 text-gray-600 text-xs font-sans font-semibold tracking-widest uppercase hover:border-gray-400 transition-colors"
+                      className="flex-1 inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-gray-300 text-gray-700 text-sm font-sans font-semibold tracking-wider uppercase hover:border-gray-400 transition-colors"
                       style={{ borderRadius: '2px' }}
                     >
                       Clear &amp; Re-select
@@ -346,7 +346,7 @@ export default function Calendar({
 
             {/* Bottom info note */}
             <div className="mt-6 p-4 bg-luxury-light rounded-lg">
-              <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
+              <div className="flex items-center justify-center gap-2 text-base text-gray-700">
                 <span className="material-icons" style={{ fontSize: '16px' }}>calendar_today</span>
                 <span>Calendar syncs with all booking platforms automatically.</span>
                 {isLoading && (
@@ -354,11 +354,11 @@ export default function Calendar({
                 )}
               </div>
               {lastUpdated && !isLoading && (
-                <p className="text-xs text-gray-500 text-center mt-1">
+                <p className="text-sm text-gray-600 text-center mt-1">
                   Last updated: {format(new Date(lastUpdated), 'MMM d, yyyy h:mm a')}
                 </p>
               )}
-              <p className="text-xs text-gray-600 text-center mt-3">
+              <p className="text-sm md:text-base text-gray-700 text-center mt-3 leading-relaxed">
                 Minimum stay starts at <span className="font-semibold">2 nights</span>. School &amp; public holidays typically require{' '}
                 <span className="font-semibold">3–5 nights</span> minimum.
               </p>

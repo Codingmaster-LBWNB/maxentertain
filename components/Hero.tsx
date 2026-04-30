@@ -123,7 +123,7 @@ export default function Hero() {
               className="flex items-center gap-3 mb-8"
             >
               <div className="h-px w-10 bg-luxury-gold" />
-              <span className="text-luxury-gold/90 text-xs font-sans font-semibold tracking-[0.3em] uppercase">
+              <span className="text-luxury-gold text-sm font-sans font-semibold tracking-[0.22em] uppercase">
                 Mornington Peninsula, Victoria
               </span>
             </motion.div>
@@ -152,7 +152,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.75 }}
-              className="text-base sm:text-lg md:text-xl text-white/80 mb-4 sm:mb-6 lg:mb-4 leading-relaxed font-light max-w-lg"
+              className="text-lg sm:text-xl md:text-2xl text-white/90 mb-4 sm:mb-6 lg:mb-4 leading-relaxed font-normal max-w-xl"
             >
               {propertyConfig.description}
             </motion.p>
@@ -167,10 +167,10 @@ export default function Hero() {
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs font-sans font-semibold tracking-widest uppercase"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-white/15 backdrop-blur-sm border border-white/25 text-white text-sm font-sans font-semibold tracking-wider uppercase"
                   style={{ borderRadius: '2px' }}
                 >
-                  <span className="material-icons text-luxury-gold" style={{ fontSize: '14px' }}>{stat.icon}</span>
+                  <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>{stat.icon}</span>
                   {stat.label}
                 </div>
               ))}
@@ -194,7 +194,7 @@ export default function Hero() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackClick('Airbnb', { location: 'Hero' })}
-                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
+                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
                   style={{ borderRadius: '2px' }}
                 >
                   <Image
@@ -213,7 +213,7 @@ export default function Hero() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackClick('Booking.com', { location: 'Hero' })}
-                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
+                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
                   style={{ borderRadius: '2px' }}
                 >
                   <Image
@@ -232,7 +232,7 @@ export default function Hero() {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => trackClick('VRBO', { location: 'Hero' })}
-                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/30 text-white text-xs font-sans font-semibold tracking-widest uppercase backdrop-blur-sm bg-white/10 hover:bg-white/20 transition-all duration-300"
+                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
                   style={{ borderRadius: '2px' }}
                 >
                   <Image
@@ -260,9 +260,9 @@ export default function Hero() {
       >
         <a
           href="#gallery"
-          className="hidden md:flex flex-col items-center gap-2 text-white/60 hover:text-white transition-colors group"
+          className="hidden md:flex flex-col items-center gap-2 text-white/75 hover:text-white transition-colors group"
         >
-          <span className="text-[10px] font-sans font-semibold tracking-[0.25em] uppercase">Explore</span>
+          <span className="text-xs font-sans font-semibold tracking-[0.22em] uppercase">Explore</span>
           <div className="w-5 h-8 border border-white/30 rounded-full flex justify-center group-hover:border-white/60 transition-colors">
             <motion.div
               className="w-0.5 h-2 bg-white/60 rounded-full mt-1.5"

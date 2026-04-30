@@ -248,12 +248,12 @@ export default function GuestChatWidget() {
               </div>
 
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white/90 tracking-wide truncate">
+                <div className="text-base font-semibold text-white/95 tracking-wide truncate">
                   MAX Assistant
                 </div>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0" />
-                  <span className="text-[11px] text-white/35 truncate">
+                  <span className="text-sm text-white/65 truncate">
                     Online · Property concierge
                   </span>
                 </div>
@@ -305,8 +305,8 @@ export default function GuestChatWidget() {
                     style={{ maxWidth: '82%' }}
                   >
                     <div
-                      className={`px-3.5 py-2.5 text-sm leading-relaxed rounded-2xl ${
-                        m.role === 'user' ? 'text-white rounded-tr-sm' : 'text-white/80 rounded-tl-sm'
+                      className={`px-3.5 py-2.5 text-base leading-relaxed rounded-2xl ${
+                        m.role === 'user' ? 'text-white rounded-tr-sm' : 'text-white/90 rounded-tl-sm'
                       }`}
                       style={
                         m.role === 'user'
@@ -319,7 +319,7 @@ export default function GuestChatWidget() {
                     >
                       {m.content}
                     </div>
-                    <span className="text-[10px] text-white/20 px-1">{m.time}</span>
+                    <span className="text-xs text-white/45 px-1">{m.time}</span>
                   </div>
                 </div>
               ))}
@@ -341,7 +341,7 @@ export default function GuestChatWidget() {
 
               {error && (
                 <div
-                  className="rounded-xl px-3.5 py-2.5 text-xs text-red-300/90"
+                  className="rounded-xl px-3.5 py-2.5 text-sm text-red-200"
                   style={{
                     background: 'rgba(239,68,68,0.08)',
                     border: '1px solid rgba(239,68,68,0.18)',
@@ -355,7 +355,7 @@ export default function GuestChatWidget() {
             {/* Quick replies */}
             {!hasSent && (
               <div className="px-4 pb-3 flex-shrink-0">
-                <p className="text-[10px] text-white/20 mb-2 uppercase tracking-widest">
+                <p className="text-xs text-white/55 mb-2 uppercase tracking-wider">
                   Quick questions
                 </p>
                 <div className="flex flex-wrap gap-1.5">
@@ -364,7 +364,7 @@ export default function GuestChatWidget() {
                       key={q}
                       type="button"
                       onClick={() => send(q)}
-                      className="text-[11px] px-3 py-1.5 rounded-full text-white/45 bg-white/5 border border-white/8 hover:text-luxury-gold hover:border-luxury-gold/40 hover:bg-luxury-gold/8 transition-all"
+                      className="text-sm px-3 py-2 rounded-full text-white/75 bg-white/7 border border-white/10 hover:text-luxury-gold hover:border-luxury-gold/40 hover:bg-luxury-gold/8 transition-all"
                     >
                       {q}
                     </button>
@@ -390,7 +390,7 @@ export default function GuestChatWidget() {
                     onChange={(e) => setInput(e.target.value.slice(0, MAX_CHARS))}
                     placeholder="Ask me anything…"
                     rows={2}
-                    className="w-full resize-none rounded-xl text-sm text-white/85 placeholder-white/25 bg-white/5 border border-white/8 focus:border-luxury-gold/40 focus:bg-luxury-gold/[0.04] focus:outline-none transition-all px-3 py-2.5"
+                    className="w-full resize-none rounded-xl text-base text-white/90 placeholder-white/45 bg-white/7 border border-white/10 focus:border-luxury-gold/40 focus:bg-luxury-gold/[0.04] focus:outline-none transition-all px-3 py-2.5"
                     onKeyDown={(e) => {
                       if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault()
@@ -432,11 +432,11 @@ export default function GuestChatWidget() {
               </div>
 
               <div className="mt-2 text-center">
-                <span className="text-[10px] text-white/20">
+                <span className="text-xs text-white/55">
                   For bookings →{' '}
                   <a
                     href="/inquiry"
-                    className="text-luxury-gold/40 hover:text-luxury-gold/70 transition-colors underline-offset-2 hover:underline"
+                    className="text-luxury-gold/80 hover:text-luxury-gold transition-colors underline-offset-2 hover:underline"
                   >
                     Enquiry form
                   </a>

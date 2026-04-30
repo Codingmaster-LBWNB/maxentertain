@@ -100,7 +100,7 @@
 @layer components {
   .btn-primary {
     @apply bg-luxury-gold text-white px-8 py-3.5 font-sans font-semibold
-           tracking-widest uppercase text-xs
+           tracking-widest uppercase text-sm
            hover:bg-opacity-90 transition-all duration-300
            shadow-lg hover:shadow-xl transform hover:-translate-y-0.5;
     border-radius: 2px;
@@ -108,7 +108,7 @@
 
   .btn-secondary {
     @apply bg-transparent border border-luxury-gold text-luxury-gold
-           px-8 py-3.5 font-sans font-semibold tracking-widest uppercase text-xs
+           px-8 py-3.5 font-sans font-semibold tracking-widest uppercase text-sm
            hover:bg-luxury-gold hover:text-white transition-all duration-300
            dark:border-luxury-gold/70 dark:text-luxury-gold/80 dark:hover:border-luxury-gold dark:hover:text-white;
     border-radius: 2px;
@@ -154,7 +154,7 @@
 
   /* Section label */
   .section-label {
-    @apply text-luxury-gold text-xs font-sans font-semibold tracking-[0.3em] uppercase mb-4 block;
+    @apply text-luxury-gold text-sm font-sans font-semibold tracking-[0.24em] uppercase mb-4 block;
   }
 }
 

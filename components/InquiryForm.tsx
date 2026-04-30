@@ -351,7 +351,7 @@ export default function InquiryForm({
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
+                    <label htmlFor="name" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
                       Full Name *
                     </label>
                     <input
@@ -361,15 +361,15 @@ export default function InquiryForm({
                       onChange={(e) => handleChange('name', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.name ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black`}
+                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black text-base`}
                     />
                     {errors.name && (
-                      <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+                      <p className="text-red-600 text-base mt-1">{errors.name}</p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="email" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
+                    <label htmlFor="email" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
                       Email Address *
                     </label>
                     <input
@@ -379,16 +379,16 @@ export default function InquiryForm({
                       onChange={(e) => handleChange('email', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black`}
+                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black text-base`}
                     />
                     {errors.email && (
-                      <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                      <p className="text-red-600 text-base mt-1">{errors.email}</p>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
+                  <label htmlFor="phone" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
                     Phone Number *
                   </label>
                   <input
@@ -398,10 +398,10 @@ export default function InquiryForm({
                     onChange={(e) => handleChange('phone', e.target.value)}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.phone ? 'border-red-500' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black`}
+                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black text-base`}
                   />
                   {errors.phone && (
-                    <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                    <p className="text-red-600 text-base mt-1">{errors.phone}</p>
                   )}
                 </div>
 
@@ -436,12 +436,12 @@ export default function InquiryForm({
                   </div>
                 </div>
 
-                <p className={`text-xs ${isGlass ? 'text-black' : 'text-gray-500'}`}>
+                <p className={`text-sm md:text-base ${isGlass ? 'text-black' : 'text-gray-600'}`}>
                   Dates are validated against live availability. Unavailable dates are disabled.
                 </p>
 
                 <div>
-                  <label htmlFor="guests" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
+                  <label htmlFor="guests" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
                     Number of Guests *
                   </label>
                   <select
@@ -450,7 +450,7 @@ export default function InquiryForm({
                     onChange={(e) => handleChange('guests', e.target.value)}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.guests ? 'border-red-500' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black`}
+                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black text-base`}
                   >
                     <option value="">Select number of guests</option>
                     {Array.from({ length: propertyConfig.maxGuests }, (_, i) => i + 1).map((num) => (
@@ -461,12 +461,12 @@ export default function InquiryForm({
                     <option value={`${propertyConfig.maxGuests}+`}>{propertyConfig.maxGuests}+ Guests</option>
                   </select>
                   {errors.guests && (
-                    <p className="text-red-500 text-sm mt-1">{errors.guests}</p>
+                    <p className="text-red-600 text-base mt-1">{errors.guests}</p>
                   )}
                 </div>
 
                 <div>
-                  <label htmlFor="message" className={`block text-sm font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-700'}`}>
+                  <label htmlFor="message" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
                     Message *
                   </label>
                   <textarea
@@ -476,10 +476,10 @@ export default function InquiryForm({
                     rows={4}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.message ? 'border-red-500' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all resize-none bg-white/85 text-black`}
+                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all resize-none bg-white/85 text-black text-base`}
                   />
                   {errors.message && (
-                    <p className="text-red-500 text-sm mt-1">{errors.message}</p>
+                    <p className="text-red-600 text-base mt-1">{errors.message}</p>
                   )}
                 </div>
 
@@ -488,13 +488,13 @@ export default function InquiryForm({
                     <span className="material-icons text-red-500 flex-shrink-0 mt-0.5" style={{ fontSize: '20px' }}>error</span>
                     <div>
                       <p className="text-red-800 font-semibold">Error sending enquiry</p>
-                      <p className="text-red-600 text-sm mt-1">
+                      <p className="text-red-700 text-base mt-1">
                         {submitErrorMessage || 'Please check your EmailJS configuration or try again later.'}
                       </p>
                       <div className="mt-3">
                         <a
                           href={`mailto:${propertyConfig.contact.email}`}
-                          className="inline-flex text-sm font-semibold text-luxury-gold hover:underline"
+                          className="inline-flex text-base font-semibold text-luxury-gold hover:underline"
                         >
                           Email us directly: {propertyConfig.contact.email}
                         </a>
@@ -521,7 +521,7 @@ export default function InquiryForm({
                   )}
                 </button>
 
-                <p className={`text-xs text-center ${isGlass ? 'text-gray-700' : 'text-gray-500'}`}>
+                <p className={`text-sm text-center leading-relaxed ${isGlass ? 'text-gray-800' : 'text-gray-600'}`}>
                   By submitting this form, you agree to our privacy policy. We&apos;ll use your information to respond to your enquiry.
                 </p>
               </form>

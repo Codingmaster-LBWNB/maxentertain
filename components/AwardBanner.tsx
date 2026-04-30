@@ -131,7 +131,7 @@ function AwardCard({ award, index }: AwardCardProps) {
           {/* Header row: platform badge + year */}
           <div className="flex items-center justify-between gap-3">
             <div
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-bold tracking-[0.15em] uppercase"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-sans font-bold tracking-[0.12em] uppercase"
               style={{
                 background: theme.badge.bg,
                 border: `1px solid ${theme.badge.border}`,
@@ -142,7 +142,7 @@ function AwardCard({ award, index }: AwardCardProps) {
               {isBooking ? 'Booking.com' : 'Airbnb'}
             </div>
             <span
-              className="text-xs font-sans font-semibold px-2.5 py-0.5 rounded-full"
+              className="text-sm font-sans font-semibold px-2.5 py-0.5 rounded-full"
               style={{ background: theme.year.bg, color: theme.year.text }}
             >
               {award.year}
@@ -167,12 +167,12 @@ function AwardCard({ award, index }: AwardCardProps) {
           {/* Footer: title + category */}
           <div className="space-y-1">
             <p
-              className="text-[11px] font-sans font-bold tracking-[0.14em] uppercase"
+              className="text-sm font-sans font-bold tracking-[0.12em] uppercase"
               style={{ color: theme.categoryColor }}
             >
               {award.category}
             </p>
-            <p className="text-xs font-sans" style={{ color: 'rgba(255,255,255,0.35)' }}>
+            <p className="text-sm font-sans" style={{ color: 'rgba(255,255,255,0.65)' }}>
               {award.title}
             </p>
           </div>
@@ -207,7 +207,7 @@ export default function AwardBanner({ embedded = false }: { embedded?: boolean }
         >
           <TrophyIcon className="w-3.5 h-3.5 text-luxury-gold" />
           <span
-            className="text-[10px] font-sans font-bold tracking-[0.22em] uppercase"
+            className="text-sm font-sans font-bold tracking-[0.16em] uppercase"
             style={{ color: '#D4AF37' }}
           >
             Award Recognition
@@ -232,7 +232,7 @@ export default function AwardBanner({ embedded = false }: { embedded?: boolean }
           <div className="h-px w-10 bg-luxury-gold/40" />
         </div>
 
-        <p className="mt-4 text-sm text-gray-500 dark:text-gray-400 font-sans max-w-sm leading-relaxed">
+        <p className="mt-4 text-base text-gray-700 dark:text-gray-300 font-sans max-w-sm leading-relaxed">
           Recognised by the world&apos;s leading travel platforms for outstanding guest experiences
         </p>
       </motion.div>

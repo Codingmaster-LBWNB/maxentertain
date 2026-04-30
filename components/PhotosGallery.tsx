@@ -113,7 +113,7 @@ export default function PhotosGallery() {
             <a
               key={s.id}
               href={`#section-${s.id}`}
-              className="shrink-0 px-4 py-4 font-sans text-[10px] font-semibold tracking-[0.22em] uppercase text-white/35 hover:text-white transition-colors border-b-2 border-transparent hover:border-luxury-gold/50 whitespace-nowrap"
+              className="shrink-0 px-4 py-4 font-sans text-xs md:text-sm font-semibold tracking-[0.16em] uppercase text-white/70 hover:text-white transition-colors border-b-2 border-transparent hover:border-luxury-gold/50 whitespace-nowrap"
             >
               {s.title}
             </a>
@@ -136,15 +136,15 @@ export default function PhotosGallery() {
               <div className="flex items-center gap-5 mb-6">
                 <div className="h-px flex-shrink-0 w-6" style={{ backgroundColor: 'rgba(212,175,55,0.4)' }} />
                 <div className="min-w-0">
-                  <span className="block text-[9px] font-sans font-semibold tracking-[0.35em] uppercase mb-1"
-                    style={{ color: 'rgba(212,175,55,0.65)' }}>
+                  <span className="block text-xs font-sans font-semibold tracking-[0.2em] uppercase mb-1"
+                    style={{ color: 'rgba(212,175,55,0.85)' }}>
                     {String(sIdx + 1).padStart(2, '0')} — {items.length} photos
                   </span>
                   <h2 className="text-xl md:text-2xl font-serif font-bold text-white leading-tight">
                     {section.title}
                   </h2>
                   {'description' in section && section.description ? (
-                    <p className="text-xs font-sans text-white/35 mt-1 font-light leading-relaxed">
+                    <p className="text-sm md:text-base font-sans text-white/70 mt-1 leading-relaxed">
                       {section.description}
                     </p>
                   ) : null}
@@ -242,7 +242,7 @@ export default function PhotosGallery() {
                           </div>
                           {/* Featured badge */}
                           {isFeatured && (
-                            <div className="absolute top-3 left-3 px-2 py-1 bg-luxury-gold/90 text-white text-[9px] font-sans font-semibold tracking-[0.2em] uppercase">
+                            <div className="absolute top-3 left-3 px-2.5 py-1.5 bg-luxury-gold/95 text-white text-xs font-sans font-semibold tracking-[0.14em] uppercase">
                               Featured
                             </div>
                           )}
@@ -342,8 +342,8 @@ export default function PhotosGallery() {
             </div>
 
             {/* Section label */}
-            <div className="hidden md:block text-[10px] font-sans font-semibold tracking-[0.3em] uppercase"
-              style={{ color: 'rgba(212,175,55,0.7)' }}>
+            <div className="hidden md:block text-xs font-sans font-semibold tracking-[0.2em] uppercase"
+              style={{ color: 'rgba(212,175,55,0.85)' }}>
               {flat[activeIndex]?.sectionTitle}
             </div>
 
@@ -409,7 +409,7 @@ export default function PhotosGallery() {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); prev() }}
-                className="px-4 py-2 border text-white/60 text-xs font-sans font-semibold tracking-widest uppercase hover:text-white transition-colors"
+                className="px-4 py-2.5 border text-white/80 text-sm font-sans font-semibold tracking-wider uppercase hover:text-white transition-colors"
                 style={{ borderColor: 'rgba(255,255,255,0.15)' }}
               >
                 Prev
@@ -417,7 +417,7 @@ export default function PhotosGallery() {
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); next() }}
-                className="px-4 py-2 border text-white/60 text-xs font-sans font-semibold tracking-widest uppercase hover:text-white transition-colors"
+                className="px-4 py-2.5 border text-white/80 text-sm font-sans font-semibold tracking-wider uppercase hover:text-white transition-colors"
                 style={{ borderColor: 'rgba(255,255,255,0.15)' }}
               >
                 Next
@@ -442,7 +442,7 @@ export default function PhotosGallery() {
                   />
                 ))
                 : (
-                  <span className="text-white/25 text-[10px] font-sans tracking-widest uppercase">
+                  <span className="text-white/60 text-sm font-sans tracking-wider uppercase">
                     {activeIndex + 1} of {totalImages}
                   </span>
                 )
@@ -450,7 +450,7 @@ export default function PhotosGallery() {
             </div>
 
             {/* Property name */}
-            <div className="ml-auto text-[9px] font-sans font-semibold tracking-[0.3em] uppercase text-white/20">
+            <div className="ml-auto text-xs font-sans font-semibold tracking-[0.18em] uppercase text-white/55">
               {propertyConfig.name}
             </div>
           </div>

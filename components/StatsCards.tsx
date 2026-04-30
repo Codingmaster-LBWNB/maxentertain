@@ -154,7 +154,7 @@ export default function StatsCards() {
                 {/* Label */}
                 <div className="space-y-2">
                   <div
-                    className="text-[11px] font-sans font-bold tracking-[0.22em] uppercase"
+                    className="text-sm font-sans font-bold tracking-[0.16em] uppercase"
                     style={{ color: '#D4AF37' }}
                   >
                     5‑Star Reviews
@@ -174,8 +174,8 @@ export default function StatsCards() {
                   </div>
                 </div>
 
-                <p className="text-xs leading-relaxed max-w-[200px]"
-                  style={{ color: 'rgba(255,255,255,0.3)' }}>
+                <p className="text-base leading-relaxed max-w-[240px]"
+                  style={{ color: 'rgba(255,255,255,0.68)' }}>
                   Consistently praised by guests for exceptional stays
                 </p>
               </div>
@@ -260,7 +260,7 @@ export default function StatsCards() {
 
                 {/* Label */}
                 <div className="space-y-2">
-                  <div className="text-[11px] font-sans font-bold tracking-[0.22em] uppercase text-blue-300">
+                  <div className="text-sm font-sans font-bold tracking-[0.16em] uppercase text-blue-200">
                     Guests Per Year
                   </div>
                   {/* Animated dot trail */}
@@ -284,8 +284,8 @@ export default function StatsCards() {
                   </div>
                 </div>
 
-                <p className="text-xs leading-relaxed max-w-[200px]"
-                  style={{ color: 'rgba(255,255,255,0.28)' }}>
+                <p className="text-base leading-relaxed max-w-[240px]"
+                  style={{ color: 'rgba(255,255,255,0.68)' }}>
                   Welcoming travellers from around the world
                 </p>
               </div>

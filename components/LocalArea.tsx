@@ -62,8 +62,8 @@ export default function LocalArea() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     {/* Category badge */}
                     <div className="absolute top-3 left-3">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/40 backdrop-blur-sm text-white text-[10px] font-sans font-semibold tracking-[0.15em] uppercase">
-                        <span className="material-icons" style={{ fontSize: '11px' }}>{iconName}</span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black/55 backdrop-blur-sm text-white text-xs font-sans font-semibold tracking-[0.12em] uppercase">
+                        <span className="material-icons" style={{ fontSize: '14px' }}>{iconName}</span>
                         {attraction.type}
                       </span>
                     </div>
@@ -85,8 +85,8 @@ export default function LocalArea() {
                     <h3 className="font-serif font-semibold text-luxury-dark dark:text-white text-lg mb-1">{attraction.name}</h3>
                   )}
                   {distanceLabel && (
-                    <p className="text-xs font-sans font-semibold tracking-[0.12em] uppercase text-gray-400 flex items-center gap-1">
-                      <span className="material-icons" style={{ fontSize: '12px' }}>near_me</span>
+                    <p className="text-sm font-sans font-semibold tracking-[0.08em] uppercase text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
+                      <span className="material-icons text-luxury-gold" style={{ fontSize: '15px' }}>near_me</span>
                       {distanceLabel}
                     </p>
                   )}
@@ -117,7 +117,7 @@ export default function LocalArea() {
                 href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(propertyConfig.location)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="bg-white dark:bg-[#1d1d1b] px-4 py-2 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-sm font-semibold text-luxury-dark dark:text-white hover:text-luxury-gold flex items-center gap-2"
+                className="bg-white dark:bg-[#1d1d1b] px-4 py-2.5 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-base font-semibold text-luxury-dark dark:text-white hover:text-luxury-gold flex items-center gap-2"
               >
                 <span className="material-icons" style={{ fontSize: '16px' }}>location_on</span>
                 Open in Google Maps
