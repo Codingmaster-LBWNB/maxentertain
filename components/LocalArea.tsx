@@ -46,7 +46,7 @@ export default function LocalArea() {
             return (
               <div
                 key={index}
-                className="group overflow-hidden bg-white dark:bg-[#1d1d1b] border border-gray-100 dark:border-white/7 hover:border-luxury-gold/30 dark:hover:border-luxury-gold/25 hover:shadow-lg transition-all will-change-transform"
+                className="group overflow-hidden rounded-2xl bg-white dark:bg-[#1d1d1b] border border-gray-200/80 dark:border-white/10 hover:border-luxury-gold/50 dark:hover:border-luxury-gold/35 shadow-sm hover:shadow-[0_8px_32px_rgba(212,175,55,0.12)] dark:hover:shadow-[0_8px_32px_rgba(212,175,55,0.10)] transition-all duration-300 will-change-transform"
               >
                 {attraction.image ? (
                   <div className="relative w-full aspect-[16/10] overflow-hidden">
@@ -58,37 +58,36 @@ export default function LocalArea() {
                       sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                       priority={index < 3}
                     />
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
                     {/* Category badge */}
                     <div className="absolute top-3 left-3">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-black/55 backdrop-blur-sm text-white text-xs font-sans font-semibold tracking-[0.12em] uppercase">
-                        <span className="material-icons" style={{ fontSize: '14px' }}>{iconName}</span>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/20 text-white text-xs font-sans font-semibold tracking-[0.12em] uppercase">
+                        <span className="material-icons" style={{ fontSize: '13px' }}>{iconName}</span>
                         {attraction.type}
                       </span>
                     </div>
                   </div>
                 ) : (
-                  <div className="w-full aspect-[16/10] bg-luxury-light flex items-center justify-center">
+                  <div className="w-full aspect-[16/10] bg-luxury-light rounded-t-2xl flex items-center justify-center">
                     <span className="material-icons text-luxury-gold/40" style={{ fontSize: '40px' }}>{iconName}</span>
                   </div>
                 )}
 
                 <div className="p-5">
                   {attraction.url ? (
-                    <h3 className="font-serif font-semibold text-luxury-dark dark:text-white text-lg mb-1 group-hover:text-luxury-gold transition-colors">
+                    <h3 className="font-serif font-semibold text-luxury-dark dark:text-white text-lg mb-2 group-hover:text-luxury-gold transition-colors duration-200">
                       <a href={attraction.url} target="_blank" rel="noopener noreferrer">
                         {attraction.name}
                       </a>
                     </h3>
                   ) : (
-                    <h3 className="font-serif font-semibold text-luxury-dark dark:text-white text-lg mb-1">{attraction.name}</h3>
+                    <h3 className="font-serif font-semibold text-luxury-dark dark:text-white text-lg mb-2">{attraction.name}</h3>
                   )}
                   {distanceLabel && (
-                    <p className="text-sm font-sans font-semibold tracking-[0.08em] uppercase text-gray-600 dark:text-gray-300 flex items-center gap-1.5">
-                      <span className="material-icons text-luxury-gold" style={{ fontSize: '15px' }}>near_me</span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-luxury-gold/10 dark:bg-luxury-gold/15 border border-luxury-gold/25 dark:border-luxury-gold/20 text-xs font-sans font-semibold tracking-[0.08em] uppercase text-luxury-accent dark:text-luxury-gold/90">
+                      <span className="material-icons text-luxury-gold" style={{ fontSize: '13px' }}>near_me</span>
                       {distanceLabel}
-                    </p>
+                    </span>
                   )}
                 </div>
               </div>
@@ -97,31 +96,34 @@ export default function LocalArea() {
         </div>
 
         {/* Interactive Google Maps */}
-        <div className="mt-12 overflow-hidden shadow-sm border border-gray-100 dark:border-white/7">
-          <div className="w-full h-96 relative">
-            {/* Google Maps Embed - Works without API key for basic embeds */}
-            <iframe
-              src={`https://www.google.com/maps?q=${encodeURIComponent(propertyConfig.location)}&output=embed&zoom=14`}
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="w-full h-full"
-              title="Property Location Map"
-            />
-            {/* Link to open in Google Maps */}
-            <div className="absolute bottom-4 right-4 z-10">
-              <a
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(propertyConfig.location)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="bg-white dark:bg-[#1d1d1b] px-4 py-2.5 rounded-lg shadow-lg hover:shadow-xl transition-shadow text-base font-semibold text-luxury-dark dark:text-white hover:text-luxury-gold flex items-center gap-2"
-              >
-                <span className="material-icons" style={{ fontSize: '16px' }}>location_on</span>
-                Open in Google Maps
-              </a>
+        <div className="mt-14">
+          <div className="relative rounded-2xl overflow-hidden border border-gray-200/80 dark:border-white/10 shadow-md ring-1 ring-luxury-gold/10 dark:ring-luxury-gold/8">
+            {/* Gold accent top bar */}
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-transparent via-luxury-gold/60 to-transparent z-10 pointer-events-none" />
+            <div className="w-full h-96 relative">
+              <iframe
+                src={`https://www.google.com/maps?q=${encodeURIComponent(propertyConfig.location)}&output=embed&zoom=14`}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="w-full h-full"
+                title="Property Location Map"
+              />
+              {/* Link to open in Google Maps */}
+              <div className="absolute bottom-4 right-4 z-10">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(propertyConfig.location)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-white dark:bg-[#1d1d1b] px-4 py-2.5 rounded-xl shadow-lg border border-gray-200/80 dark:border-white/15 hover:border-luxury-gold/50 hover:shadow-[0_4px_20px_rgba(212,175,55,0.18)] transition-all duration-200 text-sm font-sans font-semibold text-luxury-dark dark:text-white hover:text-luxury-gold dark:hover:text-luxury-gold"
+                >
+                  <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>location_on</span>
+                  Open in Google Maps
+                </a>
+              </div>
             </div>
           </div>
         </div>
