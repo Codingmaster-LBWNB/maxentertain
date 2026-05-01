@@ -24,7 +24,7 @@ const SUGGESTED = [
   'Distance to the beach?',
 ]
 
-const CHATBOT_ICON = encodeURI('/Airbnb picture/icons_files/ai-chatbot-3d-icon-png-download-12363070.webp')
+const CHATBOT_ICON = encodeURI('/Airbnb picture/icons_files/chatbot.png')
 
 function TypingDots() {
   return (
