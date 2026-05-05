@@ -191,7 +191,7 @@ export default function PricingPage() {
     }
   }, [endPointerDrag])
 
-  const handleDayPointerDown = (day: Date, e: React.PointerEvent) => {
+  const handleDayPointerDown = (day: Date, e: React.PointerEvent<Element>) => {
     const dateStr = auStr(day)
     const inMonth = day >= monthStart && day <= monthEnd
     const isPast = dateStr < todayStr
@@ -228,7 +228,7 @@ export default function PricingPage() {
     setDragPreview(preview)
   }
 
-  const handleDayPointerUp = (e: React.PointerEvent) => {
+  const handleDayPointerUp = (e: React.PointerEvent<Element>) => {
     if (dragRef.current.ptrId !== e.pointerId) return
     try {
       ;(e.target as HTMLElement).releasePointerCapture(e.pointerId)
@@ -389,17 +389,22 @@ export default function PricingPage() {
 
     return (
       <div className="border border-white/10 rounded-xl overflow-hidden">
-        <div className="grid grid-cols-7 touch-none select-none">
-          {/* Day-name header row — part of the same grid so columns align perfectly */}
+        {/* Header row */}
+        <div className="grid grid-cols-7 border-b border-white/10 bg-white/[0.03]">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-            <div key={d} className="text-center text-xs font-medium text-gray-500 py-2 border-b border-r border-white/10 bg-white/[0.03] last:border-r-0">
+            <div key={d} className="text-center text-xs font-semibold tracking-wide text-gray-500 py-3">
               {d}
             </div>
           ))}
+        </div>
+
+        {/* Day cells */}
+        <div className="grid grid-cols-7 touch-none select-none">
           {gridDays.map((day) => {
             const dateStr = auStr(day)
             const inMonth = day >= mStart && day <= mEnd
             const isPast = dateStr < todayStr
+            const isToday = dateStr === todayStr
             const override = overrideMap[dateStr]
             const tier = getTierForDate(dateStr)
             const tierRow = tiers.find((t) => t.tier === tier)
@@ -411,77 +416,95 @@ export default function PricingPage() {
             const isPreview = previewSet?.has(dateStr) ?? false
             const colIndex = (day.getDay() + 6) % 7
 
-            let cls =
-              'h-20 flex flex-col items-center justify-center text-sm transition-colors border-b border-r border-white/10 '
-            if (!inMonth) cls += 'opacity-[0.12] pointer-events-none '
-            else if (isPast) cls += 'opacity-30 cursor-not-allowed bg-white/[0.02] '
-            else if (otaHere) cls += 'bg-red-500/20 cursor-not-allowed text-red-300 '
-            else {
-              cls += 'cursor-pointer '
-              if (manualHere) {
-                cls += 'bg-red-500/15 shadow-[inset_0_0_0_2px_rgba(248,113,113,0.5)] hover:bg-red-500/20 '
-              } else if (isPreview) {
-                cls += 'bg-sky-500/20 ring-2 ring-inset ring-sky-400/60 '
-              } else if (isSelected) {
-                cls += 'bg-emerald-500/15 ring-2 ring-inset ring-sky-400 '
-              } else {
-                cls += 'bg-emerald-500/10 hover:bg-emerald-500/15 '
-                if (override) cls += 'ring-1 ring-inset ring-luxury-gold/50 '
-              }
+            // Cell wrapper background + selection state
+            let wrapperCls = 'relative h-32 border-b border-r border-white/[0.07] transition-colors group '
+            if (!inMonth) {
+              wrapperCls += 'opacity-20 pointer-events-none bg-transparent '
+            } else if (isPast) {
+              wrapperCls += 'opacity-40 cursor-not-allowed bg-white/[0.015] '
+            } else if (otaHere) {
+              wrapperCls += 'bg-red-950/40 cursor-not-allowed '
+            } else if (isPreview) {
+              wrapperCls += 'bg-sky-500/15 ring-2 ring-inset ring-sky-400/50 cursor-pointer '
+            } else if (isSelected) {
+              wrapperCls += 'bg-sky-500/20 ring-2 ring-inset ring-sky-400 cursor-pointer '
+            } else if (manualHere) {
+              wrapperCls += 'bg-red-950/30 cursor-pointer hover:bg-red-950/40 '
+            } else {
+              wrapperCls += 'bg-white/[0.02] hover:bg-white/[0.05] cursor-pointer '
             }
 
             const tooltipX = colIndex >= 5 ? 'right-0' : colIndex <= 1 ? 'left-0' : 'left-1/2 -translate-x-1/2'
 
             return (
-              <div key={dateStr} className="relative group">
-                <button
-                  type="button"
-                  disabled={isPast || !inMonth || otaHere}
-                  onPointerDown={(e) => handleDayPointerDown(day, e)}
-                  onPointerEnter={() => handleDayPointerEnter(day)}
-                  onPointerUp={handleDayPointerUp}
-                  className={cls}
-                  title=""
-                >
-                  <span className={`text-base font-semibold leading-none ${override ? 'text-luxury-gold' : otaHere ? 'text-red-300 line-through' : 'text-gray-200'}`}>
-                    {format(day, 'd')}
+              <div
+                key={dateStr}
+                className={wrapperCls}
+                onPointerDown={(e) => { if (!isPast && inMonth && !otaHere) handleDayPointerDown(day, e) }}
+                onPointerEnter={() => handleDayPointerEnter(day)}
+                onPointerUp={(e) => handleDayPointerUp(e)}
+              >
+                {/* Date number — top left */}
+                <span className={`absolute top-2.5 left-3 text-sm font-semibold leading-none
+                  ${isToday ? 'text-luxury-gold font-bold' : !inMonth || isPast ? 'text-gray-600' : 'text-gray-200'}`}>
+                  {format(day, 'd')}
+                  {isToday && <span className="ml-1 text-[10px] font-normal text-luxury-gold/70">Today</span>}
+                </span>
+
+                {/* Tier dot — top right */}
+                {inMonth && !isPast && (
+                  <span className={`absolute top-3 right-3 w-2 h-2 rounded-full ${TIER_DOT_COLOR[tier]}`} title={TIER_LABELS[tier]} />
+                )}
+
+                {/* Status pill — middle of cell (OTA booked or manual block) */}
+                {inMonth && !isPast && otaHere && (
+                  <div className="absolute inset-x-2 top-9 bg-red-500/25 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                    <span className="text-xs text-red-300 font-medium truncate">Booked</span>
+                  </div>
+                )}
+                {inMonth && !isPast && manualHere && (
+                  <div className="absolute inset-x-2 top-9 bg-orange-500/20 border border-orange-400/30 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
+                    <span className="text-xs text-orange-300 font-medium truncate">
+                      {manualBlockMap[dateStr] || 'Blocked'}
+                    </span>
+                  </div>
+                )}
+                {inMonth && !isPast && override && !otaHere && !manualHere && (
+                  <div className="absolute inset-x-2 top-9 bg-luxury-gold/10 rounded-md px-2.5 py-1.5">
+                    <span className="text-xs text-luxury-gold/80 font-medium">Custom price</span>
+                  </div>
+                )}
+
+                {/* Price — bottom right */}
+                {inMonth && !isPast && (
+                  <span className={`absolute bottom-2.5 right-3 text-sm font-semibold
+                    ${override ? 'text-luxury-gold' : otaHere ? 'text-gray-500' : 'text-gray-300'}`}>
+                    ${(displayPrice / 1000).toFixed(1)}k
                   </span>
-                  {inMonth && !isPast && (
-                    <span className={`w-2 h-2 rounded-sm mt-1 ${TIER_DOT_COLOR[tier]}`} />
-                  )}
-                  {inMonth && !isPast && (
-                    <span className={`text-xs mt-1 ${override ? 'text-luxury-gold' : 'text-gray-400'}`}>
-                      ${(displayPrice / 1000).toFixed(1)}k
-                    </span>
-                  )}
-                  {inMonth && !isPast && minNightsMap[dateStr] && (
-                    <span className="text-[10px] text-sky-400/80 mt-0.5 leading-none font-medium">
-                      {minNightsMap[dateStr]}n min
-                    </span>
-                  )}
-                  {inMonth && manualHere && !isPast && (
-                    <span className="text-[10px] text-red-400/90 mt-0.5 leading-none">blocked</span>
-                  )}
-                </button>
+                )}
+
+                {/* Min nights — bottom left */}
+                {inMonth && !isPast && minNightsMap[dateStr] && (
+                  <span className="absolute bottom-2.5 left-3 text-[10px] text-sky-400/80 font-medium">
+                    {minNightsMap[dateStr]}n min
+                  </span>
+                )}
 
                 {/* Hover tooltip */}
                 {inMonth && !isPast && (
-                  <div
-                    className={`absolute bottom-full ${tooltipX} mb-2 z-50 w-48 bg-[#0f0f0d] border border-white/20 rounded-lg p-2.5 text-xs hidden group-hover:block shadow-xl pointer-events-none`}
-                  >
-                    <div className="font-medium text-gray-200 mb-1">{dateStr}</div>
-                    <div className="text-gray-400">Tier: {TIER_LABELS[tier]}</div>
+                  <div className={`absolute bottom-full ${tooltipX} mb-2 z-50 w-52 bg-[#0f0f0d] border border-white/20 rounded-lg p-3 text-xs hidden group-hover:block shadow-xl pointer-events-none`}>
+                    <div className="font-semibold text-gray-100 mb-1.5">{dateStr}</div>
+                    <div className="flex items-center gap-1.5 text-gray-400 mb-0.5">
+                      <span className={`w-1.5 h-1.5 rounded-full ${TIER_DOT_COLOR[tier]}`} />
+                      {TIER_LABELS[tier]}
+                    </div>
                     <div className="text-gray-400">Base: ${basePrice.toLocaleString()}/night</div>
-                    {override && (
-                      <div className="text-luxury-gold">Override: ${override.price.toLocaleString()}/night</div>
-                    )}
-                    {minNightsMap[dateStr] && (
-                      <div className="text-sky-400">Min stay: {minNightsMap[dateStr]} nights</div>
-                    )}
-                    {manualHere && (
-                      <div className="text-red-400">Blocked: {manualBlockMap[dateStr] || 'Manual block'}</div>
-                    )}
-                    {otaHere && <div className="text-red-400">Booked via OTA</div>}
+                    {override && <div className="text-luxury-gold mt-0.5">Override: ${override.price.toLocaleString()}/night</div>}
+                    {minNightsMap[dateStr] && <div className="text-sky-400 mt-0.5">Min stay: {minNightsMap[dateStr]} nights</div>}
+                    {manualHere && <div className="text-orange-400 mt-0.5">Blocked: {manualBlockMap[dateStr] || 'Manual block'}</div>}
+                    {otaHere && <div className="text-red-400 mt-0.5">Booked via OTA</div>}
                   </div>
                 )}
               </div>
