@@ -1,13 +1,34 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
 import { useAvailability } from '@/hooks/useAvailability'
 import { blockedDates as defaultBlockedDates } from '@/config/property'
-import { getPriceSummary, groupNightsByTier, TIER_LABELS, NIGHTLY_RATES } from '@/lib/pricing'
+import { getPriceSummary, groupNightsByTier, TIER_LABELS, NIGHTLY_RATES, PricingTier } from '@/lib/pricing'
+
+type PricingState =
+  | { status: 'loading' }
+  | { status: 'error' }
+  | { status: 'loaded'; overrides: Record<string, number>; tierPrices: Record<PricingTier, number> }
+
+function usePricingOverrides(): PricingState {
+  const [state, setState] = useState<PricingState>({ status: 'loading' })
+
+  useEffect(() => {
+    fetch('/api/pricing-overrides')
+      .then((r) => {
+        if (!r.ok) throw new Error('failed')
+        return r.json()
+      })
+      .then((data) => setState({ status: 'loaded', overrides: data.overrides, tierPrices: data.tierPrices }))
+      .catch(() => setState({ status: 'error' }))
+  }, [])
+
+  return state
+}
 
 const TZ = 'Australia/Melbourne'
 
@@ -21,6 +42,7 @@ export default function Calendar({
   lastUpdated?: string | null
 }) {
   const availability = useAvailability({ enabled: blockedDatesProp === undefined })
+  const pricing = usePricingOverrides()
 
   const nowAU = toZonedTime(new Date(), TZ)
   const [currentMonth, setCurrentMonth] = useState(nowAU)
@@ -30,6 +52,10 @@ export default function Calendar({
   const blockedDates = blockedDatesProp ?? availability.blockedDates
   const isLoading = isLoadingProp ?? availability.isLoading
   const lastUpdated = lastUpdatedProp ?? availability.lastUpdated
+
+  const pricingReady = pricing.status === 'loaded'
+  const overrides = pricingReady ? pricing.overrides : {}
+  const tierPrices = pricingReady ? pricing.tierPrices : NIGHTLY_RATES
 
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
@@ -100,8 +126,12 @@ export default function Calendar({
     setCheckOut(null)
   }
 
-  // Pricing summary
-  const summary = checkIn && checkOut ? getPriceSummary(auStr(checkIn), auStr(checkOut)) : null
+  // Pricing summary — only compute when pricing data is loaded (show "-" otherwise)
+  const summary =
+    checkIn && checkOut && pricingReady
+      ? getPriceSummary(auStr(checkIn), auStr(checkOut), overrides, tierPrices)
+      : null
+  const pricingPending = checkIn && checkOut && !pricingReady
   const grouped = summary ? groupNightsByTier(summary.nights) : []
 
   const selectionPrompt = !checkIn
@@ -274,7 +304,7 @@ export default function Calendar({
 
             {/* Pricing Panel — shown after both dates selected */}
             <AnimatePresence>
-              {summary && (
+              {(summary || pricingPending) && (
                 <motion.div
                   key="pricing-panel"
                   initial={{ opacity: 0, y: 16 }}
@@ -287,41 +317,62 @@ export default function Calendar({
                     Price Breakdown
                   </h4>
 
-                  {/* Per-tier rows */}
-                  <div className="space-y-2 mb-4">
-                    {grouped.map(({ tier, count, subtotal }) => (
-                      <div key={tier} className="flex items-center justify-between text-base">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-700">{count} × {TIER_LABELS[tier]}</span>
-                          <span className="text-gray-600 text-sm">@ ${NIGHTLY_RATES[tier].toLocaleString()}/night</span>
-                        </div>
-                        <span className="font-semibold text-luxury-dark">${subtotal.toLocaleString()}</span>
+                  {pricingPending ? (
+                    <div className="space-y-3 mb-4">
+                      <div className="flex items-center gap-2 text-gray-500 text-base">
+                        <span className="material-icons animate-spin" style={{ fontSize: '16px' }}>autorenew</span>
+                        Loading prices…
                       </div>
-                    ))}
-                  </div>
+                      <div className="border-t pt-4 flex items-center justify-between">
+                        <span className="font-sans font-semibold text-luxury-dark">Total — direct booking</span>
+                        <span className="text-xl font-serif font-bold text-gray-400">-</span>
+                      </div>
+                    </div>
+                  ) : summary ? (
+                    <>
+                      {/* Per-tier rows */}
+                      <div className="space-y-2 mb-4">
+                        {grouped.map(({ tier, count, subtotal, hasOverride }) => {
+                          const perNight = Math.round(subtotal / count)
+                          return (
+                            <div key={tier} className="flex items-center justify-between text-base">
+                              <div className="flex items-center gap-2">
+                                <span className="text-gray-700">{count} × {TIER_LABELS[tier]}</span>
+                                <span className="text-gray-600 text-sm">
+                                  @ ${perNight.toLocaleString()}/night
+                                  {hasOverride && <span className="ml-1 text-luxury-gold text-xs">(custom)</span>}
+                                </span>
+                              </div>
+                              <span className="font-semibold text-luxury-dark">${subtotal.toLocaleString()}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
 
-                  {/* Divider + totals */}
-                  <div className="border-t pt-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-sans font-semibold text-luxury-dark">
-                        Total — direct booking
-                      </span>
-                      <span className="text-xl font-serif font-bold text-luxury-dark">
-                        ${summary.total.toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-base text-gray-600">
-                      <span>Platform estimate (Airbnb / Booking.com)</span>
-                      <span className="line-through">${summary.platformEstimate.toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-base font-semibold text-green-700">
-                      <span>You save booking direct</span>
-                      <span>≈ ${summary.savings.toLocaleString()}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">
-                      All fees included. Cleaning, linen &amp; taxes — no hidden charges.
-                    </p>
-                  </div>
+                      {/* Divider + totals */}
+                      <div className="border-t pt-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-sans font-semibold text-luxury-dark">
+                            Total — direct booking
+                          </span>
+                          <span className="text-xl font-serif font-bold text-luxury-dark">
+                            ${summary.total.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between text-base text-gray-600">
+                          <span>Platform estimate (Airbnb / Booking.com)</span>
+                          <span className="line-through">${summary.platformEstimate.toLocaleString()}</span>
+                        </div>
+                        <div className="flex items-center justify-between text-base font-semibold text-green-700">
+                          <span>You save booking direct</span>
+                          <span>≈ ${summary.savings.toLocaleString()}</span>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">
+                          All fees included. Cleaning, linen &amp; taxes — no hidden charges.
+                        </p>
+                      </div>
+                    </>
+                  ) : null}
 
                   {/* CTAs */}
                   <div className="flex flex-col sm:flex-row gap-3 mt-6">

@@ -241,6 +241,21 @@ export default function InquiryForm({
       trackGoogleAdsLeadConversion()
       trackClick('Enquiry Submitted', { location: 'Inquiry Form' })
 
+      // Store inquiry in MongoDB (fire-and-forget — don't block UX on this)
+      fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          checkIn: formData.checkIn,
+          checkOut: formData.checkOut,
+          guests: formData.guests,
+          message: formData.message,
+        }),
+      }).catch(() => { /* silently ignore */ })
+
       setSubmitStatus('success')
       setFormData({
         name: '',

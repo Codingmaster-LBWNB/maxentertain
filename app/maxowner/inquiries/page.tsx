@@ -1,0 +1,185 @@
+'use client'
+
+import { useState, useEffect, useCallback } from 'react'
+import { format } from 'date-fns'
+
+type Status = 'new' | 'replied' | 'booked'
+
+interface Inquiry {
+  _id: string
+  name: string
+  email: string
+  phone: string
+  checkIn: string
+  checkOut: string
+  guests: string
+  message: string
+  receivedAt: string
+  status: Status
+}
+
+const STATUS_STYLE: Record<Status, string> = {
+  new: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+  replied: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
+  booked: 'bg-green-500/15 text-green-300 border-green-500/30',
+}
+
+export default function InquiriesPage() {
+  const [inquiries, setInquiries] = useState<Inquiry[]>([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [pages, setPages] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState<string | null>(null)
+
+  const load = useCallback(async (p = 1) => {
+    setLoading(true)
+    const res = await fetch(`/api/maxowner/inquiries?page=${p}`)
+    const data = await res.json()
+    setInquiries(data.inquiries)
+    setTotal(data.total)
+    setPage(data.page)
+    setPages(data.pages)
+    setLoading(false)
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  const updateStatus = async (id: string, status: Status) => {
+    await fetch('/api/maxowner/inquiries', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, status }),
+    })
+    setInquiries((prev) => prev.map((i) => (i._id === id ? { ...i, status } : i)))
+  }
+
+  return (
+    <div className="p-8 text-white">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-serif text-luxury-gold mb-1">Inquiries</h1>
+          <p className="text-gray-400 text-sm">{total} total — from the direct inquiry form</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <p className="text-gray-500">Loading…</p>
+      ) : inquiries.length === 0 ? (
+        <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-12 text-center">
+          <p className="text-gray-500">No inquiries yet.</p>
+          <p className="text-gray-600 text-sm mt-1">They appear here when guests submit the form on the site.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {inquiries.map((inq) => (
+            <div
+              key={inq._id}
+              className="bg-[#1a1a18] rounded-xl border border-white/10 overflow-hidden"
+            >
+              <div
+                className="flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-white/5 transition-colors"
+                onClick={() => setExpanded(expanded === inq._id ? null : inq._id)}
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 mb-0.5">
+                    <span className="font-semibold text-white text-sm truncate">{inq.name}</span>
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_STYLE[inq.status]}`}>
+                      {inq.status}
+                    </span>
+                  </div>
+                  <div className="flex gap-4 text-xs text-gray-500">
+                    <span>{inq.email}</span>
+                    <span>·</span>
+                    <span>{inq.checkIn} → {inq.checkOut}</span>
+                    <span>·</span>
+                    <span>{inq.guests} guests</span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-gray-500">
+                    {inq.receivedAt ? format(new Date(inq.receivedAt), 'd MMM yyyy, h:mm a') : '—'}
+                  </p>
+                </div>
+                <span className="text-gray-600 text-sm">{expanded === inq._id ? '▲' : '▼'}</span>
+              </div>
+
+              {expanded === inq._id && (
+                <div className="px-5 pb-5 border-t border-white/5">
+                  <div className="grid grid-cols-2 gap-4 mt-4 mb-4 text-sm">
+                    <div>
+                      <p className="text-gray-500 text-xs mb-0.5">Email</p>
+                      <a href={`mailto:${inq.email}`} className="text-luxury-gold hover:underline">{inq.email}</a>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs mb-0.5">Phone</p>
+                      <span className="text-gray-300">{inq.phone || '—'}</span>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs mb-0.5">Check-in</p>
+                      <span className="text-gray-300">{inq.checkIn}</span>
+                    </div>
+                    <div>
+                      <p className="text-gray-500 text-xs mb-0.5">Check-out</p>
+                      <span className="text-gray-300">{inq.checkOut}</span>
+                    </div>
+                  </div>
+
+                  {inq.message && (
+                    <div className="mb-4">
+                      <p className="text-gray-500 text-xs mb-1">Message</p>
+                      <p className="text-gray-300 text-sm leading-relaxed bg-black/20 rounded-lg px-4 py-3">{inq.message}</p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 text-xs mr-1">Status:</span>
+                    {(['new', 'replied', 'booked'] as Status[]).map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => updateStatus(inq._id, s)}
+                        className={`text-xs px-3 py-1 rounded-full border transition-colors ${
+                          inq.status === s
+                            ? STATUS_STYLE[s]
+                            : 'border-white/10 text-gray-500 hover:border-white/30 hover:text-gray-300'
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                    <a
+                      href={`mailto:${inq.email}?subject=Your enquiry for MAX Entertain Beachside Retreat`}
+                      className="ml-auto text-xs text-luxury-gold hover:underline"
+                    >
+                      Reply via email →
+                    </a>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {pages > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            onClick={() => load(page - 1)}
+            disabled={page === 1}
+            className="px-4 py-2 text-sm text-gray-400 border border-white/10 rounded-lg disabled:opacity-30 hover:bg-white/5 transition-colors"
+          >
+            ← Prev
+          </button>
+          <span className="px-4 py-2 text-sm text-gray-500">{page} / {pages}</span>
+          <button
+            onClick={() => load(page + 1)}
+            disabled={page === pages}
+            className="px-4 py-2 text-sm text-gray-400 border border-white/10 rounded-lg disabled:opacity-30 hover:bg-white/5 transition-colors"
+          >
+            Next →
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}

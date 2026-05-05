@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import ICAL from 'ical.js'
-import { fromZonedTime, toZonedTime, formatInTimeZone } from 'date-fns-tz'
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
+import { getDb } from '@/lib/mongodb'
 
 // Helper function to parse a single iCal feed
 async function parseICalFeed(icalUrl: string, australianTimezone: string): Promise<{ blockedDates: string[], eventCount: number }> {
@@ -143,6 +144,20 @@ export async function GET() {
         eventCount: result.eventCount,
       })
     })
+
+    // Merge manual blocks from MongoDB (if configured)
+    if (process.env.MONGODB_URI) {
+      try {
+        const db = await getDb()
+        const manualBlocks = await db
+          .collection('manual_blocks')
+          .find({}, { projection: { _id: 0, date: 1 } })
+          .toArray()
+        for (const { date } of manualBlocks) allBlockedDates.add(date)
+      } catch {
+        // DB unavailable — continue with iCal-only blocks
+      }
+    }
 
     // Convert Set to sorted array
     const blockedDates = Array.from(allBlockedDates).sort()

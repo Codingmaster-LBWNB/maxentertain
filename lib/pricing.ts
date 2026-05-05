@@ -84,6 +84,7 @@ export interface NightBreakdown {
   dateStr: string
   tier: PricingTier
   price: number
+  isOverride: boolean
 }
 
 export interface PriceSummary {
@@ -95,8 +96,14 @@ export interface PriceSummary {
 }
 
 // checkInStr and checkOutStr are YYYY-MM-DD (Australian timezone already applied by caller)
-// Pricing covers each night from checkIn up to (not including) checkOut
-export function getPriceSummary(checkInStr: string, checkOutStr: string): PriceSummary {
+// Pricing covers each night from checkIn up to (not including) checkOut.
+// overrides: per-date price overrides (take priority over tier). tierPrices: custom base rates.
+export function getPriceSummary(
+  checkInStr: string,
+  checkOutStr: string,
+  overrides: Record<string, number> = {},
+  tierPrices: Record<PricingTier, number> = NIGHTLY_RATES
+): PriceSummary {
   const nights: NightBreakdown[] = []
 
   const [iy, im, id] = checkInStr.split('-').map(Number)
@@ -107,7 +114,9 @@ export function getPriceSummary(checkInStr: string, checkOutStr: string): PriceS
   while (current < checkOutDate) {
     const dateStr = formatDateStr(current)
     const tier = getTierForDate(dateStr)
-    nights.push({ dateStr, tier, price: NIGHTLY_RATES[tier] })
+    const isOverride = dateStr in overrides
+    const price = isOverride ? overrides[dateStr]! : (tierPrices[tier] ?? NIGHTLY_RATES[tier])
+    nights.push({ dateStr, tier, price, isOverride })
     current.setDate(current.getDate() + 1)
   }
 
@@ -119,15 +128,16 @@ export function getPriceSummary(checkInStr: string, checkOutStr: string): PriceS
 }
 
 // Group nights by tier for a compact display
-export function groupNightsByTier(nights: NightBreakdown[]): { tier: PricingTier; count: number; subtotal: number }[] {
-  const map = new Map<PricingTier, { count: number; subtotal: number }>()
+export function groupNightsByTier(nights: NightBreakdown[]): { tier: PricingTier; count: number; subtotal: number; hasOverride: boolean }[] {
+  const map = new Map<PricingTier, { count: number; subtotal: number; hasOverride: boolean }>()
   for (const n of nights) {
     const existing = map.get(n.tier)
     if (existing) {
       existing.count++
       existing.subtotal += n.price
+      if (n.isOverride) existing.hasOverride = true
     } else {
-      map.set(n.tier, { count: 1, subtotal: n.price })
+      map.set(n.tier, { count: 1, subtotal: n.price, hasOverride: n.isOverride })
     }
   }
   // Return in priority order
