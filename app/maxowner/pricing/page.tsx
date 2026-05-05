@@ -177,7 +177,8 @@ export default function PricingPage() {
     const dateStr = auStr(day)
     const inMonth = day >= monthStart && day <= monthEnd
     const isPast = dateStr < todayStr
-    if (isPast || !inMonth) return
+    const isOtaBooked = otaBlocked.has(dateStr)
+    if (isPast || !inMonth || isOtaBooked) return
     e.preventDefault()
     dragRef.current = {
       start: day,
@@ -199,7 +200,8 @@ export default function PricingPage() {
     const dateStr = auStr(day)
     const inMonth = day >= monthStart && day <= monthEnd
     const isPast = dateStr < todayStr
-    if (isPast || !inMonth) return
+    const isOtaBooked = otaBlocked.has(dateStr)
+    if (isPast || !inMonth || isOtaBooked) return
 
     if (last && auStr(last) !== dateStr) dragRef.current.crossedCell = true
     dragRef.current.last = day
@@ -411,12 +413,12 @@ export default function PricingPage() {
               'aspect-square flex flex-col items-center justify-center rounded-lg text-xs transition-colors border '
             if (!inMonth) cls += 'opacity-[0.12] pointer-events-none border-transparent '
             else if (isPast) cls += 'opacity-30 cursor-not-allowed border-transparent bg-white/[0.02] '
+            else if (otaHere) cls += 'bg-red-500/10 text-red-300 border-red-400/30 line-through cursor-not-allowed '
             else {
               cls += 'cursor-pointer hover:bg-white/10 '
               if (override) cls += 'bg-luxury-gold/15 border-luxury-gold/35 '
               else cls += 'bg-white/5 border-white/10 '
               if (manualHere) cls += 'shadow-[inset_0_0_0_2px_rgba(248,113,113,0.45)] '
-              else if (otaHere) cls += 'opacity-65 '
               if (isPreview) cls += 'bg-sky-500/25 border-sky-400/70 ring-2 ring-sky-400/50 '
               else if (isSelected) cls += 'ring-2 ring-sky-400 border-sky-400/50 '
             }
@@ -425,11 +427,12 @@ export default function PricingPage() {
               <button
                 key={dateStr}
                 type="button"
-                disabled={isPast || !inMonth}
+                disabled={isPast || !inMonth || otaHere}
                 onPointerDown={(e) => handleDayPointerDown(day, e)}
                 onPointerEnter={() => handleDayPointerEnter(day)}
                 onPointerUp={handleDayPointerUp}
                 className={cls}
+                title={otaHere ? 'Booked via OTA calendar' : manualHere ? 'Manual block' : ''}
               >
                 <span className={`font-medium ${override ? 'text-luxury-gold' : 'text-gray-300'}`}>
                   {format(day, 'd')}
@@ -465,7 +468,7 @@ export default function PricingPage() {
             Manual block
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-white/5 border border-white/10 opacity-60 inline-block" />
+            <span className="w-3 h-3 rounded bg-red-500/10 border border-red-400/30 inline-block" />
             Booked (OTA)
           </span>
         </div>
