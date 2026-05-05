@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState, useEffect, useCallback } from 'react'
 
 interface Block {
@@ -58,7 +59,8 @@ export default function BlocksPage() {
     <div className="p-8 text-white">
       <h1 className="text-2xl font-serif text-luxury-gold mb-1">Blocked Dates</h1>
       <p className="text-gray-400 text-sm mb-8">
-        These are on top of OTA iCal blocks. Use for personal stays, maintenance, or hold periods.
+        These stack on top of OTA iCal blocks. You can also block nights from the{' '}
+        <Link href="/maxowner/pricing" className="text-luxury-gold hover:underline">Pricing</Link> calendar when editing selected dates.
       </p>
 
       {/* Add form */}
