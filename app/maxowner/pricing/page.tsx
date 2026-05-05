@@ -421,17 +421,21 @@ export default function PricingPage() {
             if (!inMonth) {
               wrapperCls += 'opacity-20 pointer-events-none bg-transparent '
             } else if (isPast) {
-              wrapperCls += 'opacity-40 cursor-not-allowed bg-white/[0.015] '
+              wrapperCls += 'opacity-35 cursor-not-allowed bg-white/[0.015] '
             } else if (otaHere) {
-              wrapperCls += 'bg-red-950/40 cursor-not-allowed '
+              // Booked via OTA — solid red fill
+              wrapperCls += 'bg-red-500/30 border-red-500/20 cursor-not-allowed '
             } else if (isPreview) {
-              wrapperCls += 'bg-sky-500/15 ring-2 ring-inset ring-sky-400/50 cursor-pointer '
+              wrapperCls += 'bg-sky-500/25 ring-2 ring-inset ring-sky-400/70 cursor-pointer '
             } else if (isSelected) {
-              wrapperCls += 'bg-sky-500/20 ring-2 ring-inset ring-sky-400 cursor-pointer '
+              wrapperCls += 'bg-sky-500/30 ring-2 ring-inset ring-sky-400 cursor-pointer '
             } else if (manualHere) {
-              wrapperCls += 'bg-red-950/30 cursor-pointer hover:bg-red-950/40 '
+              // Owner-blocked — amber/orange fill to distinguish from OTA red
+              wrapperCls += 'bg-amber-500/20 border-amber-500/20 cursor-pointer hover:bg-amber-500/25 '
             } else {
-              wrapperCls += 'bg-white/[0.02] hover:bg-white/[0.05] cursor-pointer '
+              // Open / available — green fill
+              wrapperCls += 'bg-emerald-500/15 hover:bg-emerald-500/22 cursor-pointer '
+              if (override) wrapperCls += 'ring-1 ring-inset ring-luxury-gold/60 '
             }
 
             const tooltipX = colIndex >= 5 ? 'right-0' : colIndex <= 1 ? 'left-0' : 'left-1/2 -translate-x-1/2'
@@ -456,24 +460,24 @@ export default function PricingPage() {
                   <span className={`absolute top-3 right-3 w-2 h-2 rounded-full ${TIER_DOT_COLOR[tier]}`} title={TIER_LABELS[tier]} />
                 )}
 
-                {/* Status pill — middle of cell (OTA booked or manual block) */}
+                {/* Status pill — middle of cell */}
                 {inMonth && !isPast && otaHere && (
-                  <div className="absolute inset-x-2 top-9 bg-red-500/25 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
-                    <span className="text-xs text-red-300 font-medium truncate">Booked</span>
+                  <div className="absolute inset-x-2 top-9 bg-red-600/40 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-300 flex-shrink-0" />
+                    <span className="text-xs text-red-200 font-semibold truncate">Booked</span>
                   </div>
                 )}
                 {inMonth && !isPast && manualHere && (
-                  <div className="absolute inset-x-2 top-9 bg-orange-500/20 border border-orange-400/30 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0" />
-                    <span className="text-xs text-orange-300 font-medium truncate">
+                  <div className="absolute inset-x-2 top-9 bg-amber-600/30 border border-amber-400/30 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-300 flex-shrink-0" />
+                    <span className="text-xs text-amber-200 font-semibold truncate">
                       {manualBlockMap[dateStr] || 'Blocked'}
                     </span>
                   </div>
                 )}
                 {inMonth && !isPast && override && !otaHere && !manualHere && (
-                  <div className="absolute inset-x-2 top-9 bg-luxury-gold/10 rounded-md px-2.5 py-1.5">
-                    <span className="text-xs text-luxury-gold/80 font-medium">Custom price</span>
+                  <div className="absolute inset-x-2 top-9 bg-luxury-gold/15 rounded-md px-2.5 py-1.5">
+                    <span className="text-xs text-luxury-gold font-medium">Custom price</span>
                   </div>
                 )}
 
@@ -570,44 +574,44 @@ export default function PricingPage() {
         {/* Legend */}
         <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 text-xs text-gray-500">
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded ring-2 ring-sky-400 bg-emerald-500/10 border border-emerald-400/15 inline-block" />
-            Selected
+            <span className="w-3.5 h-3.5 rounded bg-emerald-500/30 border border-emerald-400/30 inline-block" />
+            Available
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-emerald-500/10 border border-emerald-400/15 ring-1 ring-luxury-gold/40 inline-block" />
-            Open (custom price)
+            <span className="w-3.5 h-3.5 rounded bg-red-500/40 border border-red-400/30 inline-block" />
+            Booked (OTA)
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-emerald-500/10 border border-emerald-400/15 inline-block" />
-            Open
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-red-500/15 border border-red-400/25 shadow-[inset_0_0_0_2px_rgba(248,113,113,0.4)] inline-block" />
+            <span className="w-3.5 h-3.5 rounded bg-amber-500/30 border border-amber-400/30 inline-block" />
             Manual block
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-red-500/20 border border-red-400/30 inline-block" />
-            Booked (OTA)
+            <span className="w-3.5 h-3.5 rounded bg-sky-500/35 ring-2 ring-inset ring-sky-400 inline-block" />
+            Selected
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-3.5 h-3.5 rounded bg-emerald-500/30 ring-1 ring-inset ring-luxury-gold/60 inline-block" />
+            Custom price
           </span>
           <span className="text-gray-600">·</span>
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-sm bg-orange-400 inline-block" />
+            <span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />
             Peak
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-sm bg-purple-400 inline-block" />
+            <span className="w-2 h-2 rounded-full bg-purple-400 inline-block" />
             Public hol
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-sm bg-sky-400 inline-block" />
+            <span className="w-2 h-2 rounded-full bg-sky-400 inline-block" />
             School hol
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-sm bg-amber-400 inline-block" />
+            <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />
             Weekend
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-sm bg-gray-500 inline-block" />
+            <span className="w-2 h-2 rounded-full bg-gray-500 inline-block" />
             Standard
           </span>
         </div>
