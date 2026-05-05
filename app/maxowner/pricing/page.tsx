@@ -116,12 +116,8 @@ export default function PricingPage() {
   const overrideMap = Object.fromEntries(overrides.map((o) => [o.date, o]))
   const minNightsMap = Object.fromEntries(minNightsOverrides.map((m) => [m.date, m.minNights]))
 
-  // Two-month view: always show currentMonth and the next month
-  const nextMonth = addMonths(currentMonth, 1)
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
-  const nextMonthStart = startOfMonth(nextMonth)
-  const nextMonthEnd = endOfMonth(nextMonth)
 
   const todayStr = formatInTimeZone(new Date(), TZ, 'yyyy-MM-dd')
 
@@ -195,13 +191,9 @@ export default function PricingPage() {
     }
   }, [endPointerDrag])
 
-  const isInEitherMonth = (day: Date) =>
-    (day >= monthStart && day <= monthEnd) ||
-    (day >= nextMonthStart && day <= nextMonthEnd)
-
   const handleDayPointerDown = (day: Date, e: React.PointerEvent) => {
     const dateStr = auStr(day)
-    const inMonth = isInEitherMonth(day)
+    const inMonth = day >= monthStart && day <= monthEnd
     const isPast = dateStr < todayStr
     const isOtaBooked = otaBlocked.has(dateStr)
     if (isPast || !inMonth || isOtaBooked) return
@@ -224,7 +216,7 @@ export default function PricingPage() {
     const { start, last } = dragRef.current
     if (!start) return
     const dateStr = auStr(day)
-    const inMonth = isInEitherMonth(day)
+    const inMonth = day >= monthStart && day <= monthEnd
     const isPast = dateStr < todayStr
     const isOtaBooked = otaBlocked.has(dateStr)
     if (isPast || !inMonth || isOtaBooked) return
@@ -396,10 +388,7 @@ export default function PricingPage() {
     const gridDays = eachDayOfInterval({ start: calStart, end: calEnd })
 
     return (
-      <div className="flex-1 min-w-[280px]">
-        <h3 className="text-center font-serif text-base mb-3 text-gray-300">
-          {format(monthRef, 'MMMM yyyy')}
-        </h3>
+      <div>
         <div className="grid grid-cols-7 gap-1 mb-1 select-none">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
             <div key={d} className="text-center text-xs text-gray-500 py-1">{d}</div>
@@ -512,7 +501,7 @@ export default function PricingPage() {
       </p>
 
       {/* Calendar */}
-      <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6 mb-8 overflow-x-auto">
+      <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6 mb-8">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-2">
             <button
@@ -523,9 +512,7 @@ export default function PricingPage() {
             >
               ←
             </button>
-            <span className="font-serif text-lg">
-              {format(currentMonth, 'MMMM yyyy')} – {format(nextMonth, 'MMMM yyyy')}
-            </span>
+            <span className="font-serif text-lg">{format(currentMonth, 'MMMM yyyy')}</span>
             <button
               type="button"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
@@ -555,11 +542,7 @@ export default function PricingPage() {
           </div>
         </div>
 
-        {/* Two-month grid */}
-        <div className="flex gap-8 min-w-[560px]">
-          {renderCalendarGrid(currentMonth)}
-          {renderCalendarGrid(nextMonth)}
-        </div>
+        {renderCalendarGrid(currentMonth)}
 
         {/* Legend */}
         <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 text-xs text-gray-500">
