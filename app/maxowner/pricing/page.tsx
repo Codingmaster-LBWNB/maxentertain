@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { format, startOfMonth, endOfMonth, addMonths, subMonths, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { getTierForDate, TIER_LABELS, NIGHTLY_RATES, PricingTier } from '@/lib/pricing'
+import { blockedDates as defaultBlockedDates } from '@/config/property'
 
 const TZ = 'Australia/Melbourne'
 
@@ -88,7 +89,9 @@ export default function PricingPage() {
       const list = Array.isArray(data.blockedDates) ? data.blockedDates : []
       setOtaBlocked(new Set(list.filter((d: string) => !manualSet.has(d))))
     } else {
-      setOtaBlocked(new Set())
+      // Mirror frontend behavior: if live calendar is unavailable, keep UI usable
+      // with config fallback dates so owner and guest views stay aligned.
+      setOtaBlocked(new Set(defaultBlockedDates.filter((d) => !manualSet.has(d))))
     }
     setLoading(false)
   }, [])
