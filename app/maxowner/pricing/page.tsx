@@ -388,13 +388,14 @@ export default function PricingPage() {
     const gridDays = eachDayOfInterval({ start: calStart, end: calEnd })
 
     return (
-      <div>
-        <div className="grid grid-cols-7 gap-2 mb-2 select-none">
+      <div className="border border-white/10 rounded-xl overflow-hidden">
+        <div className="grid grid-cols-7 touch-none select-none">
+          {/* Day-name header row — part of the same grid so columns align perfectly */}
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-            <div key={d} className="text-center text-xs font-medium text-gray-500 py-1">{d}</div>
+            <div key={d} className="text-center text-xs font-medium text-gray-500 py-2 border-b border-r border-white/10 bg-white/[0.03] last:border-r-0">
+              {d}
+            </div>
           ))}
-        </div>
-        <div className="grid grid-cols-7 gap-2 touch-none select-none">
           {gridDays.map((day) => {
             const dateStr = auStr(day)
             const inMonth = day >= mStart && day <= mEnd
@@ -408,25 +409,24 @@ export default function PricingPage() {
             const otaHere = otaBlocked.has(dateStr) && !manualHere
             const isSelected = selectedSet.has(dateStr)
             const isPreview = previewSet?.has(dateStr) ?? false
-            // column index 0=Mon … 6=Sun for tooltip edge detection
             const colIndex = (day.getDay() + 6) % 7
 
             let cls =
-              'h-20 flex flex-col items-center justify-center rounded-lg text-sm transition-colors border '
-            if (!inMonth) cls += 'opacity-[0.12] pointer-events-none border-transparent '
-            else if (isPast) cls += 'opacity-30 cursor-not-allowed border-transparent bg-white/[0.02] '
-            else if (otaHere) cls += 'bg-red-500/20 border-red-400/30 cursor-not-allowed text-red-300 '
+              'h-20 flex flex-col items-center justify-center text-sm transition-colors border-b border-r border-white/10 '
+            if (!inMonth) cls += 'opacity-[0.12] pointer-events-none '
+            else if (isPast) cls += 'opacity-30 cursor-not-allowed bg-white/[0.02] '
+            else if (otaHere) cls += 'bg-red-500/20 cursor-not-allowed text-red-300 '
             else {
               cls += 'cursor-pointer '
               if (manualHere) {
-                cls += 'bg-red-500/15 border-red-400/25 shadow-[inset_0_0_0_2px_rgba(248,113,113,0.4)] hover:bg-red-500/20 '
+                cls += 'bg-red-500/15 shadow-[inset_0_0_0_2px_rgba(248,113,113,0.5)] hover:bg-red-500/20 '
               } else if (isPreview) {
-                cls += 'bg-sky-500/20 border-sky-400/60 ring-2 ring-sky-400/50 '
+                cls += 'bg-sky-500/20 ring-2 ring-inset ring-sky-400/60 '
               } else if (isSelected) {
-                cls += 'bg-emerald-500/10 border-emerald-400/15 ring-2 ring-sky-400 '
+                cls += 'bg-emerald-500/15 ring-2 ring-inset ring-sky-400 '
               } else {
-                cls += 'bg-emerald-500/10 border-emerald-400/15 hover:bg-emerald-500/15 '
-                if (override) cls += 'ring-1 ring-luxury-gold/40 '
+                cls += 'bg-emerald-500/10 hover:bg-emerald-500/15 '
+                if (override) cls += 'ring-1 ring-inset ring-luxury-gold/50 '
               }
             }
 
