@@ -12,7 +12,7 @@ import { getPriceSummary, groupNightsByTier, TIER_LABELS, NIGHTLY_RATES, Pricing
 type PricingState =
   | { status: 'loading' }
   | { status: 'error' }
-  | { status: 'loaded'; overrides: Record<string, number>; tierPrices: Record<PricingTier, number> }
+  | { status: 'loaded'; overrides: Record<string, number>; tierPrices: Record<PricingTier, number>; minNightsMap: Record<string, number> }
 
 function usePricingOverrides(): PricingState {
   const [state, setState] = useState<PricingState>({ status: 'loading' })
@@ -23,7 +23,12 @@ function usePricingOverrides(): PricingState {
         if (!r.ok) throw new Error('failed')
         return r.json()
       })
-      .then((data) => setState({ status: 'loaded', overrides: data.overrides, tierPrices: data.tierPrices }))
+      .then((data) => setState({
+        status: 'loaded',
+        overrides: data.overrides,
+        tierPrices: data.tierPrices,
+        minNightsMap: data.minNightsMap ?? {},
+      }))
       .catch(() => setState({ status: 'error' }))
   }, [])
 
@@ -56,6 +61,7 @@ export default function Calendar({
   const pricingReady = pricing.status === 'loaded'
   const overrides = pricingReady ? pricing.overrides : {}
   const tierPrices = pricingReady ? pricing.tierPrices : NIGHTLY_RATES
+  const minNightsMap = pricingReady ? pricing.minNightsMap : {}
 
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
@@ -117,7 +123,19 @@ export default function Calendar({
       setCheckIn(day)
       setCheckOut(null)
     } else {
-      setCheckOut(day)
+      // Enforce minimum nights: find the maximum minNights across all nights in the proposed range
+      const nights = eachDayOfInterval({ start: checkIn, end: day }).slice(0, -1) // exclude checkout day
+      const requiredMin = nights.reduce((max, n) => {
+        const mn = minNightsMap[auStr(n)]
+        return mn && mn > max ? mn : max
+      }, 1)
+      if (nights.length < requiredMin) {
+        // Fewer nights than required — restart selection from clicked date
+        setCheckIn(day)
+        setCheckOut(null)
+      } else {
+        setCheckOut(day)
+      }
     }
   }
 

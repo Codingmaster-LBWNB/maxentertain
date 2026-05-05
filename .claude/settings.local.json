@@ -35,7 +35,8 @@
       "Bash(b6)",
       "Bash(bunk)",
       "Bash(single)",
-      "Bash(king\")"
+      "Bash(king\")",
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")"
     ]
   }
 }

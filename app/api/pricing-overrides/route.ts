@@ -7,15 +7,16 @@ export const revalidate = 3600
 export async function GET() {
   // If MongoDB is not configured, return defaults so the calendar shows tier prices as normal
   if (!process.env.MONGODB_URI) {
-    return NextResponse.json({ overrides: {}, tierPrices: NIGHTLY_RATES, source: 'unconfigured' })
+    return NextResponse.json({ overrides: {}, tierPrices: NIGHTLY_RATES, minNightsMap: {}, source: 'unconfigured' })
   }
 
   try {
     const db = await getDb()
 
-    const [overrideDocs, tierDocs] = await Promise.all([
+    const [overrideDocs, tierDocs, minNightsDocs] = await Promise.all([
       db.collection('pricing_overrides').find({}, { projection: { _id: 0, date: 1, price: 1 } }).toArray(),
       db.collection('pricing_tiers').find({}, { projection: { _id: 0, tier: 1, price: 1 } }).toArray(),
+      db.collection('min_nights_overrides').find({}, { projection: { _id: 0, date: 1, minNights: 1 } }).toArray(),
     ])
 
     const overrides: Record<string, number> = {}
@@ -30,7 +31,12 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({ overrides, tierPrices, source: 'db' })
+    const minNightsMap: Record<string, number> = {}
+    for (const doc of minNightsDocs) {
+      minNightsMap[doc.date] = doc.minNights
+    }
+
+    return NextResponse.json({ overrides, tierPrices, minNightsMap, source: 'db' })
   } catch {
     // DB is configured but unreachable — signal to frontend to show "-"
     return NextResponse.json({ error: 'Pricing data unavailable' }, { status: 503 })

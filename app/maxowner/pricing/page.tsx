@@ -27,6 +27,11 @@ interface ManualBlock {
   reason: string
 }
 
+interface MinNightsOverride {
+  date: string
+  minNights: number
+}
+
 function auStr(date: Date) {
   return formatInTimeZone(date, TZ, 'yyyy-MM-dd')
 }
@@ -41,11 +46,20 @@ function mergeUniqueSorted(dates: string[]): string[] {
   return [...new Set(dates)].sort()
 }
 
+const TIER_DOT_COLOR: Record<PricingTier, string> = {
+  SUMMER_PEAK:    'bg-orange-400',
+  PUBLIC_HOLIDAY: 'bg-purple-400',
+  SCHOOL_HOLIDAY: 'bg-sky-400',
+  WEEKEND:        'bg-amber-400',
+  STANDARD:       'bg-gray-500',
+}
+
 export default function PricingPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [overrides, setOverrides] = useState<Override[]>([])
   const [tiers, setTiers] = useState<TierRow[]>([])
   const [manualBlocks, setManualBlocks] = useState<ManualBlock[]>([])
+  const [minNightsOverrides, setMinNightsOverrides] = useState<MinNightsOverride[]>([])
   const [otaBlocked, setOtaBlocked] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
 
@@ -59,11 +73,11 @@ export default function PricingPage() {
     crossedCell: false,
   })
 
-  // Modal state — applies to all dates in `modal.dates`
   const [modal, setModal] = useState<{
     dates: string[]
     price: string
     note: string
+    minNights: string
     blockDates: boolean
     blockReason: string
   } | null>(null)
@@ -72,16 +86,18 @@ export default function PricingPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [ovRes, tierRes, mbRes, calRes] = await Promise.all([
+    const [ovRes, tierRes, mbRes, calRes, mnRes] = await Promise.all([
       fetch('/api/maxowner/pricing-overrides'),
       fetch('/api/maxowner/pricing-tiers'),
       fetch('/api/maxowner/manual-blocks'),
       fetch('/api/calendar').catch(() => null),
+      fetch('/api/maxowner/min-nights'),
     ])
     setOverrides(await ovRes.json())
     setTiers(await tierRes.json())
     const mbJson: ManualBlock[] = await mbRes.json()
     setManualBlocks(mbJson)
+    setMinNightsOverrides(await mnRes.json())
     const manualSet = new Set(mbJson.map((b) => b.date))
 
     if (calRes?.ok) {
@@ -89,8 +105,6 @@ export default function PricingPage() {
       const list = Array.isArray(data.blockedDates) ? data.blockedDates : []
       setOtaBlocked(new Set(list.filter((d: string) => !manualSet.has(d))))
     } else {
-      // Mirror frontend behavior: if live calendar is unavailable, keep UI usable
-      // with config fallback dates so owner and guest views stay aligned.
       setOtaBlocked(new Set(defaultBlockedDates.filter((d) => !manualSet.has(d))))
     }
     setLoading(false)
@@ -100,12 +114,14 @@ export default function PricingPage() {
 
   const manualBlockMap = Object.fromEntries(manualBlocks.map((b) => [b.date, b.reason]))
   const overrideMap = Object.fromEntries(overrides.map((o) => [o.date, o]))
+  const minNightsMap = Object.fromEntries(minNightsOverrides.map((m) => [m.date, m.minNights]))
 
+  // Two-month view: always show currentMonth and the next month
+  const nextMonth = addMonths(currentMonth, 1)
   const monthStart = startOfMonth(currentMonth)
   const monthEnd = endOfMonth(currentMonth)
-  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 })
-  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 })
-  const days = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
+  const nextMonthStart = startOfMonth(nextMonth)
+  const nextMonthEnd = endOfMonth(nextMonth)
 
   const todayStr = formatInTimeZone(new Date(), TZ, 'yyyy-MM-dd')
 
@@ -133,16 +149,19 @@ export default function PricingPage() {
         price = refOv.price
         note = refOv.note ?? ''
       }
+      const firstMinNights = minNightsMap[first]
+      const uniformMinNights = sorted.every((d) => minNightsMap[d] === firstMinNights)
       const allManualBlocked = sorted.every((d) => manualBlockMap[d] !== undefined)
       setModal({
         dates: sorted,
         price: String(price),
         note,
+        minNights: uniformMinNights && firstMinNights ? String(firstMinNights) : '',
         blockDates: allManualBlocked,
         blockReason: allManualBlocked ? (manualBlockMap[first] ?? '') : '',
       })
     },
-    [tiers, overrideMap, manualBlockMap]
+    [tiers, overrideMap, manualBlockMap, minNightsMap]
   )
 
   const endPointerDrag = useCallback(() => {
@@ -176,9 +195,13 @@ export default function PricingPage() {
     }
   }, [endPointerDrag])
 
+  const isInEitherMonth = (day: Date) =>
+    (day >= monthStart && day <= monthEnd) ||
+    (day >= nextMonthStart && day <= nextMonthEnd)
+
   const handleDayPointerDown = (day: Date, e: React.PointerEvent) => {
     const dateStr = auStr(day)
-    const inMonth = day >= monthStart && day <= monthEnd
+    const inMonth = isInEitherMonth(day)
     const isPast = dateStr < todayStr
     const isOtaBooked = otaBlocked.has(dateStr)
     if (isPast || !inMonth || isOtaBooked) return
@@ -201,7 +224,7 @@ export default function PricingPage() {
     const { start, last } = dragRef.current
     if (!start) return
     const dateStr = auStr(day)
-    const inMonth = day >= monthStart && day <= monthEnd
+    const inMonth = isInEitherMonth(day)
     const isPast = dateStr < todayStr
     const isOtaBooked = otaBlocked.has(dateStr)
     if (isPast || !inMonth || isOtaBooked) return
@@ -240,6 +263,29 @@ export default function PricingPage() {
           })
         )
       )
+
+      const mn = modal.minNights ? Number(modal.minNights) : null
+      if (mn && mn >= 1) {
+        await Promise.all(
+          dates.map((date) =>
+            fetch('/api/maxowner/min-nights', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ date, minNights: mn }),
+            })
+          )
+        )
+      } else if (modal.minNights === '') {
+        await Promise.all(
+          dates.map((date) =>
+            fetch('/api/maxowner/min-nights', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ date }),
+            })
+          )
+        )
+      }
 
       if (modal.blockDates) {
         await Promise.all(
@@ -341,16 +387,132 @@ export default function PricingPage() {
   const anyModalOverrides = modal ? modal.dates.some((d) => overrideMap[d]) : false
   const anyModalManualBlocks = modal ? modal.dates.some((d) => manualBlockMap[d] !== undefined) : false
 
+  // Render a single month calendar grid (used twice for two-month view)
+  const renderCalendarGrid = (monthRef: Date) => {
+    const mStart = startOfMonth(monthRef)
+    const mEnd = endOfMonth(monthRef)
+    const calStart = startOfWeek(mStart, { weekStartsOn: 1 })
+    const calEnd = endOfWeek(mEnd, { weekStartsOn: 1 })
+    const gridDays = eachDayOfInterval({ start: calStart, end: calEnd })
+
+    return (
+      <div className="flex-1 min-w-[280px]">
+        <h3 className="text-center font-serif text-base mb-3 text-gray-300">
+          {format(monthRef, 'MMMM yyyy')}
+        </h3>
+        <div className="grid grid-cols-7 gap-1 mb-1 select-none">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
+            <div key={d} className="text-center text-xs text-gray-500 py-1">{d}</div>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-1 touch-none select-none">
+          {gridDays.map((day) => {
+            const dateStr = auStr(day)
+            const inMonth = day >= mStart && day <= mEnd
+            const isPast = dateStr < todayStr
+            const override = overrideMap[dateStr]
+            const tier = getTierForDate(dateStr)
+            const tierRow = tiers.find((t) => t.tier === tier)
+            const basePrice = tierRow?.price ?? NIGHTLY_RATES[tier]
+            const displayPrice = override ? override.price : basePrice
+            const manualHere = manualBlockMap[dateStr] !== undefined
+            const otaHere = otaBlocked.has(dateStr) && !manualHere
+            const isSelected = selectedSet.has(dateStr)
+            const isPreview = previewSet?.has(dateStr) ?? false
+            // column index 0=Mon … 6=Sun for tooltip edge detection
+            const colIndex = (day.getDay() + 6) % 7
+
+            let cls =
+              'aspect-square flex flex-col items-center justify-center rounded-lg text-xs transition-colors border '
+            if (!inMonth) cls += 'opacity-[0.12] pointer-events-none border-transparent '
+            else if (isPast) cls += 'opacity-30 cursor-not-allowed border-transparent bg-white/[0.02] '
+            else if (otaHere) cls += 'bg-red-500/20 border-red-400/30 cursor-not-allowed text-red-300 '
+            else {
+              cls += 'cursor-pointer '
+              if (manualHere) {
+                cls += 'bg-red-500/15 border-red-400/25 shadow-[inset_0_0_0_2px_rgba(248,113,113,0.4)] hover:bg-red-500/20 '
+              } else if (isPreview) {
+                cls += 'bg-sky-500/20 border-sky-400/60 ring-2 ring-sky-400/50 '
+              } else if (isSelected) {
+                cls += 'bg-emerald-500/10 border-emerald-400/15 ring-2 ring-sky-400 '
+              } else {
+                cls += 'bg-emerald-500/10 border-emerald-400/15 hover:bg-emerald-500/15 '
+                if (override) cls += 'ring-1 ring-luxury-gold/40 '
+              }
+            }
+
+            const tooltipX = colIndex >= 5 ? 'right-0' : colIndex <= 1 ? 'left-0' : 'left-1/2 -translate-x-1/2'
+
+            return (
+              <div key={dateStr} className="relative group">
+                <button
+                  type="button"
+                  disabled={isPast || !inMonth || otaHere}
+                  onPointerDown={(e) => handleDayPointerDown(day, e)}
+                  onPointerEnter={() => handleDayPointerEnter(day)}
+                  onPointerUp={handleDayPointerUp}
+                  className={cls}
+                  title=""
+                >
+                  <span className={`font-medium ${override ? 'text-luxury-gold' : otaHere ? 'text-red-300 line-through' : 'text-gray-300'}`}>
+                    {format(day, 'd')}
+                  </span>
+                  {inMonth && !isPast && (
+                    <span className={`w-1.5 h-1.5 rounded-sm mt-0.5 ${TIER_DOT_COLOR[tier]}`} />
+                  )}
+                  {inMonth && !isPast && (
+                    <span className={`text-[10px] mt-0.5 ${override ? 'text-luxury-gold' : 'text-gray-500'}`}>
+                      ${(displayPrice / 1000).toFixed(1)}k
+                    </span>
+                  )}
+                  {inMonth && !isPast && minNightsMap[dateStr] && (
+                    <span className="text-[9px] text-sky-400/80 mt-0.5 leading-none font-medium">
+                      {minNightsMap[dateStr]}n min
+                    </span>
+                  )}
+                  {inMonth && manualHere && !isPast && (
+                    <span className="text-[9px] text-red-400/90 mt-0.5 leading-none">blocked</span>
+                  )}
+                </button>
+
+                {/* Hover tooltip */}
+                {inMonth && !isPast && (
+                  <div
+                    className={`absolute bottom-full ${tooltipX} mb-2 z-50 w-48 bg-[#0f0f0d] border border-white/20 rounded-lg p-2.5 text-xs hidden group-hover:block shadow-xl pointer-events-none`}
+                  >
+                    <div className="font-medium text-gray-200 mb-1">{dateStr}</div>
+                    <div className="text-gray-400">Tier: {TIER_LABELS[tier]}</div>
+                    <div className="text-gray-400">Base: ${basePrice.toLocaleString()}/night</div>
+                    {override && (
+                      <div className="text-luxury-gold">Override: ${override.price.toLocaleString()}/night</div>
+                    )}
+                    {minNightsMap[dateStr] && (
+                      <div className="text-sky-400">Min stay: {minNightsMap[dateStr]} nights</div>
+                    )}
+                    {manualHere && (
+                      <div className="text-red-400">Blocked: {manualBlockMap[dateStr] || 'Manual block'}</div>
+                    )}
+                    {otaHere && <div className="text-red-400">Booked via OTA</div>}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="p-8 text-white">
       <h1 className="text-2xl font-serif text-luxury-gold mb-1">Pricing</h1>
       <p className="text-gray-400 text-sm mb-8 max-w-xl">
         Drag across nights or click individual dates to build a selection (like Airbnb). Then use{' '}
-        <span className="text-gray-300">Edit selected</span> to set price, notes, and manual calendar blocks in one place.
+        <span className="text-gray-300">Edit selected</span> to set price, min nights, and calendar blocks.
       </p>
 
       {/* Calendar */}
-      <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6 mb-8">
+      <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6 mb-8 overflow-x-auto">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-2">
             <button
@@ -361,7 +523,9 @@ export default function PricingPage() {
             >
               ←
             </button>
-            <span className="font-serif text-lg">{format(currentMonth, 'MMMM yyyy')}</span>
+            <span className="font-serif text-lg">
+              {format(currentMonth, 'MMMM yyyy')} – {format(nextMonth, 'MMMM yyyy')}
+            </span>
             <button
               type="button"
               onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
@@ -391,88 +555,54 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 mb-1 select-none">
-          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-            <div key={d} className="text-center text-xs text-gray-500 py-1">{d}</div>
-          ))}
+        {/* Two-month grid */}
+        <div className="flex gap-8 min-w-[560px]">
+          {renderCalendarGrid(currentMonth)}
+          {renderCalendarGrid(nextMonth)}
         </div>
 
-        <div className="grid grid-cols-7 gap-1 touch-none select-none">
-          {days.map((day) => {
-            const dateStr = auStr(day)
-            const inMonth = day >= monthStart && day <= monthEnd
-            const isPast = dateStr < todayStr
-            const override = overrideMap[dateStr]
-            const tier = getTierForDate(dateStr)
-            const tierRow = tiers.find((t) => t.tier === tier)
-            const basePrice = tierRow?.price ?? NIGHTLY_RATES[tier]
-            const displayPrice = override ? override.price : basePrice
-            const manualHere = manualBlockMap[dateStr] !== undefined
-            const otaHere = otaBlocked.has(dateStr) && !manualHere
-            const isSelected = selectedSet.has(dateStr)
-            const isPreview = previewSet?.has(dateStr) ?? false
-
-            let cls =
-              'aspect-square flex flex-col items-center justify-center rounded-lg text-xs transition-colors border '
-            if (!inMonth) cls += 'opacity-[0.12] pointer-events-none border-transparent '
-            else if (isPast) cls += 'opacity-30 cursor-not-allowed border-transparent bg-white/[0.02] '
-            else if (otaHere) cls += 'bg-red-500/10 text-red-300 border-red-400/30 line-through cursor-not-allowed '
-            else {
-              cls += 'cursor-pointer hover:bg-white/10 '
-              if (override) cls += 'bg-luxury-gold/15 border-luxury-gold/35 '
-              else cls += 'bg-white/5 border-white/10 '
-              if (manualHere) cls += 'shadow-[inset_0_0_0_2px_rgba(248,113,113,0.45)] '
-              if (isPreview) cls += 'bg-sky-500/25 border-sky-400/70 ring-2 ring-sky-400/50 '
-              else if (isSelected) cls += 'ring-2 ring-sky-400 border-sky-400/50 '
-            }
-
-            return (
-              <button
-                key={dateStr}
-                type="button"
-                disabled={isPast || !inMonth || otaHere}
-                onPointerDown={(e) => handleDayPointerDown(day, e)}
-                onPointerEnter={() => handleDayPointerEnter(day)}
-                onPointerUp={handleDayPointerUp}
-                className={cls}
-                title={otaHere ? 'Booked via OTA calendar' : manualHere ? 'Manual block' : ''}
-              >
-                <span className={`font-medium ${override ? 'text-luxury-gold' : 'text-gray-300'}`}>
-                  {format(day, 'd')}
-                </span>
-                {inMonth && !isPast && (
-                  <span className={`text-[10px] mt-0.5 ${override ? 'text-luxury-gold' : 'text-gray-500'}`}>
-                    ${(displayPrice / 1000).toFixed(1)}k
-                  </span>
-                )}
-                {inMonth && manualHere && !isPast && (
-                  <span className="text-[9px] text-red-400/90 mt-0.5 leading-none">blocked</span>
-                )}
-              </button>
-            )
-          })}
-        </div>
-
-        <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4 text-xs text-gray-500">
+        {/* Legend */}
+        <div className="flex flex-wrap gap-x-5 gap-y-2 mt-5 text-xs text-gray-500">
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded ring-2 ring-sky-400 border border-sky-400/40 bg-white/5 inline-block" />
+            <span className="w-3 h-3 rounded ring-2 ring-sky-400 bg-emerald-500/10 border border-emerald-400/15 inline-block" />
             Selected
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-luxury-gold/15 border border-luxury-gold/40 inline-block" />
-            Custom price
+            <span className="w-3 h-3 rounded bg-emerald-500/10 border border-emerald-400/15 ring-1 ring-luxury-gold/40 inline-block" />
+            Open (custom price)
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-white/5 border border-white/10 inline-block" />
-            Tier price
+            <span className="w-3 h-3 rounded bg-emerald-500/10 border border-emerald-400/15 inline-block" />
+            Open
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-white/5 border border-red-400/50 shadow-[inset_0_0_0_2px_rgba(248,113,113,0.45)] inline-block" />
+            <span className="w-3 h-3 rounded bg-red-500/15 border border-red-400/25 shadow-[inset_0_0_0_2px_rgba(248,113,113,0.4)] inline-block" />
             Manual block
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded bg-red-500/10 border border-red-400/30 inline-block" />
+            <span className="w-3 h-3 rounded bg-red-500/20 border border-red-400/30 inline-block" />
             Booked (OTA)
+          </span>
+          <span className="text-gray-600">·</span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-sm bg-orange-400 inline-block" />
+            Peak
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-sm bg-purple-400 inline-block" />
+            Public hol
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-sm bg-sky-400 inline-block" />
+            School hol
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-sm bg-amber-400 inline-block" />
+            Weekend
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-sm bg-gray-500 inline-block" />
+            Standard
           </span>
         </div>
       </div>
@@ -487,6 +617,9 @@ export default function PricingPage() {
                 <div>
                   <span className="text-luxury-gold font-medium">{o.date}</span>
                   <span className="text-gray-400 ml-3">${o.price.toLocaleString()}/night</span>
+                  {minNightsMap[o.date] && (
+                    <span className="text-sky-400/80 ml-2 text-xs">{minNightsMap[o.date]}n min</span>
+                  )}
                   {o.note && <span className="text-gray-500 ml-2 text-xs">— {o.note}</span>}
                 </div>
                 <button
@@ -510,10 +643,11 @@ export default function PricingPage() {
           <div className="space-y-3">
             {tiers.map((row) => (
               <div key={row.tier} className="flex items-center justify-between">
-                <div>
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-sm ${TIER_DOT_COLOR[row.tier]}`} />
                   <span className="text-gray-300 text-sm">{row.label}</span>
                   {row.isCustom && (
-                    <span className="ml-2 text-xs text-luxury-gold bg-luxury-gold/10 px-1.5 py-0.5 rounded">custom</span>
+                    <span className="text-xs text-luxury-gold bg-luxury-gold/10 px-1.5 py-0.5 rounded">custom</span>
                   )}
                 </div>
                 <div className="flex items-center gap-4">
@@ -572,6 +706,20 @@ export default function PricingPage() {
                   min="0"
                   step="50"
                 />
+              </div>
+              <div>
+                <label className="block text-xs text-gray-400 mb-1">Minimum nights (blank = no override)</label>
+                <input
+                  type="number"
+                  value={modal.minNights}
+                  onChange={(e) => setModal({ ...modal, minNights: e.target.value })}
+                  placeholder="e.g. 3"
+                  min="1"
+                  max="30"
+                  step="1"
+                  className="w-full px-3 py-2.5 bg-[#0f0f0d] border border-white/10 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-luxury-gold transition-colors"
+                />
+                <p className="text-gray-600 text-xs mt-1">Guests selecting fewer nights see these dates as unavailable.</p>
               </div>
               <div>
                 <label className="block text-xs text-gray-400 mb-1">Note (optional)</label>
