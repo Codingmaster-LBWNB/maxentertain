@@ -389,12 +389,12 @@ export default function PricingPage() {
 
     return (
       <div>
-        <div className="grid grid-cols-7 gap-1 mb-1 select-none">
+        <div className="grid grid-cols-7 gap-2 mb-2 select-none">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-            <div key={d} className="text-center text-xs text-gray-500 py-1">{d}</div>
+            <div key={d} className="text-center text-xs font-medium text-gray-500 py-1">{d}</div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1 touch-none select-none">
+        <div className="grid grid-cols-7 gap-2 touch-none select-none">
           {gridDays.map((day) => {
             const dateStr = auStr(day)
             const inMonth = day >= mStart && day <= mEnd
@@ -412,7 +412,7 @@ export default function PricingPage() {
             const colIndex = (day.getDay() + 6) % 7
 
             let cls =
-              'aspect-square flex flex-col items-center justify-center rounded-lg text-xs transition-colors border '
+              'h-20 flex flex-col items-center justify-center rounded-lg text-sm transition-colors border '
             if (!inMonth) cls += 'opacity-[0.12] pointer-events-none border-transparent '
             else if (isPast) cls += 'opacity-30 cursor-not-allowed border-transparent bg-white/[0.02] '
             else if (otaHere) cls += 'bg-red-500/20 border-red-400/30 cursor-not-allowed text-red-300 '
@@ -443,24 +443,24 @@ export default function PricingPage() {
                   className={cls}
                   title=""
                 >
-                  <span className={`font-medium ${override ? 'text-luxury-gold' : otaHere ? 'text-red-300 line-through' : 'text-gray-300'}`}>
+                  <span className={`text-base font-semibold leading-none ${override ? 'text-luxury-gold' : otaHere ? 'text-red-300 line-through' : 'text-gray-200'}`}>
                     {format(day, 'd')}
                   </span>
                   {inMonth && !isPast && (
-                    <span className={`w-1.5 h-1.5 rounded-sm mt-0.5 ${TIER_DOT_COLOR[tier]}`} />
+                    <span className={`w-2 h-2 rounded-sm mt-1 ${TIER_DOT_COLOR[tier]}`} />
                   )}
                   {inMonth && !isPast && (
-                    <span className={`text-[10px] mt-0.5 ${override ? 'text-luxury-gold' : 'text-gray-500'}`}>
+                    <span className={`text-xs mt-1 ${override ? 'text-luxury-gold' : 'text-gray-400'}`}>
                       ${(displayPrice / 1000).toFixed(1)}k
                     </span>
                   )}
                   {inMonth && !isPast && minNightsMap[dateStr] && (
-                    <span className="text-[9px] text-sky-400/80 mt-0.5 leading-none font-medium">
+                    <span className="text-[10px] text-sky-400/80 mt-0.5 leading-none font-medium">
                       {minNightsMap[dateStr]}n min
                     </span>
                   )}
                   {inMonth && manualHere && !isPast && (
-                    <span className="text-[9px] text-red-400/90 mt-0.5 leading-none">blocked</span>
+                    <span className="text-[10px] text-red-400/90 mt-0.5 leading-none">blocked</span>
                   )}
                 </button>
 
