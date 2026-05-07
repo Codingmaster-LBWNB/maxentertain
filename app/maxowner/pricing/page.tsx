@@ -81,7 +81,8 @@ export default function PricingPage() {
     blockDates: boolean
     blockReason: string
   } | null>(null)
-  const [tierModal, setTierModal] = useState<{ tier: PricingTier; price: string } | null>(null)
+  const [tierDrafts, setTierDrafts] = useState<Partial<Record<PricingTier, string>>>({})
+  const [savingTier, setSavingTier] = useState<PricingTier | null>(null)
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
@@ -368,16 +369,17 @@ export default function PricingPage() {
     load()
   }
 
-  const saveTier = async () => {
-    if (!tierModal) return
-    setSaving(true)
+  const saveTierDirect = async (tier: PricingTier, priceStr: string) => {
+    const price = Number(priceStr)
+    if (!Number.isFinite(price) || price < 0) return
+    setSavingTier(tier)
     await fetch('/api/maxowner/pricing-tiers', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tier: tierModal.tier, price: Number(tierModal.price) }),
+      body: JSON.stringify({ tier, price }),
     })
-    setSaving(false)
-    setTierModal(null)
+    setSavingTier(null)
+    setTierDrafts((d) => { const next = { ...d }; delete next[tier]; return next })
     load()
   }
 
@@ -653,6 +655,86 @@ export default function PricingPage() {
         </div>
       </div>
 
+      {/* Bulk tier pricing */}
+      <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6 mb-8">
+        <h2 className="text-base font-semibold mb-1 text-gray-200">Bulk tier pricing</h2>
+        <p className="text-gray-500 text-sm mb-5">
+          Set a base rate per tier — updates every date in that tier unless it has a per-date override.
+        </p>
+        {loading ? (
+          <p className="text-gray-500 text-sm">Loading…</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+            {tiers.map((row) => {
+              const draft = tierDrafts[row.tier] ?? String(row.price)
+              const isDirty = Number(draft) !== row.price
+              const isSaving = savingTier === row.tier
+              return (
+                <div
+                  key={row.tier}
+                  className={`bg-[#0f0f0d] rounded-lg border p-4 flex flex-col gap-3 transition-colors ${
+                    isDirty ? 'border-luxury-gold/50' : 'border-white/[0.08]'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${TIER_DOT_COLOR[row.tier]}`} />
+                    <span className="text-sm text-gray-300 font-medium leading-tight">{row.label}</span>
+                    {row.isCustom && (
+                      <span className="ml-auto text-[10px] text-luxury-gold bg-luxury-gold/10 px-1.5 py-0.5 rounded whitespace-nowrap">
+                        custom
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-gray-500 text-sm">$</span>
+                    <input
+                      type="number"
+                      value={draft}
+                      min="0"
+                      step="50"
+                      onChange={(e) =>
+                        setTierDrafts((d) => ({ ...d, [row.tier]: e.target.value }))
+                      }
+                      className="w-full bg-[#1a1a18] border border-white/10 rounded px-2.5 py-1.5 text-white text-sm font-mono focus:outline-none focus:border-luxury-gold/60 transition-colors"
+                    />
+                    <span className="text-gray-600 text-xs whitespace-nowrap">/night</span>
+                  </div>
+
+                  {row.isCustom && (
+                    <p className="text-gray-600 text-xs -mt-1">
+                      Default: ${row.default.toLocaleString()}
+                    </p>
+                  )}
+
+                  <div className="flex gap-2 mt-auto">
+                    <button
+                      disabled={!isDirty || isSaving}
+                      onClick={() => saveTierDirect(row.tier, draft)}
+                      className="flex-1 text-xs py-1.5 rounded bg-luxury-gold text-white font-semibold disabled:opacity-30 hover:bg-luxury-gold/90 transition-colors"
+                    >
+                      {isSaving ? 'Saving…' : 'Apply'}
+                    </button>
+                    {row.isCustom && (
+                      <button
+                        disabled={isSaving}
+                        onClick={() => {
+                          resetTier(row.tier)
+                          setTierDrafts((d) => { const next = { ...d }; delete next[row.tier]; return next })
+                        }}
+                        className="text-xs py-1.5 px-2.5 rounded border border-white/10 text-gray-500 hover:text-red-400 hover:border-red-400/30 transition-colors disabled:opacity-30"
+                      >
+                        Reset
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
       {/* Active overrides list */}
       {overrides.length > 0 && (
         <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6 mb-8">
@@ -680,46 +762,6 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* Tier rates */}
-      <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6">
-        <h2 className="text-base font-semibold mb-4 text-gray-200">Base tier rates</h2>
-        {loading ? (
-          <p className="text-gray-500 text-sm">Loading…</p>
-        ) : (
-          <div className="space-y-3">
-            {tiers.map((row) => (
-              <div key={row.tier} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-sm ${TIER_DOT_COLOR[row.tier]}`} />
-                  <span className="text-gray-300 text-sm">{row.label}</span>
-                  {row.isCustom && (
-                    <span className="text-xs text-luxury-gold bg-luxury-gold/10 px-1.5 py-0.5 rounded">custom</span>
-                  )}
-                </div>
-                <div className="flex items-center gap-4">
-                  <span className={`font-mono text-sm ${row.isCustom ? 'text-luxury-gold' : 'text-gray-400'}`}>
-                    ${row.price.toLocaleString()}/night
-                  </span>
-                  <button
-                    onClick={() => setTierModal({ tier: row.tier, price: String(row.price) })}
-                    className="text-xs text-gray-500 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/5"
-                  >
-                    Edit
-                  </button>
-                  {row.isCustom && (
-                    <button
-                      onClick={() => resetTier(row.tier)}
-                      className="text-xs text-gray-600 hover:text-red-400 transition-colors"
-                    >
-                      Reset
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
       {/* Date override + manual block modal */}
       {modal && (
@@ -854,43 +896,6 @@ export default function PricingPage() {
         </div>
       )}
 
-      {/* Tier edit modal */}
-      {tierModal && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-          <div className="bg-[#1a1a18] border border-white/15 rounded-xl p-6 w-full max-w-sm">
-            <h3 className="font-serif text-lg mb-4">{TIER_LABELS[tierModal.tier]}</h3>
-            <div>
-              <label className="block text-xs text-gray-400 mb-1">Base price per night (AUD)</label>
-              <input
-                type="number"
-                value={tierModal.price}
-                onChange={(e) => setTierModal({ ...tierModal, price: e.target.value })}
-                className="w-full px-3 py-2.5 bg-[#0f0f0d] border border-white/10 rounded-lg text-white focus:outline-none focus:border-luxury-gold transition-colors"
-                min="0"
-                step="50"
-              />
-              <p className="text-gray-500 text-xs mt-1">
-                Default: ${NIGHTLY_RATES[tierModal.tier].toLocaleString()}. Applies to all dates in this tier unless overridden individually.
-              </p>
-            </div>
-            <div className="flex gap-3 mt-6">
-              <button
-                onClick={() => setTierModal(null)}
-                className="flex-1 px-4 py-2 text-sm text-gray-400 border border-white/10 rounded-lg hover:bg-white/5 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveTier}
-                disabled={saving || !tierModal.price}
-                className="flex-1 px-4 py-2 text-sm bg-luxury-gold text-white rounded-lg disabled:opacity-40 hover:bg-luxury-gold/90 transition-colors"
-              >
-                {saving ? 'Saving…' : 'Save'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
