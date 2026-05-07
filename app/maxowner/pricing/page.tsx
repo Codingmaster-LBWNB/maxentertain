@@ -86,28 +86,42 @@ export default function PricingPage() {
 
   const load = useCallback(async () => {
     setLoading(true)
-    const [ovRes, tierRes, mbRes, calRes, mnRes] = await Promise.all([
-      fetch('/api/maxowner/pricing-overrides'),
-      fetch('/api/maxowner/pricing-tiers'),
-      fetch('/api/maxowner/manual-blocks'),
-      fetch('/api/calendar').catch(() => null),
-      fetch('/api/maxowner/min-nights'),
-    ])
-    setOverrides(await ovRes.json())
-    setTiers(await tierRes.json())
-    const mbJson: ManualBlock[] = await mbRes.json()
-    setManualBlocks(mbJson)
-    setMinNightsOverrides(await mnRes.json())
-    const manualSet = new Set(mbJson.map((b) => b.date))
+    try {
+      const safeJson = async (res: Response) => {
+        if (!res.ok) return null
+        const ct = res.headers.get('content-type') ?? ''
+        if (!ct.includes('json')) return null
+        return res.json().catch(() => null)
+      }
 
-    if (calRes?.ok) {
-      const data = await calRes.json()
-      const list = Array.isArray(data.blockedDates) ? data.blockedDates : []
+      const [ovRes, tierRes, mbRes, calRes, mnRes] = await Promise.all([
+        fetch('/api/maxowner/pricing-overrides'),
+        fetch('/api/maxowner/pricing-tiers'),
+        fetch('/api/maxowner/manual-blocks'),
+        fetch('/api/calendar').catch(() => null),
+        fetch('/api/maxowner/min-nights'),
+      ])
+
+      const [ovJson, tierJson, mbJson, calJson, mnJson] = await Promise.all([
+        safeJson(ovRes),
+        safeJson(tierRes),
+        safeJson(mbRes),
+        calRes ? safeJson(calRes) : null,
+        safeJson(mnRes),
+      ])
+
+      if (ovJson) setOverrides(ovJson)
+      if (tierJson) setTiers(tierJson)
+      const manualBlocksData: ManualBlock[] = mbJson ?? []
+      setManualBlocks(manualBlocksData)
+      if (mnJson) setMinNightsOverrides(mnJson)
+
+      const manualSet = new Set(manualBlocksData.map((b) => b.date))
+      const list: string[] = Array.isArray(calJson?.blockedDates) ? calJson.blockedDates : defaultBlockedDates
       setOtaBlocked(new Set(list.filter((d: string) => !manualSet.has(d))))
-    } else {
-      setOtaBlocked(new Set(defaultBlockedDates.filter((d) => !manualSet.has(d))))
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [])
 
   useEffect(() => { load() }, [load])
