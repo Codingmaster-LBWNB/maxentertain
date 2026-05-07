@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { format, startOfMonth, endOfMonth, addMonths, subMonths, startOfWeek, endOfWeek, eachDayOfInterval } from 'date-fns'
+import { format, startOfMonth, endOfMonth, addMonths, subMonths, startOfWeek, endOfWeek, eachDayOfInterval, addDays } from 'date-fns'
 import { formatInTimeZone } from 'date-fns-tz'
 import { getTierForDate, TIER_LABELS, NIGHTLY_RATES, PricingTier } from '@/lib/pricing'
 import { blockedDates as defaultBlockedDates } from '@/config/property'
@@ -426,6 +426,9 @@ export default function PricingPage() {
             const displayPrice = override ? override.price : basePrice
             const manualHere = manualBlockMap[dateStr] !== undefined
             const otaHere = otaBlocked.has(dateStr) && !manualHere
+            const isGroupStart = otaHere && !otaBlocked.has(auStr(addDays(day, -1)))
+            const isGroupEnd = otaHere && !otaBlocked.has(auStr(addDays(day, 1)))
+            const isGroupSingle = isGroupStart && isGroupEnd
             const isSelected = selectedSet.has(dateStr)
             const isPreview = previewSet?.has(dateStr) ?? false
             const colIndex = (day.getDay() + 6) % 7
@@ -476,10 +479,27 @@ export default function PricingPage() {
 
                 {/* Status pill — middle of cell */}
                 {inMonth && !isPast && otaHere && (
-                  <div className="absolute inset-x-2 top-9 bg-red-600/40 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-300 flex-shrink-0" />
-                    <span className="text-xs text-red-200 font-semibold truncate">Booked</span>
-                  </div>
+                  <>
+                    {/* Booking span stripe — connects consecutive OTA days */}
+                    <div
+                      className={[
+                        'absolute h-1 top-[66px] bg-red-400/70 pointer-events-none',
+                        isGroupSingle ? 'inset-x-5 rounded-full' :
+                        isGroupStart  ? 'left-[50%] right-0 rounded-l-full' :
+                        isGroupEnd    ? 'left-0 right-[50%] rounded-r-full' :
+                                        'inset-x-0',
+                      ].join(' ')}
+                    />
+                    {/* Status pill */}
+                    <div className="absolute inset-x-2 top-9 bg-red-600/40 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                        isGroupStart ? 'bg-emerald-400' : isGroupEnd ? 'bg-amber-400' : 'bg-red-300'
+                      }`} />
+                      <span className="text-xs text-red-200 font-semibold truncate">
+                        {isGroupSingle ? 'Arrives & departs' : isGroupStart ? 'Check-in' : isGroupEnd ? 'Check-out' : 'Booked'}
+                      </span>
+                    </div>
+                  </>
                 )}
                 {inMonth && !isPast && manualHere && (
                   <div className="absolute inset-x-2 top-9 bg-amber-600/30 border border-amber-400/30 rounded-md px-2.5 py-1.5 flex items-center gap-1.5">
@@ -593,7 +613,9 @@ export default function PricingPage() {
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-3.5 h-3.5 rounded bg-red-500/40 border border-red-400/30 inline-block" />
-            Booked (OTA)
+            Booked (OTA) —
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block" />check-in</span>
+            <span className="flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block" />check-out</span>
           </span>
           <span className="flex items-center gap-1.5">
             <span className="w-3.5 h-3.5 rounded bg-amber-500/30 border border-amber-400/30 inline-block" />
