@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 
 export async function GET() {
-  const db = await getDb()
-  const overrides = await db
-    .collection('pricing_overrides')
-    .find({}, { projection: { _id: 0, date: 1, price: 1, note: 1 } })
-    .sort({ date: 1 })
-    .toArray()
-  return NextResponse.json(overrides)
+  try {
+    const db = await getDb()
+    const overrides = await db
+      .collection('pricing_overrides')
+      .find({}, { projection: { _id: 0, date: 1, price: 1, note: 1 } })
+      .sort({ date: 1 })
+      .toArray()
+    return NextResponse.json(overrides)
+  } catch {
+    return NextResponse.json([])
+  }
 }
 
 export async function POST(req: NextRequest) {

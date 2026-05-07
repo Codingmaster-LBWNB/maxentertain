@@ -5,24 +5,37 @@ import { NIGHTLY_RATES, TIER_LABELS, PricingTier } from '@/lib/pricing'
 const TIERS = Object.keys(NIGHTLY_RATES) as PricingTier[]
 
 export async function GET() {
-  const db = await getDb()
-  const docs = await db
-    .collection('pricing_tiers')
-    .find({}, { projection: { _id: 0, tier: 1, price: 1 } })
-    .toArray()
-
-  const dbPrices: Partial<Record<PricingTier, number>> = {}
-  for (const d of docs) dbPrices[d.tier as PricingTier] = d.price
-
-  const tiers = TIERS.map((tier) => ({
+  const defaults = TIERS.map((tier) => ({
     tier,
     label: TIER_LABELS[tier],
-    price: dbPrices[tier] ?? NIGHTLY_RATES[tier],
-    isCustom: tier in dbPrices,
+    price: NIGHTLY_RATES[tier],
+    isCustom: false,
     default: NIGHTLY_RATES[tier],
   }))
 
-  return NextResponse.json(tiers)
+  try {
+    const db = await getDb()
+    const docs = await db
+      .collection('pricing_tiers')
+      .find({}, { projection: { _id: 0, tier: 1, price: 1 } })
+      .toArray()
+
+    const dbPrices: Partial<Record<PricingTier, number>> = {}
+    for (const d of docs) dbPrices[d.tier as PricingTier] = d.price
+
+    return NextResponse.json(
+      TIERS.map((tier) => ({
+        tier,
+        label: TIER_LABELS[tier],
+        price: dbPrices[tier] ?? NIGHTLY_RATES[tier],
+        isCustom: tier in dbPrices,
+        default: NIGHTLY_RATES[tier],
+      }))
+    )
+  } catch {
+    // MongoDB unavailable — return hardcoded defaults so the UI still renders
+    return NextResponse.json(defaults)
+  }
 }
 
 export async function PUT(req: NextRequest) {
