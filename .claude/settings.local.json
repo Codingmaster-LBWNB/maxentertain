@@ -36,7 +36,11 @@
       "Bash(bunk)",
       "Bash(single)",
       "Bash(king\")",
-      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")"
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")",
+      "Bash(curl -s http://localhost:3000/api/calendar)",
+      "Bash(npm run *)",
+      "Bash(echo \"Started PID $!\")",
+      "Bash(curl -s http://localhost:3001/api/calendar)"
     ]
   }
 }
