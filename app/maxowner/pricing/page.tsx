@@ -717,11 +717,11 @@ export default function PricingPage() {
 
                   <div className="flex gap-2 mt-auto">
                     <button
-                      disabled={!isDirty || isSaving}
+                      disabled={isSaving}
                       onClick={() => saveTierDirect(row.tier, draft)}
                       className="flex-1 text-xs py-1.5 rounded bg-luxury-gold text-white font-semibold disabled:opacity-30 hover:bg-luxury-gold/90 transition-colors"
                     >
-                      {isSaving ? 'Saving…' : 'Apply'}
+                      {isSaving ? 'Saving…' : isDirty ? 'Apply' : 'Save'}
                     </button>
                     {row.isCustom && (
                       <button
