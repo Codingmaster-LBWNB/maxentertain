@@ -83,6 +83,7 @@ export default function PricingPage() {
   } | null>(null)
   const [tierDrafts, setTierDrafts] = useState<Partial<Record<PricingTier, string>>>({})
   const [savingTier, setSavingTier] = useState<PricingTier | null>(null)
+  const [tierError, setTierError] = useState<Partial<Record<PricingTier, string>>>({})
   const [saving, setSaving] = useState(false)
 
   const load = useCallback(async () => {
@@ -373,14 +374,21 @@ export default function PricingPage() {
     const price = Number(priceStr)
     if (!Number.isFinite(price) || price < 0) return
     setSavingTier(tier)
-    await fetch('/api/maxowner/pricing-tiers', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tier, price }),
-    })
-    setSavingTier(null)
-    setTierDrafts((d) => { const next = { ...d }; delete next[tier]; return next })
-    load()
+    setTierError((e) => { const n = { ...e }; delete n[tier]; return n })
+    try {
+      const res = await fetch('/api/maxowner/pricing-tiers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier, price }),
+      })
+      if (!res.ok) throw new Error(`${res.status}`)
+      setTierDrafts((d) => { const next = { ...d }; delete next[tier]; return next })
+      load()
+    } catch {
+      setTierError((e) => ({ ...e, [tier]: 'Save failed — check DB connection' }))
+    } finally {
+      setSavingTier(null)
+    }
   }
 
   const resetTier = async (tier: PricingTier) => {
@@ -721,6 +729,7 @@ export default function PricingPage() {
                         onClick={() => {
                           resetTier(row.tier)
                           setTierDrafts((d) => { const next = { ...d }; delete next[row.tier]; return next })
+                          setTierError((e) => { const n = { ...e }; delete n[row.tier]; return n })
                         }}
                         className="text-xs py-1.5 px-2.5 rounded border border-white/10 text-gray-500 hover:text-red-400 hover:border-red-400/30 transition-colors disabled:opacity-30"
                       >
@@ -728,6 +737,9 @@ export default function PricingPage() {
                       </button>
                     )}
                   </div>
+                  {tierError[row.tier] && (
+                    <p className="text-red-400 text-xs">{tierError[row.tier]}</p>
+                  )}
                 </div>
               )
             })}
