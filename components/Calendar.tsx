@@ -176,7 +176,7 @@ export default function Calendar({
           <div className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-luxury-gold/10 border border-luxury-gold/30 rounded-sm">
             <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>savings</span>
             <span className="text-base font-sans font-semibold text-white tracking-wide shake-attention">
-              Book directly &amp; save 15%+ vs Airbnb / Booking.com
+              Book directly &amp; save up to 10% vs Airbnb / Booking.com
             </span>
           </div>
         </motion.div>

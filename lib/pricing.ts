@@ -91,7 +91,7 @@ export interface PriceSummary {
   nights: NightBreakdown[]
   totalNights: number
   total: number
-  platformEstimate: number // ~15% more than direct
+  platformEstimate: number // ~10% more than direct
   savings: number
 }
 
@@ -121,7 +121,7 @@ export function getPriceSummary(
   }
 
   const total = nights.reduce((sum, n) => sum + n.price, 0)
-  const platformEstimate = Math.round(total * 1.15)
+  const platformEstimate = Math.round(total * 1.1)
   const savings = platformEstimate - total
 
   return { nights, totalNights: nights.length, total, platformEstimate, savings }
