@@ -36,7 +36,16 @@
       "Bash(bunk)",
       "Bash(single)",
       "Bash(king\")",
-      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")"
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")",
+      "Bash(curl -s http://localhost:3000/api/calendar)",
+      "Bash(npm run *)",
+      "Bash(echo \"Started PID $!\")",
+      "Bash(curl -s http://localhost:3001/api/calendar)",
+      "Bash(curl -s http://localhost:3001/api/maxowner/pricing-overrides)",
+      "Bash(curl -s http://localhost:3001/api/maxowner/manual-blocks)",
+      "Bash(curl -s http://localhost:3001/api/maxowner/pricing-tiers)",
+      "Bash(node *)",
+      "Bash(curl *)"
     ]
   }
 }

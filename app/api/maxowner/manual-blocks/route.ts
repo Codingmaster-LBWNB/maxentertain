@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 
 export async function GET() {
-  const db = await getDb()
-  const docs = await db
-    .collection('manual_blocks')
-    .find({}, { projection: { _id: 0, date: 1, reason: 1 } })
-    .sort({ date: 1 })
-    .toArray()
-  return NextResponse.json(docs)
+  try {
+    const db = await getDb()
+    const docs = await db
+      .collection('manual_blocks')
+      .find({}, { projection: { _id: 0, date: 1, reason: 1 } })
+      .sort({ date: 1 })
+      .toArray()
+    return NextResponse.json(docs)
+  } catch {
+    return NextResponse.json([])
+  }
 }
 
 export async function POST(req: NextRequest) {

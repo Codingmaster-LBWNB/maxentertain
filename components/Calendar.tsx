@@ -270,7 +270,7 @@ export default function Calendar({
                 } else if (past) {
                   cellClass += 'bg-gray-100 text-gray-400 rounded-lg '
                 } else if (blocked) {
-                  cellClass += 'bg-red-50 text-red-400 rounded-lg line-through '
+                  cellClass += 'bg-red-100 text-red-600 rounded-lg line-through cursor-not-allowed '
                 } else if (available) {
                   cellClass += 'bg-green-50 text-green-800 rounded-lg cursor-pointer hover:bg-luxury-gold/30 hover:text-luxury-dark '
                 } else {
@@ -307,7 +307,7 @@ export default function Calendar({
                 <span className="text-gray-600">Your stay</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-3.5 h-3.5 rounded bg-red-50 border border-red-200" />
+                <div className="w-3.5 h-3.5 rounded bg-red-100 border border-red-300" />
                 <span className="text-gray-600">Booked</span>
               </div>
               <div className="flex items-center gap-1.5">
