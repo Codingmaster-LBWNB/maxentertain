@@ -9,6 +9,7 @@ import type {
   BookingPricing,
   BookingRecord,
   BookingStatus,
+  GuestRecord,
   PublicBookingSummary,
 } from '@/types/booking'
 import { getSiteUrl } from '@/lib/site'
@@ -299,6 +300,7 @@ export async function confirmBookingPayment(bookingId: string, payment: BookingP
   const db = await getDb()
   await ensureBookingIndexes(db)
   const now = new Date()
+  const existing = await getBookingById(bookingId)
 
   await db.collection<BookingRecord>('bookings').updateOne(
     { _id: bookingId, status: { $in: ['pending_payment', 'confirmed'] } },
@@ -324,7 +326,48 @@ export async function confirmBookingPayment(bookingId: string, payment: BookingP
 
   const booking = await getBookingById(bookingId)
   if (!booking) throw new Error('Booking not found after confirmation')
+  if (existing?.status !== 'confirmed') {
+    await upsertGuestFromBooking(booking)
+  }
   return booking
+}
+
+export async function upsertGuestFromBooking(booking: BookingRecord) {
+  const db = await getDb()
+  const now = new Date()
+  const email = booking.guest.email.toLowerCase()
+
+  await db.collection<GuestRecord>('guests').updateOne(
+    { _id: email } as any,
+    {
+      $set: {
+        propertyId: booking.propertyId,
+        name: booking.guest.name,
+        email,
+        phone: booking.guest.phone,
+        lastBookingId: booking._id,
+        lastCheckIn: booking.checkIn,
+        lastCheckOut: booking.checkOut,
+        lastStayedAt: new Date(`${booking.checkOut}T00:00:00.000Z`),
+        updatedAt: now,
+      },
+      $setOnInsert: {
+        _id: email,
+        totalBookings: 0,
+        totalSpendAud: 0,
+        offerCampaignsSent: [],
+        createdAt: now,
+      },
+      $inc: {
+        totalBookings: 1,
+        totalSpendAud: booking.pricing.totalAud,
+      },
+      $addToSet: {
+        tags: booking.guest.groupType,
+      },
+    } as any,
+    { upsert: true }
+  )
 }
 
 export async function expireBooking(bookingId: string, reason = 'expired') {

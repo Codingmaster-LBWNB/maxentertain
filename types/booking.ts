@@ -95,3 +95,21 @@ export interface PublicBookingSummary {
   confirmedAt?: string
 }
 
+export interface GuestRecord {
+  _id: string
+  propertyId: string
+  name: string
+  email: string
+  phone: string
+  tags: BookingGroupType[]
+  totalBookings: number
+  totalSpendAud: number
+  lastBookingId: string
+  lastCheckIn: string
+  lastCheckOut: string
+  lastStayedAt?: Date
+  offerCampaignsSent?: string[]
+  createdAt: Date
+  updatedAt: Date
+}
+

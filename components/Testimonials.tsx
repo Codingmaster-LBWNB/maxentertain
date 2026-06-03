@@ -1,11 +1,20 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
 import AwardBanner from '@/components/AwardBanner'
 import { useSectionTime } from '@/hooks/useSectionTime'
 import SectionWavesBackground from '@/components/SectionWavesBackground'
+
+type ReviewFilter = 'all' | 'families' | 'golf' | 'celebrations'
+
+const FILTERS: { id: ReviewFilter; label: string }[] = [
+  { id: 'all', label: 'All reviews' },
+  { id: 'families', label: 'Families' },
+  { id: 'golf', label: 'Golf groups' },
+  { id: 'celebrations', label: 'Celebrations' },
+]
 
 function escapeRegExp(input: string) {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -39,9 +48,29 @@ function renderHighlightedText(text: string, keywords?: string[]) {
 export default function Testimonials() {
   const sectionRef = useSectionTime('Reviews')
   const [isExpandedMobile, setIsExpandedMobile] = useState(false)
+  const [activeFilter, setActiveFilter] = useState<ReviewFilter>('all')
   const testimonials = propertyConfig.testimonials
-  const firstFour = testimonials.slice(0, 4)
-  const rest = testimonials.slice(4)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const requested = params.get('guestType') as ReviewFilter | null
+    if (requested && FILTERS.some((filter) => filter.id === requested)) {
+      setActiveFilter(requested)
+      setIsExpandedMobile(true)
+    }
+  }, [])
+
+  const matchesFilter = (testimonial: (typeof testimonials)[number]) => {
+    if (activeFilter === 'all') return true
+    const haystack = `${testimonial.comment} ${(testimonial.highlight ?? []).join(' ')}`.toLowerCase()
+    if (activeFilter === 'golf') return /golf|golfer|course|moonah|dunes|national/.test(haystack)
+    if (activeFilter === 'celebrations') return /birthday|celebrat|40th|50th|70th|80th|christmas|milestone/.test(haystack)
+    return /family|families|children|kids|grandparent|grandma|grandchildren|three generations|large group|all ages/.test(haystack)
+  }
+
+  const filteredTestimonials = testimonials.filter(matchesFilter)
+  const firstFour = filteredTestimonials.slice(0, 4)
+  const rest = filteredTestimonials.slice(4)
 
   const ReviewCard = ({ testimonial, index }: { testimonial: (typeof testimonials)[number]; index: number }) => {
     const initial = testimonial.name.charAt(0).toUpperCase()
@@ -147,24 +176,49 @@ export default function Testimonials() {
             <div className="w-1.5 h-1.5 bg-luxury-gold rotate-45" />
             <div className="h-px w-12 bg-luxury-gold/50" />
           </div>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {firstFour.map((testimonial, index) => (
-            <ReviewCard key={`${testimonial.name}-${testimonial.date}-${index}`} testimonial={testimonial} index={index} />
-          ))}
-
-          {/* Desktop always shows all reviews; mobile shows the rest when expanded */}
-          <div className={isExpandedMobile ? 'contents' : 'hidden md:contents'}>
-            {rest.map((testimonial, index) => (
-              <ReviewCard
-                key={`${testimonial.name}-${testimonial.date}-${index + 4}`}
-                testimonial={testimonial}
-                index={index + 4}
-              />
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            {FILTERS.map((filter) => (
+              <button
+                key={filter.id}
+                type="button"
+                onClick={() => {
+                  setActiveFilter(filter.id)
+                  setIsExpandedMobile(false)
+                }}
+                className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] transition-colors ${
+                  activeFilter === filter.id
+                    ? 'border-luxury-gold bg-luxury-gold text-black'
+                    : 'border-white/15 text-white/70 hover:border-luxury-gold hover:text-luxury-gold'
+                }`}
+              >
+                {filter.label}
+              </button>
             ))}
           </div>
-        </div>
+        </motion.div>
+
+        {filteredTestimonials.length === 0 ? (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-8 text-center text-white/70">
+            No reviews match this filter yet.
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-3 gap-8">
+            {firstFour.map((testimonial, index) => (
+              <ReviewCard key={`${testimonial.name}-${testimonial.date}-${index}`} testimonial={testimonial} index={index} />
+            ))}
+
+            {/* Desktop always shows all reviews; mobile shows the rest when expanded */}
+            <div className={isExpandedMobile ? 'contents' : 'hidden md:contents'}>
+              {rest.map((testimonial, index) => (
+                <ReviewCard
+                  key={`${testimonial.name}-${testimonial.date}-${index + 4}`}
+                  testimonial={testimonial}
+                  index={index + 4}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Mobile: fold extra reviews behind a toggle */}
         {rest.length > 0 && (

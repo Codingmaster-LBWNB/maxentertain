@@ -309,7 +309,7 @@ export default function InquiryForm({
           <div
             className={
               isGlass
-                ? 'bg-white/88 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-12 border border-white/40'
+                ? 'bg-[#0f0f0f]/82 backdrop-blur-xl rounded-2xl shadow-2xl p-8 md:p-12 border border-white/10'
                 : 'bg-white rounded-2xl shadow-xl p-8 md:p-12'
             }
           >
@@ -320,10 +320,10 @@ export default function InquiryForm({
                 className="text-center py-8"
               >
                 <span className="material-icons mx-auto text-green-500 mb-4 block text-center" style={{ fontSize: '64px' }}>check_circle</span>
-                <h3 className="text-2xl font-serif font-semibold text-luxury-dark mb-2">
+                <h3 className={`text-2xl font-serif font-semibold mb-2 ${isGlass ? 'text-white' : 'text-luxury-dark'}`}>
                   Thank You!
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className={`mb-6 ${isGlass ? 'text-white/70' : 'text-gray-600'}`}>
                   Your enquiry has been sent successfully. We&apos;ll get back to you within 24 hours.
                 </p>
                 <button
@@ -337,7 +337,7 @@ export default function InquiryForm({
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <label htmlFor="name" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
+                    <label htmlFor="name" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-white/90' : 'text-gray-800'}`}>
                       Full Name *
                     </label>
                     <input
@@ -347,7 +347,7 @@ export default function InquiryForm({
                       onChange={(e) => handleChange('name', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.name ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black text-base`}
+                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white text-black text-base`}
                     />
                     {errors.name && (
                       <p className="text-red-600 text-base mt-1">{errors.name}</p>
@@ -355,7 +355,7 @@ export default function InquiryForm({
                   </div>
 
                   <div>
-                    <label htmlFor="email" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
+                    <label htmlFor="email" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-white/90' : 'text-gray-800'}`}>
                       Email Address *
                     </label>
                     <input
@@ -365,7 +365,7 @@ export default function InquiryForm({
                       onChange={(e) => handleChange('email', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border ${
                         errors.email ? 'border-red-500' : 'border-gray-300'
-                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black text-base`}
+                      } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white text-black text-base`}
                     />
                     {errors.email && (
                       <p className="text-red-600 text-base mt-1">{errors.email}</p>
@@ -374,7 +374,7 @@ export default function InquiryForm({
                 </div>
 
                 <div>
-                  <label htmlFor="phone" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
+                  <label htmlFor="phone" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-white/90' : 'text-gray-800'}`}>
                     Phone Number *
                   </label>
                   <input
@@ -384,7 +384,7 @@ export default function InquiryForm({
                     onChange={(e) => handleChange('phone', e.target.value)}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.phone ? 'border-red-500' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black text-base`}
+                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white text-black text-base`}
                   />
                   {errors.phone && (
                     <p className="text-red-600 text-base mt-1">{errors.phone}</p>
@@ -422,12 +422,12 @@ export default function InquiryForm({
                   </div>
                 </div>
 
-                <p className={`text-sm md:text-base ${isGlass ? 'text-black' : 'text-gray-600'}`}>
+                <p className={`text-sm md:text-base ${isGlass ? 'text-white/55' : 'text-gray-600'}`}>
                   Dates are validated against live availability. Unavailable dates are disabled.
                 </p>
 
                 <div>
-                  <label htmlFor="guests" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
+                  <label htmlFor="guests" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-white/90' : 'text-gray-800'}`}>
                     Number of Guests *
                   </label>
                   <select
@@ -436,7 +436,7 @@ export default function InquiryForm({
                     onChange={(e) => handleChange('guests', e.target.value)}
                     className={`w-full px-4 py-3 rounded-lg border ${
                       errors.guests ? 'border-red-500' : 'border-gray-300'
-                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white/85 text-black text-base`}
+                    } focus:outline-none focus:ring-2 focus:ring-luxury-gold transition-all bg-white text-black text-base`}
                   >
                     <option value="">Select number of guests</option>
                     {Array.from({ length: propertyConfig.maxGuests }, (_, i) => i + 1).map((num) => (
@@ -452,7 +452,7 @@ export default function InquiryForm({
                 </div>
 
                 <div>
-                  <label htmlFor="message" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-black' : 'text-gray-800'}`}>
+                  <label htmlFor="message" className={`block text-base font-semibold mb-2 ${isGlass ? 'text-white/90' : 'text-gray-800'}`}>
                     Message *
                   </label>
                   <textarea
@@ -507,7 +507,7 @@ export default function InquiryForm({
                   )}
                 </button>
 
-                <p className={`text-sm text-center leading-relaxed ${isGlass ? 'text-gray-800' : 'text-gray-600'}`}>
+                <p className={`text-sm text-center leading-relaxed ${isGlass ? 'text-white/45' : 'text-gray-600'}`}>
                   By submitting this form, you agree to our privacy policy. We&apos;ll use your information to respond to your enquiry.
                 </p>
               </form>

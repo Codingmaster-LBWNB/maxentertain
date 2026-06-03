@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 import { propertyConfig } from '@/config/property'
-import type { BookingRecord } from '@/types/booking'
+import type { BookingRecord, GuestRecord } from '@/types/booking'
 
 const PRE_STAY_SUBJECTS: Record<number, string> = {
   14: 'Your MAX Entertain stay is in two weeks',
@@ -319,6 +319,29 @@ export async function sendInquiryReceivedEmails(input: {
       'We will get back to you within 24 hours.',
       `Requested dates: ${input.checkIn} to ${input.checkOut}`,
       `Guests: ${input.guests}`,
+    ].join('\n'),
+  })
+}
+
+export async function sendReturningGuestOfferEmail(guest: GuestRecord, campaign: { id: string; label: string }) {
+  const name = escapeHtml(guest.name)
+  const propertyName = escapeHtml(propertyConfig.name)
+
+  return sendEmail({
+    to: guest.email,
+    subject: `${campaign.label}: returning guest direct-booking offer`,
+    html: `
+      <h2>${campaign.label}</h2>
+      <p>Hi ${name},</p>
+      <p>We would love to welcome you back to ${propertyName} for the next school holiday window.</p>
+      <p>As a returning guest, reply to this email before booking and Jason can confirm the best direct-booking option for your dates.</p>
+      <p>Book direct at maxentertain.com to avoid OTA service fees and deal with us personally.</p>
+    `,
+    text: [
+      `Hi ${guest.name},`,
+      `We would love to welcome you back to ${propertyConfig.name} for ${campaign.label}.`,
+      'Reply to this email before booking and Jason can confirm the best direct-booking option for your dates.',
+      'Book direct at maxentertain.com to avoid OTA service fees.',
     ].join('\n'),
   })
 }

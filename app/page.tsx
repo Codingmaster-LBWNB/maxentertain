@@ -8,6 +8,7 @@ import LocalArea from '@/components/LocalArea'
 import ImageGallery from '@/components/ImageGallery'
 import SleepArrangements from '@/components/SleepArrangements'
 import StatsCards from '@/components/StatsCards'
+import SegmentCTACards from '@/components/SegmentCTACards'
 import StarBackground from '@/components/StarBackground'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
@@ -140,6 +141,7 @@ export default function Home() {
       <div className="star-wrapper">
         <StarBackground />
         <StatsCards />
+        <SegmentCTACards />
         <ImageGallery />
         <SleepArrangements />
         <PropertyDetails />
