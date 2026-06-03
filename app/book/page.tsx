@@ -27,14 +27,14 @@ export default async function BookPage({
     <div className="relative min-h-screen overflow-hidden">
       <div className="absolute inset-0 md:fixed -z-10">
         <Image
-          src={encodeURI('/Airbnb picture/1975 Point Nepean Road- HD/Backyard.jpg')}
-          alt="MAX Entertain backyard"
+          src={encodeURI('/Airbnb picture/1975 Point Nepean Road- HD/Living 1.jpg')}
+          alt="MAX Entertain living room"
           fill
           priority
           className="object-cover"
           sizes="100vw"
         />
-        <div className="absolute inset-0 bg-black/45" />
+        <div className="absolute inset-0 bg-black/55" />
       </div>
 
       <main className="section-padding min-h-screen">

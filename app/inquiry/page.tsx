@@ -18,14 +18,14 @@ export default function InquiryPage({
       {/* Background — fixed on desktop, absolute on mobile for iOS Safari compatibility */}
       <div className="absolute inset-0 md:fixed -z-10">
         <Image
-          src={safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/Backyard.jpg')}
-          alt="Property background"
+          src={safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/Living 1.jpg')}
+          alt="MAX Entertain living room"
           fill
           priority
           className="object-cover"
           sizes="100vw"
         />
-        {/* Keep full-colour background; readability handled by the form card styling */}
+        <div className="absolute inset-0 bg-black/45" />
       </div>
 
       <main className="relative min-h-screen">

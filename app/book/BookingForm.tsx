@@ -13,6 +13,12 @@ const GROUP_OPTIONS: { value: BookingGroupType; label: string }[] = [
   { value: 'other', label: 'Other' },
 ]
 
+const inputClass =
+  'mt-2 w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-luxury-dark transition-colors outline-none focus:border-luxury-gold focus:bg-white focus:ring-2 focus:ring-luxury-gold/20 dark:border-white/10 dark:bg-[#141411]/80 dark:text-white dark:placeholder-white/30 dark:focus:bg-[#141411]'
+
+const labelClass =
+  'flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400'
+
 export default function BookingForm({
   checkIn,
   checkOut,
@@ -69,61 +75,139 @@ export default function BookingForm({
   return (
     <div className="grid gap-8 lg:grid-cols-12">
       <div className="lg:col-span-7">
-        <form onSubmit={submit} className="rounded-sm bg-white/95 p-6 shadow-2xl dark:bg-[#1f1f1c]/95 md:p-8">
-          <h1 className="font-serif text-3xl font-bold text-luxury-dark dark:text-white md:text-4xl">
-            Secure Your Direct Booking
+        <form onSubmit={submit} className="rounded-2xl border-t-2 border-luxury-gold/60 bg-white/[0.97] p-6 shadow-2xl backdrop-blur-sm dark:bg-[#1a1a1a]/[0.97] md:p-8">
+
+          {/* Badge + heading */}
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-luxury-gold/30 bg-luxury-gold/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-luxury-gold">
+            <span className="material-icons text-[12px]">verified</span>
+            Direct Booking — No Platform Fees
+          </div>
+          <h1 className="mt-3 font-serif text-3xl font-bold text-luxury-dark dark:text-white md:text-4xl">
+            Secure Your Stay
           </h1>
-          <p className="mt-3 text-base leading-relaxed text-gray-700 dark:text-gray-300">
-            Complete your details, confirm the house rules, then pay securely with Stripe. Your dates are held for 30 minutes while checkout is open.
+          <p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+            Your dates are held for 30 minutes once checkout opens. Pay securely with Stripe — no platform surcharge.
           </p>
 
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
+          {/* Section divider */}
+          <div className="my-7 flex items-center gap-3">
+            <div className="h-px flex-1 bg-gray-100 dark:bg-white/10" />
+            <span className="text-xs font-semibold uppercase tracking-widest text-gray-400 dark:text-gray-500">Guest Details</span>
+            <div className="h-px flex-1 bg-gray-100 dark:bg-white/10" />
+          </div>
+
+          <div className="grid gap-5 md:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Full name</span>
-              <input name="name" required className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 text-luxury-dark outline-none focus:border-luxury-gold dark:border-white/10 dark:bg-[#141411] dark:text-white" />
+              <span className={labelClass}>
+                <span className="material-icons text-[14px] text-luxury-gold">person</span>
+                Full name
+              </span>
+              <input name="name" required className={inputClass} />
             </label>
             <label className="block">
-              <span className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Email</span>
-              <input name="email" type="email" required className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 text-luxury-dark outline-none focus:border-luxury-gold dark:border-white/10 dark:bg-[#141411] dark:text-white" />
+              <span className={labelClass}>
+                <span className="material-icons text-[14px] text-luxury-gold">email</span>
+                Email
+              </span>
+              <input name="email" type="email" required className={inputClass} />
             </label>
             <label className="block">
-              <span className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Phone</span>
-              <input name="phone" required placeholder="+61 ..." className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 text-luxury-dark outline-none focus:border-luxury-gold dark:border-white/10 dark:bg-[#141411] dark:text-white" />
+              <span className={labelClass}>
+                <span className="material-icons text-[14px] text-luxury-gold">phone</span>
+                Phone
+              </span>
+              <input name="phone" required placeholder="+61 ..." className={inputClass} />
             </label>
             <label className="block">
-              <span className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Guests</span>
-              <input name="guests" type="number" min={1} max={30} required className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 text-luxury-dark outline-none focus:border-luxury-gold dark:border-white/10 dark:bg-[#141411] dark:text-white" />
+              <span className={labelClass}>
+                <span className="material-icons text-[14px] text-luxury-gold">group</span>
+                Guests
+              </span>
+              <input name="guests" type="number" min={1} max={30} required className={inputClass} />
             </label>
             <label className="block md:col-span-2">
-              <span className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Group type</span>
-              <select name="groupType" required className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 text-luxury-dark outline-none focus:border-luxury-gold dark:border-white/10 dark:bg-[#141411] dark:text-white">
+              <span className={labelClass}>
+                <span className="material-icons text-[14px] text-luxury-gold">category</span>
+                Group type
+              </span>
+              <select name="groupType" required className={inputClass}>
                 {GROUP_OPTIONS.map((option) => (
                   <option key={option.value} value={option.value}>{option.label}</option>
                 ))}
               </select>
             </label>
             <label className="block md:col-span-2">
-              <span className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Pets</span>
-              <input name="pets" placeholder="No pets / one small dog / etc." className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 text-luxury-dark outline-none focus:border-luxury-gold dark:border-white/10 dark:bg-[#141411] dark:text-white" />
+              <span className={labelClass}>
+                <span className="material-icons text-[14px] text-luxury-gold">pets</span>
+                Pets
+              </span>
+              <input name="pets" placeholder="No pets / one small dog / etc." className={inputClass} />
             </label>
             <label className="block md:col-span-2">
-              <span className="text-sm font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300">Tell Jason about your stay</span>
-              <textarea name="message" required rows={4} placeholder="Occasion, family mix, arrival plans, or anything we should know." className="mt-2 w-full border border-gray-300 bg-white px-4 py-3 text-luxury-dark outline-none focus:border-luxury-gold dark:border-white/10 dark:bg-[#141411] dark:text-white" />
+              <span className={labelClass}>
+                <span className="material-icons text-[14px] text-luxury-gold">chat_bubble_outline</span>
+                Tell Jason about your stay
+              </span>
+              <textarea
+                name="message"
+                required
+                rows={4}
+                placeholder="Occasion, family mix, arrival plans, or anything we should know."
+                className={inputClass}
+              />
             </label>
           </div>
 
-          <label className="mt-6 flex items-start gap-3 text-base text-gray-700 dark:text-gray-300">
-            <input name="rulesAccepted" type="checkbox" required className="mt-1 h-4 w-4 accent-luxury-gold" />
-            <span>
-              I confirm this is not a Schoolies booking, parties are not permitted, outdoor areas close between 11pm and 7am, and I accept the cancellation policy.
-            </span>
-          </label>
+          {/* House rules */}
+          <div className="mt-6 rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-white/5">
+            <label className="flex cursor-pointer items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
+              <input name="rulesAccepted" type="checkbox" required className="mt-0.5 h-4 w-4 shrink-0 accent-luxury-gold" />
+              <span>
+                I confirm this is not a Schoolies booking, parties are not permitted, outdoor areas close between 11 pm–7 am, and I accept the cancellation policy.
+              </span>
+            </label>
+          </div>
 
-          {error ? <p className="mt-5 text-sm font-semibold text-red-600">{error}</p> : null}
+          {error ? (
+            <div className="mt-5 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700 dark:border-red-900/40 dark:bg-red-950/30 dark:text-red-400">
+              <span className="material-icons shrink-0 text-[16px]">error_outline</span>
+              {error}
+            </div>
+          ) : null}
 
-          <button type="submit" disabled={isSubmitting} className="btn-primary mt-8 w-full disabled:cursor-not-allowed disabled:opacity-60">
-            {isSubmitting ? 'Opening Secure Checkout...' : `Pay $${pricing.totalAud.toLocaleString()} Securely`}
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="btn-primary mt-7 flex w-full items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="material-icons animate-spin text-[18px]">sync</span>
+                Opening Secure Checkout…
+              </>
+            ) : (
+              <>
+                <span className="material-icons text-[18px]">lock</span>
+                Pay ${pricing.totalAud.toLocaleString()} Securely
+              </>
+            )}
           </button>
+
+          {/* Trust signals */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-gray-400 dark:text-gray-500">
+            <span className="flex items-center gap-1">
+              <span className="material-icons text-[13px]">verified_user</span>
+              Powered by Stripe
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="material-icons text-[13px]">schedule</span>
+              30-min date hold
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="material-icons text-[13px]">receipt_long</span>
+              Invoice provided
+            </span>
+          </div>
         </form>
       </div>
 

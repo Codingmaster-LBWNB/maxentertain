@@ -15,7 +15,7 @@ export default function BookingSummary({
   const grouped = groupNightsByTier(pricing.nights)
 
   return (
-    <div className="rounded-sm border border-luxury-gold/30 bg-white/95 dark:bg-[#1f1f1c]/95 p-6 shadow-xl">
+    <div className="rounded-2xl border border-luxury-gold/30 bg-white/[0.97] p-6 shadow-xl backdrop-blur-sm dark:bg-[#1a1a1a]/[0.97]">
       <h2 className="font-serif text-2xl font-bold text-luxury-dark dark:text-white">
         Booking Summary
       </h2>
@@ -41,9 +41,9 @@ export default function BookingSummary({
       </div>
 
       <div className="mt-6 border-t border-gray-200 pt-4 dark:border-white/10">
-        <div className="flex items-center justify-between text-lg font-semibold text-luxury-dark dark:text-white">
+        <div className="flex items-center justify-between text-lg font-bold text-luxury-dark dark:text-white">
           <span>Total paid direct</span>
-          <span>${pricing.totalAud.toLocaleString()}</span>
+          <span className="text-luxury-gold">${pricing.totalAud.toLocaleString()}</span>
         </div>
         {showLevy ? (
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
