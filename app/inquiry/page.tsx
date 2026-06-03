@@ -1,6 +1,19 @@
+import type { Metadata } from 'next'
 import InquiryForm from '@/components/InquiryForm'
 import Link from 'next/link'
 import Image from 'next/image'
+
+export const metadata: Metadata = {
+  title: 'Book Direct & Save | MAX Entertain Beachside Retreat',
+  description: 'Enquire and book direct for the best rate at our award-winning Mornington Peninsula beachfront retreat. 6 bedrooms, heated pool, home theatre — 10 m from the beach.',
+  alternates: { canonical: '/inquiry' },
+  openGraph: {
+    title: 'Book Direct & Save | MAX Entertain Beachside Retreat',
+    description: 'Skip the OTA fees — book directly with the host for the best rate on the Mornington Peninsula.',
+    type: 'website',
+    url: '/inquiry',
+  },
+}
 
 export default function InquiryPage({
   searchParams,
