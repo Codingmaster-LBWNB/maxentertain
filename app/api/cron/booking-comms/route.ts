@@ -14,10 +14,10 @@ function getReturningGuestCampaign(now: Date) {
   const month = now.getMonth() + 1
   const day = now.getDate()
 
-  if (month === 3 && day === 1) return { id: `${year}-easter-school-holidays`, label: 'Easter school holidays' }
-  if (month === 6 && day === 1) return { id: `${year}-winter-school-holidays`, label: 'Winter school holidays' }
-  if (month === 8 && day === 15) return { id: `${year}-spring-school-holidays`, label: 'Spring school holidays' }
-  if (month === 11 && day === 1) return { id: `${year + 1}-summer-school-holidays`, label: 'Summer school holidays' }
+  if (month === 3 && day <= 7) return { id: `${year}-easter-school-holidays`, label: 'Easter school holidays' }
+  if (month === 6 && day <= 7) return { id: `${year}-winter-school-holidays`, label: 'Winter school holidays' }
+  if (month === 8 && day >= 15 && day <= 21) return { id: `${year}-spring-school-holidays`, label: 'Spring school holidays' }
+  if (month === 11 && day <= 7) return { id: `${year + 1}-summer-school-holidays`, label: 'Summer school holidays' }
 
   return null
 }
@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
   if (campaign) {
     const guests = await db
       .collection<GuestRecord>('guests')
-      .find({ offerCampaignsSent: { $ne: campaign.id } })
+      .find({ offerCampaignsSent: { $ne: campaign.id }, marketingOptOut: { $ne: true } })
       .limit(100)
       .toArray()
 

@@ -117,6 +117,7 @@ async function ensureBookingIndexes(db: Db) {
     db.collection('bookings').createIndex({ cancellationToken: 1 }, { unique: true }),
     db.collection('bookings').createIndex({ status: 1, checkIn: 1, checkOut: 1 }),
     db.collection('booking_events').createIndex({ bookingId: 1, createdAt: 1 }),
+    db.collection('stripe_events').createIndex({ eventId: 1 }, { unique: true }),
   ])
 
   indexesEnsured = true
@@ -175,13 +176,30 @@ function isDuplicateKeyError(error: unknown): error is MongoServerError {
   return typeof error === 'object' && error !== null && 'code' in error && (error as MongoServerError).code === 11000
 }
 
-async function recordBookingEvent(db: Db, bookingId: string, event: string, data: Record<string, unknown> = {}) {
+export async function recordBookingEvent(db: Db, bookingId: string, event: string, data: Record<string, unknown> = {}) {
   await db.collection('booking_events').insertOne({
     bookingId,
     event,
     data,
     createdAt: new Date(),
   })
+}
+
+export async function recordStripeEventIfNew(eventId: string, eventType: string) {
+  const db = await getDb()
+  await ensureBookingIndexes(db)
+
+  try {
+    await db.collection('stripe_events').insertOne({
+      eventId,
+      eventType,
+      receivedAt: new Date(),
+    })
+    return true
+  } catch (error) {
+    if (isDuplicateKeyError(error)) return false
+    throw error
+  }
 }
 
 export async function cleanupExpiredPendingBookings() {
@@ -332,6 +350,17 @@ export async function confirmBookingPayment(bookingId: string, payment: BookingP
   return booking
 }
 
+export async function hasActiveLocksForBooking(booking: BookingRecord) {
+  const db = await getDb()
+  const nights = getNightDates(booking.checkIn, booking.checkOut)
+  const count = await db.collection('booking_locks').countDocuments({
+    bookingId: booking._id,
+    date: { $in: nights },
+    status: { $in: ['pending_payment', 'confirmed'] },
+  })
+  return count === nights.length
+}
+
 export async function upsertGuestFromBooking(booking: BookingRecord) {
   const db = await getDb()
   const now = new Date()
@@ -395,7 +424,7 @@ export async function cancelBooking(bookingId: string, updates: { refundAmountAu
 
   await db.collection('booking_locks').deleteMany({ bookingId })
   await db.collection<BookingRecord>('bookings').updateOne(
-    { _id: bookingId, status: { $in: ['confirmed', 'refunded', 'cancelled'] } },
+    { _id: bookingId, status: { $in: ['cancelling', 'refund_pending'] } },
     {
       $set: {
         status: nextStatus,
@@ -408,6 +437,60 @@ export async function cancelBooking(bookingId: string, updates: { refundAmountAu
     }
   )
   await recordBookingEvent(db, bookingId, 'booking.cancelled', updates)
+  return getBookingById(bookingId)
+}
+
+export async function beginCancellation(bookingId: string, refundAmountAud: number, reason = 'Guest requested cancellation') {
+  const db = await getDb()
+  const nextStatus: BookingStatus = refundAmountAud > 0 ? 'refund_pending' : 'cancelling'
+  const result = await db.collection<BookingRecord>('bookings').findOneAndUpdate(
+    { _id: bookingId as any, status: 'confirmed' } as any,
+    {
+      $set: {
+        status: nextStatus,
+        cancelReason: reason,
+        updatedAt: new Date(),
+      },
+    },
+    { returnDocument: 'after' }
+  )
+
+  if (result) {
+    await recordBookingEvent(db, bookingId, 'booking.cancellation_started', { refundAmountAud, reason })
+  }
+  return result
+}
+
+export async function failCancellation(bookingId: string, error: string) {
+  const db = await getDb()
+  await db.collection<BookingRecord>('bookings').updateOne(
+    { _id: bookingId as any, status: { $in: ['cancelling', 'refund_pending'] } } as any,
+    {
+      $set: {
+        status: 'confirmed',
+        updatedAt: new Date(),
+        'comms.lastEmailError': error,
+      },
+    }
+  )
+  await recordBookingEvent(db, bookingId, 'booking.cancellation_failed', { error })
+  return getBookingById(bookingId)
+}
+
+export async function markPaymentOrphaned(bookingId: string, payment: BookingPayment, reason: string) {
+  const db = await getDb()
+  await db.collection<BookingRecord>('bookings').updateOne(
+    { _id: bookingId as any } as any,
+    {
+      $set: {
+        status: 'payment_orphaned',
+        payment,
+        updatedAt: new Date(),
+        'comms.lastEmailError': reason,
+      },
+    }
+  )
+  await recordBookingEvent(db, bookingId, 'booking.payment_orphaned', { reason, payment })
   return getBookingById(bookingId)
 }
 
@@ -487,6 +570,44 @@ export async function markCommsEventIfFirst(bookingId: string, event: string) {
   return result.modifiedCount > 0
 }
 
+export async function hasCommsEvent(bookingId: string, event: string) {
+  const db = await getDb()
+  const found = await db.collection('bookings').findOne(
+    {
+      _id: bookingId as any,
+      'comms.commsEventsSent': event,
+    } as any,
+    { projection: { _id: 1 } }
+  )
+  return Boolean(found)
+}
+
+export async function markCommsEventSent(bookingId: string, event: string) {
+  const db = await getDb()
+  await db.collection('bookings').updateOne(
+    { _id: bookingId as any } as any,
+    {
+      $addToSet: { 'comms.commsEventsSent': event },
+      $unset: { 'comms.lastEmailError': '' },
+      $set: { updatedAt: new Date() },
+    }
+  )
+}
+
+export async function markCommsEventFailed(bookingId: string, event: string, error: unknown) {
+  const db = await getDb()
+  const message = error instanceof Error ? error.message : String(error)
+  await db.collection('bookings').updateOne(
+    { _id: bookingId as any } as any,
+    {
+      $set: {
+        updatedAt: new Date(),
+        'comms.lastEmailError': `${event}: ${message}`,
+      },
+    }
+  )
+}
+
 export async function markPreStaySent(bookingId: string, daysBeforeCheckIn: number) {
   const db = await getDb()
   await db.collection('bookings').updateOne(
@@ -507,6 +628,8 @@ export async function markCheckoutCompletedSent(bookingId: string) {
         status: 'completed',
         completedAt: new Date(),
         'comms.checkoutCompletedSent': true,
+        'comms.reviewRequestedAt': new Date(),
+        'comms.reviewSource': 'direct',
         updatedAt: new Date(),
       },
     }

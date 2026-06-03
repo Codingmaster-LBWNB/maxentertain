@@ -121,12 +121,12 @@ export default function Navigation() {
             </div>
 
             <Link
-              href="/inquiry"
-              onClick={() => trackClick('Enquiry', { location: 'Nav' })}
+              href="/#calendar"
+              onClick={() => trackClick('Check Dates', { location: 'Nav' })}
               className="btn-primary py-2.5 px-5 flex-shrink-0 inline-flex items-center gap-1.5"
             >
               <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>
-              Enquiry
+              Check Dates
             </Link>
 
           </div>
@@ -134,11 +134,12 @@ export default function Navigation() {
           {/* Mobile actions */}
           <div className="md:hidden flex items-center gap-2 flex-shrink-0">
             <Link
-              href="/inquiry"
+              href="/#calendar"
+              onClick={() => trackClick('Check Dates', { location: 'Mobile Nav' })}
               className="inline-flex items-center gap-2 bg-luxury-gold text-white px-3 py-2 rounded-lg font-semibold text-sm shadow-lg hover:bg-opacity-90 transition-all"
             >
               <span className="material-icons" style={{ fontSize: '16px' }}>calendar_today</span>
-              Enquiry
+              Dates
             </Link>
 
             <ShareButton
@@ -192,12 +193,12 @@ export default function Navigation() {
                 </a>
               ))}
               <Link
-                href="/inquiry"
+                href="/#calendar"
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="btn-primary w-full flex items-center justify-center gap-2 text-center"
               >
                 <span className="material-icons" style={{ fontSize: '13px' }}>calendar_today</span>
-                Send Enquiry
+                Check Dates
               </Link>
             </div>
           </motion.div>

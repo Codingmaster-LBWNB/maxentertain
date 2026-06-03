@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import type Stripe from 'stripe'
-import { confirmBookingPayment, expireBooking, markCommsEventIfFirst } from '@/lib/bookings'
+import {
+  confirmBookingPayment,
+  expireBooking,
+  getBookingById,
+  hasActiveLocksForBooking,
+  hasCommsEvent,
+  markCommsEventFailed,
+  markCommsEventSent,
+  markPaymentOrphaned,
+  recordStripeEventIfNew,
+} from '@/lib/bookings'
 import { getStripe, getStripeWebhookSecret } from '@/lib/stripe'
-import { sendBookingConfirmedEmail, sendOwnerBookingAlert } from '@/lib/email'
+import { sendBookingConfirmedEmail, sendOwnerBookingAlert, sendOwnerPaymentIssueAlert } from '@/lib/email'
 
 export const runtime = 'nodejs'
 
@@ -63,20 +73,53 @@ export async function POST(req: NextRequest) {
   }
 
   try {
+    const isNewEvent = await recordStripeEventIfNew(event.id, event.type)
+    if (!isNewEvent) {
+      return NextResponse.json({ received: true, duplicate: true })
+    }
+
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session
       const bookingId = session.metadata?.bookingId
       if (!bookingId) throw new Error('Missing bookingId in Stripe metadata')
 
       const payment = await buildPaymentDetails(session)
+      const existingBooking = await getBookingById(bookingId)
+      if (!existingBooking) {
+        throw new Error(`Booking ${bookingId} not found for completed checkout`)
+      }
+
+      const locksStillHeld = await hasActiveLocksForBooking(existingBooking)
+      if (existingBooking.status !== 'pending_payment' || !locksStillHeld) {
+        const reason = `Checkout completed after booking status became ${existingBooking.status} or locks were missing`
+        const orphaned = await markPaymentOrphaned(bookingId, payment, reason)
+        if (payment.stripePaymentIntentId) {
+          await stripe.refunds.create(
+            {
+              payment_intent: payment.stripePaymentIntentId,
+              metadata: { bookingId, reason: 'orphaned_direct_booking_payment' },
+            },
+            { idempotencyKey: `orphan-refund-${bookingId}` }
+          )
+        }
+        if (orphaned) await sendOwnerPaymentIssueAlert(orphaned, reason)
+        return NextResponse.json({ received: true, orphaned: true })
+      }
+
       const booking = await confirmBookingPayment(bookingId, payment)
 
-      const shouldSendConfirmationEmails = await markCommsEventIfFirst(booking._id, 'booking.confirmed.email')
-      if (shouldSendConfirmationEmails) {
-        await Promise.allSettled([
-          sendBookingConfirmedEmail(booking),
-          sendOwnerBookingAlert(booking),
-        ])
+      const emailEvent = 'booking.confirmed.email'
+      if (!(await hasCommsEvent(booking._id, emailEvent))) {
+        try {
+          await Promise.all([
+            sendBookingConfirmedEmail(booking),
+            sendOwnerBookingAlert(booking),
+          ])
+          await markCommsEventSent(booking._id, emailEvent)
+        } catch (error) {
+          await markCommsEventFailed(booking._id, emailEvent, error)
+          throw error
+        }
       }
     }
 

@@ -3,9 +3,12 @@ import type { NightBreakdown } from '@/lib/pricing'
 export type BookingStatus =
   | 'pending_payment'
   | 'confirmed'
+  | 'cancelling'
+  | 'refund_pending'
   | 'expired'
   | 'cancelled'
   | 'refunded'
+  | 'payment_orphaned'
   | 'completed'
 
 export type BookingGroupType =
@@ -46,8 +49,12 @@ export interface BookingPayment {
 
 export interface BookingComms {
   commsEventsSent?: string[]
+  lastEmailError?: string
   preStaySent?: number[]
   checkoutCompletedSent?: boolean
+  reviewRequestedAt?: Date
+  reviewSource?: 'google' | 'direct'
+  reviewReceivedAt?: Date
 }
 
 export interface BookingRecord {
@@ -104,6 +111,7 @@ export interface GuestRecord {
   tags: BookingGroupType[]
   totalBookings: number
   totalSpendAud: number
+  marketingOptOut?: boolean
   lastBookingId: string
   lastCheckIn: string
   lastCheckOut: string

@@ -70,7 +70,7 @@ export default function SegmentCTACards() {
               <p className="mt-3 min-h-[96px] text-base leading-relaxed text-white/70">{segment.description}</p>
               <div className="mt-6 flex flex-col gap-3">
                 <Link
-                  href={`/#testimonials?guestType=${segment.reviewFilter}`}
+                  href={`/?guestType=${segment.reviewFilter}#testimonials`}
                   className="text-sm font-semibold uppercase tracking-widest text-luxury-gold hover:underline"
                 >
                   Read matching reviews

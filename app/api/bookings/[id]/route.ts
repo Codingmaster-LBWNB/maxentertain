@@ -13,5 +13,5 @@ export async function GET(
     return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
   }
 
-  return NextResponse.json(toPublicBookingSummary(booking, booking.status === 'confirmed'))
+  return NextResponse.json(toPublicBookingSummary(booking, false))
 }

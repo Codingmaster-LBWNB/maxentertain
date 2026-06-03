@@ -29,6 +29,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.7,
     },
+    ...[
+      'family-holidays-mornington-peninsula',
+      'golf-accommodation-mornington-peninsula',
+      'corporate-retreat-mornington-peninsula',
+      'milestone-birthday-accommodation',
+      'tootgarook-holiday-house',
+    ].map((slug) => ({
+      url: `${baseUrl}/${slug}`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly' as const,
+      priority: 0.85,
+    })),
   ]
 }
 

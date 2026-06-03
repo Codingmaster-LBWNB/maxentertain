@@ -24,7 +24,13 @@ export function GET() {
     cfg.booking?.airbnb ? `- Airbnb: ${cfg.booking.airbnb}` : null,
     cfg.booking?.bookingCom ? `- Booking.com: ${cfg.booking.bookingCom}` : null,
     cfg.booking?.vrbo ? `- VRBO: ${cfg.booking.vrbo}` : null,
-    `- Direct booking: ${siteUrl}/inquiry`,
+    `- Direct booking: ${siteUrl}/#calendar`,
+    `- Book direct checkout: ${siteUrl}/book`,
+    `- Family holidays: ${siteUrl}/family-holidays-mornington-peninsula`,
+    `- Golf accommodation: ${siteUrl}/golf-accommodation-mornington-peninsula`,
+    `- Corporate retreats: ${siteUrl}/corporate-retreat-mornington-peninsula`,
+    `- Milestone birthdays: ${siteUrl}/milestone-birthday-accommodation`,
+    `- Tootgarook holiday house: ${siteUrl}/tootgarook-holiday-house`,
   ]
     .filter(Boolean)
     .join('\n')

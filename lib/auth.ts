@@ -3,19 +3,25 @@ import { cookies } from 'next/headers'
 import { NextRequest } from 'next/server'
 
 const COOKIE_NAME = 'maxowner_session'
-const SECRET = new TextEncoder().encode(process.env.ADMIN_JWT_SECRET ?? 'fallback-dev-secret-change-me')
+
+function getJwtSecret() {
+  if (process.env.NODE_ENV === 'production' && !process.env.ADMIN_JWT_SECRET) {
+    throw new Error('ADMIN_JWT_SECRET is required in production')
+  }
+  return new TextEncoder().encode(process.env.ADMIN_JWT_SECRET ?? 'fallback-dev-secret-change-me')
+}
 
 export async function signSession(): Promise<string> {
   return new SignJWT({ role: 'owner' })
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('7d')
-    .sign(SECRET)
+    .sign(getJwtSecret())
 }
 
 export async function verifySession(token: string): Promise<boolean> {
   try {
-    await jwtVerify(token, SECRET)
+    await jwtVerify(token, getJwtSecret())
     return true
   } catch {
     return false

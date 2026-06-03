@@ -41,7 +41,8 @@ export default function Footer() {
                 { label: 'Amenities', href: '#amenities' },
                 { label: 'Guest Reviews', href: '#testimonials' },
                 { label: 'Nearby Attractions', href: '#local-area' },
-                { label: 'Book Your Stay', href: '#inquiry' },
+                { label: 'Check Availability', href: '#calendar' },
+                { label: 'FAQ', href: '#faq' },
               ].map((item) => (
                 <li key={item.label}>
                   <Link
@@ -116,11 +117,11 @@ export default function Footer() {
             &copy; {new Date().getFullYear()} {propertyConfig.name}. All rights reserved.
           </p>
           <Link
-            href="/inquiry"
+            href="/#calendar"
             className="btn-primary py-2.5 px-6 inline-flex items-center gap-2"
           >
             <span className="material-icons" style={{ fontSize: '12px' }}>calendar_today</span>
-            Book Direct
+            Check Dates
           </Link>
         </div>
       </div>

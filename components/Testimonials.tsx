@@ -138,6 +138,16 @@ export default function Testimonials() {
                 {testimonial.name}
               </p>
               <p className="text-sm text-white/65 font-sans mt-0.5">{testimonial.date}</p>
+              {testimonial.sourceUrl ? (
+                <a
+                  href={testimonial.sourceUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex text-xs font-semibold uppercase tracking-[0.12em] text-luxury-gold hover:underline"
+                >
+                  Verified on {testimonial.source ?? 'platform'}
+                </a>
+              ) : null}
             </div>
           </div>
         </div>

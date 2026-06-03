@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { cancelBooking, getBookingByCancellationToken, markCommsEventIfFirst } from '@/lib/bookings'
+import {
+  beginCancellation,
+  cancelBooking,
+  failCancellation,
+  getBookingByCancellationToken,
+  hasCommsEvent,
+  markCommsEventFailed,
+  markCommsEventSent,
+} from '@/lib/bookings'
 import { computeRefund } from '@/lib/cancellation'
 import { getStripe } from '@/lib/stripe'
 import { sendBookingCancelledEmail, sendOwnerCancellationAlert } from '@/lib/email'
@@ -20,37 +28,63 @@ export async function POST(req: NextRequest) {
     }
 
     const refund = computeRefund(booking)
+    const reasonText = String(reason ?? 'Guest requested cancellation')
+    const cancellationStarted = await beginCancellation(booking._id, refund.refundAud, reasonText)
+    if (!cancellationStarted) {
+      return NextResponse.json({ error: 'Booking is already being cancelled or is no longer confirmed' }, { status: 409 })
+    }
+
     let refundStripeId: string | undefined
 
     if (refund.refundAud > 0) {
       if (!booking.payment.stripePaymentIntentId) {
+        await failCancellation(booking._id, 'Payment intent missing; manual refund required')
         return NextResponse.json({ error: 'Payment intent missing; manual refund required' }, { status: 409 })
       }
 
-      const stripeRefund = await getStripe().refunds.create({
-        payment_intent: booking.payment.stripePaymentIntentId,
-        amount: refund.refundAud * 100,
-        metadata: {
-          bookingId: booking._id,
-          policyApplied: refund.policyApplied,
-        },
-      })
-      refundStripeId = stripeRefund.id
+      try {
+        const stripeRefund = await getStripe().refunds.create(
+          {
+            payment_intent: booking.payment.stripePaymentIntentId,
+            amount: refund.refundAud * 100,
+            metadata: {
+              bookingId: booking._id,
+              policyApplied: refund.policyApplied,
+            },
+          },
+          { idempotencyKey: `cancel-refund-${booking._id}` }
+        )
+        refundStripeId = stripeRefund.id
+      } catch (error) {
+        await failCancellation(booking._id, error instanceof Error ? error.message : 'Stripe refund failed')
+        throw error
+      }
     }
 
-    const cancelled = await cancelBooking(booking._id, {
-      refundAmountAud: refund.refundAud,
-      refundStripeId,
-      reason: String(reason ?? 'Guest requested cancellation'),
-    })
+    let cancelled
+    try {
+      cancelled = await cancelBooking(booking._id, {
+        refundAmountAud: refund.refundAud,
+        refundStripeId,
+        reason: reasonText,
+      })
+    } catch (error) {
+      await failCancellation(booking._id, error instanceof Error ? error.message : 'Final cancellation update failed')
+      throw error
+    }
 
     if (cancelled) {
-      const shouldSendCancellationEmails = await markCommsEventIfFirst(cancelled._id, 'booking.cancelled.email')
-      if (shouldSendCancellationEmails) {
-        await Promise.allSettled([
-          sendBookingCancelledEmail(cancelled, refund),
-          sendOwnerCancellationAlert(cancelled, refund),
-        ])
+      const emailEvent = 'booking.cancelled.email'
+      if (!(await hasCommsEvent(cancelled._id, emailEvent))) {
+        try {
+          await Promise.all([
+            sendBookingCancelledEmail(cancelled, refund),
+            sendOwnerCancellationAlert(cancelled, refund),
+          ])
+          await markCommsEventSent(cancelled._id, emailEvent)
+        } catch (error) {
+          await markCommsEventFailed(cancelled._id, emailEvent, error)
+        }
       }
     }
 

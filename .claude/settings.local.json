@@ -45,7 +45,8 @@
       "Bash(curl -s http://localhost:3001/api/maxowner/manual-blocks)",
       "Bash(curl -s http://localhost:3001/api/maxowner/pricing-tiers)",
       "Bash(node *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(openssl rand *)"
     ]
   }
 }

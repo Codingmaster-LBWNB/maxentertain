@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
+import { expireBooking } from '@/lib/bookings'
 import { sendBookingConfirmedEmail, sendOwnerBookingAlert } from '@/lib/email'
 import type { BookingRecord, BookingStatus } from '@/types/booking'
 
@@ -44,30 +45,72 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { bookingId, action } = await req.json()
-  if (!bookingId || action !== 'resend_confirmation') {
+  const body = await req.json()
+  const { bookingId, action } = body
+  if (!bookingId || !action) {
     return NextResponse.json({ error: 'Valid bookingId and action required' }, { status: 400 })
   }
 
   const db = await getDb()
   const booking = await db.collection<BookingRecord>('bookings').findOne({ _id: bookingId })
   if (!booking) return NextResponse.json({ error: 'Booking not found' }, { status: 404 })
-  if (booking.status !== 'confirmed') {
-    return NextResponse.json({ error: 'Only confirmed bookings can receive confirmation emails' }, { status: 400 })
+
+  if (action === 'resend_confirmation') {
+    if (booking.status !== 'confirmed') {
+      return NextResponse.json({ error: 'Only confirmed bookings can receive confirmation emails' }, { status: 400 })
+    }
+
+    await Promise.all([
+      sendBookingConfirmedEmail(booking),
+      sendOwnerBookingAlert(booking),
+    ])
+
+    await db.collection('bookings').updateOne(
+      { _id: bookingId },
+      {
+        $set: { updatedAt: new Date(), 'comms.lastConfirmationResentAt': new Date() },
+        $addToSet: { 'comms.commsEventsSent': `booking.confirmed.resend.${new Date().toISOString()}` },
+      }
+    )
+
+    return NextResponse.json({ ok: true })
   }
 
-  await Promise.all([
-    sendBookingConfirmedEmail(booking),
-    sendOwnerBookingAlert(booking),
-  ])
-
-  await db.collection('bookings').updateOne(
-    { _id: bookingId },
-    {
-      $set: { updatedAt: new Date(), 'comms.lastConfirmationResentAt': new Date() },
-      $addToSet: { 'comms.commsEventsSent': `booking.confirmed.resend.${new Date().toISOString()}` },
+  if (action === 'expire_hold') {
+    if (booking.status !== 'pending_payment') {
+      return NextResponse.json({ error: 'Only pending holds can be expired' }, { status: 400 })
     }
-  )
+    await expireBooking(booking._id, 'owner_expired_hold')
+    return NextResponse.json({ ok: true })
+  }
 
-  return NextResponse.json({ ok: true })
+  if (action === 'mark_manual_refund') {
+    const { refundAmountAud = 0, reason = 'Owner marked manual refund' } = body
+    if (!['confirmed', 'cancelled', 'refund_pending', 'cancelling', 'payment_orphaned'].includes(booking.status)) {
+      return NextResponse.json({ error: 'This booking cannot be marked refunded' }, { status: 400 })
+    }
+    await db.collection('booking_locks').deleteMany({ bookingId: booking._id })
+    await db.collection('bookings').updateOne(
+      { _id: booking._id as any } as any,
+      {
+        $set: {
+          status: 'refunded',
+          cancelledAt: new Date(),
+          cancelReason: String(reason),
+          refundAmountAud: Number(refundAmountAud),
+          refundStripeId: 'manual',
+          updatedAt: new Date(),
+        },
+      }
+    )
+    await db.collection('booking_events').insertOne({
+      bookingId: booking._id,
+      event: 'booking.manual_refund_marked',
+      data: { refundAmountAud: Number(refundAmountAud), reason: String(reason) },
+      createdAt: new Date(),
+    })
+    return NextResponse.json({ ok: true })
+  }
+
+  return NextResponse.json({ error: 'Unsupported booking action' }, { status: 400 })
 }

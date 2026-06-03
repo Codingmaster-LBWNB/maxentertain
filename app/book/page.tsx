@@ -1,7 +1,19 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import BookingForm from '@/app/book/BookingForm'
 import { BookingValidationError, getBookingQuote } from '@/lib/bookings'
+
+export const metadata: Metadata = {
+  title: 'Book Direct | Mornington Peninsula Beachfront Retreat',
+  description: 'Book MAX Entertain direct with secure Stripe checkout. See live pricing for this 6-bedroom Mornington Peninsula beachside retreat.',
+  alternates: { canonical: '/book' },
+  openGraph: {
+    title: 'Book Direct | MAX Entertain',
+    description: 'Secure direct booking for MAX Entertain Beachside Retreat on the Mornington Peninsula.',
+    url: '/book',
+  },
+}
 
 export default async function BookPage({
   searchParams,

@@ -313,6 +313,18 @@ export default function InquiryForm({
                 : 'bg-white rounded-2xl shadow-xl p-8 md:p-12'
             }
           >
+            {!isGlass && submitStatus !== 'success' ? (
+              <div className="mb-8 text-center">
+                <span className="section-label">Still Have Questions?</span>
+                <h2 className="mt-2 font-serif text-3xl font-bold text-luxury-dark">
+                  Send an enquiry to Jason
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl text-base leading-relaxed text-gray-600">
+                  For custom dates, pets, group fit or special requests, send a note here. Ready to book? Use the calendar above to see live pricing and pay securely.
+                </p>
+              </div>
+            ) : null}
+
             {submitStatus === 'success' ? (
               <motion.div
                 initial={{ scale: 0.9, opacity: 0 }}

@@ -36,6 +36,13 @@ export async function POST(req: NextRequest) {
     }
 
     const calendar = await calendarResponse.json()
+    if (calendar.calendarHealth?.degraded) {
+      return NextResponse.json(
+        { error: 'Availability feeds are temporarily unavailable. Please try again shortly.' },
+        { status: 503 }
+      )
+    }
+
     const blockedSet = new Set<string>(calendar.blockedDates ?? [])
     if (requestedNights.some((date) => blockedSet.has(date))) {
       throw new DatesUnavailableError()

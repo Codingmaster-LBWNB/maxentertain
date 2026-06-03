@@ -7,6 +7,7 @@ import { getSiteUrl } from '@/lib/site'
 import GuestChatWidget from '@/components/GuestChatWidget'
 import ThemeProvider from '@/components/ThemeProvider'
 import { Analytics } from '@vercel/analytics/react'
+import StickyMobileCTA from '@/components/StickyMobileCTA'
 
 const josefin = Josefin_Sans({
   subsets: ['latin'],
@@ -89,6 +90,7 @@ export default function RootLayout({
           <div className="relative z-[1]">
             {children}
             {chatEnabled ? <GuestChatWidget /> : null}
+            <StickyMobileCTA />
           </div>
         </ThemeProvider>
         <Analytics />

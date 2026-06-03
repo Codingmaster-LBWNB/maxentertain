@@ -8,6 +8,7 @@ import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
 import { useAvailability } from '@/hooks/useAvailability'
 import { blockedDates as defaultBlockedDates } from '@/config/property'
 import { getPriceSummary, groupNightsByTier, TIER_LABELS, NIGHTLY_RATES, PricingTier } from '@/lib/pricing'
+import { trackClick } from '@/lib/analytics'
 
 type PricingState =
   | { status: 'loading' }
@@ -396,6 +397,11 @@ export default function Calendar({
                   <div className="flex flex-col sm:flex-row gap-3 mt-6">
                     <Link
                       href={`/book?checkIn=${checkIn ? auStr(checkIn) : ''}&checkOut=${checkOut ? auStr(checkOut) : ''}`}
+                      onClick={() => trackClick('Book Directly', {
+                        location: 'Calendar',
+                        checkIn: checkIn ? auStr(checkIn) : '',
+                        checkOut: checkOut ? auStr(checkOut) : '',
+                      })}
                       className="btn-primary flex-1 inline-flex items-center gap-2 justify-center"
                     >
                       <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>

@@ -7,6 +7,9 @@ const STATUS_OPTIONS: Array<{ id: 'all' | BookingStatus; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'confirmed', label: 'Confirmed' },
   { id: 'pending_payment', label: 'Pending holds' },
+  { id: 'cancelling', label: 'Cancelling' },
+  { id: 'refund_pending', label: 'Refund pending' },
+  { id: 'payment_orphaned', label: 'Payment issues' },
   { id: 'cancelled', label: 'Cancelled' },
   { id: 'refunded', label: 'Refunded' },
   { id: 'expired', label: 'Expired' },
@@ -16,39 +19,78 @@ const STATUS_OPTIONS: Array<{ id: 'all' | BookingStatus; label: string }> = [
 const STATUS_STYLE: Record<BookingStatus, string> = {
   pending_payment: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
   confirmed: 'bg-green-500/15 text-green-300 border-green-500/30',
+  cancelling: 'bg-orange-500/15 text-orange-300 border-orange-500/30',
+  refund_pending: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
+  payment_orphaned: 'bg-red-500/15 text-red-300 border-red-500/30',
   expired: 'bg-gray-500/15 text-gray-300 border-gray-500/30',
   cancelled: 'bg-red-500/15 text-red-300 border-red-500/30',
   refunded: 'bg-purple-500/15 text-purple-300 border-purple-500/30',
   completed: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
 }
 
+type BookingEvent = {
+  _id: string
+  event: string
+  data?: Record<string, unknown>
+  createdAt: string
+}
+
 export default function OwnerBookingsPage() {
   const [bookings, setBookings] = useState<BookingRecord[]>([])
   const [status, setStatus] = useState<'all' | BookingStatus>('all')
   const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [pages, setPages] = useState(1)
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState('')
+  const [eventsByBooking, setEventsByBooking] = useState<Record<string, BookingEvent[]>>({})
+  const [openBookingId, setOpenBookingId] = useState<string | null>(null)
+  const [health, setHealth] = useState<Record<string, boolean> | null>(null)
+  const [directBookingIcalUrl, setDirectBookingIcalUrl] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
-    const res = await fetch(`/api/maxowner/bookings?status=${status}`)
+    const res = await fetch(`/api/maxowner/bookings?status=${status}&page=${page}`)
     const data = await res.json()
     setBookings(data.bookings ?? [])
     setTotal(data.total ?? 0)
+    setPages(data.pages ?? 1)
     setLoading(false)
-  }, [status])
+  }, [status, page])
 
   useEffect(() => { load() }, [load])
+  useEffect(() => {
+    fetch('/api/maxowner/health')
+      .then((res) => res.json())
+      .then((data) => {
+        setHealth(data.checks ?? null)
+        setDirectBookingIcalUrl(data.directBookingIcalUrl ?? null)
+      })
+      .catch(() => setHealth(null))
+  }, [])
 
   const resendConfirmation = async (bookingId: string) => {
+    await runAction(bookingId, { action: 'resend_confirmation' }, 'Confirmation email resent.')
+  }
+
+  const runAction = async (bookingId: string, payload: Record<string, unknown>, okMessage: string) => {
     setMessage('')
     const res = await fetch('/api/maxowner/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ bookingId, action: 'resend_confirmation' }),
+      body: JSON.stringify({ bookingId, ...payload }),
     })
     const data = await res.json().catch(() => ({}))
-    setMessage(res.ok ? 'Confirmation email resent.' : data.error ?? 'Could not resend confirmation.')
+    setMessage(res.ok ? okMessage : data.error ?? 'Action failed.')
+    if (res.ok) load()
+  }
+
+  const loadEvents = async (bookingId: string) => {
+    setOpenBookingId((current) => current === bookingId ? null : bookingId)
+    if (eventsByBooking[bookingId]) return
+    const res = await fetch(`/api/maxowner/bookings/${bookingId}/events`)
+    const data = await res.json()
+    setEventsByBooking((prev) => ({ ...prev, [bookingId]: data.events ?? [] }))
   }
 
   return (
@@ -60,11 +102,32 @@ export default function OwnerBookingsPage() {
         </div>
       </div>
 
+      {health ? (
+        <div className="mb-6 grid gap-2 md:grid-cols-4">
+          {Object.entries(health).map(([key, ok]) => (
+            <div key={key} className="rounded-lg border border-white/10 bg-[#1a1a18] px-4 py-3 text-sm">
+              <span className={ok ? 'text-green-300' : 'text-red-300'}>{ok ? 'OK' : 'Needs setup'}</span>
+              <span className="ml-2 text-gray-400">{key}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {directBookingIcalUrl ? (
+        <div className="mb-6 rounded-lg border border-luxury-gold/20 bg-luxury-gold/10 px-4 py-3 text-sm text-luxury-gold">
+          <p className="font-semibold">Private direct-booking iCal feed</p>
+          <p className="mt-1 break-all text-luxury-gold/80">{directBookingIcalUrl}</p>
+        </div>
+      ) : null}
+
       <div className="mb-6 flex flex-wrap gap-2">
         {STATUS_OPTIONS.map((option) => (
           <button
             key={option.id}
-            onClick={() => setStatus(option.id)}
+            onClick={() => {
+              setStatus(option.id)
+              setPage(1)
+            }}
             className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
               status === option.id
                 ? 'border-luxury-gold bg-luxury-gold/10 text-luxury-gold'
@@ -104,6 +167,8 @@ export default function OwnerBookingsPage() {
                     <p>{booking.guest.phone}</p>
                     <p>{booking.checkIn} to {booking.checkOut} ({booking.nights} nights)</p>
                     <p>${booking.pricing.totalAud.toLocaleString()} total</p>
+                    <p>Payment intent: {booking.payment.stripePaymentIntentId ?? '—'}</p>
+                    <p>Refund ID: {booking.refundStripeId ?? '—'}</p>
                   </div>
                   {booking.refundAmountAud ? (
                     <p className="mt-2 text-sm text-purple-300">Refunded: ${booking.refundAmountAud.toLocaleString()}</p>
@@ -127,12 +192,86 @@ export default function OwnerBookingsPage() {
                       Resend confirmation
                     </button>
                   ) : null}
+                  {booking.status === 'pending_payment' ? (
+                    <button
+                      onClick={() => runAction(booking._id, { action: 'expire_hold' }, 'Pending hold expired.')}
+                      className="rounded-lg border border-yellow-500/40 px-3 py-2 text-xs font-semibold text-yellow-300 hover:bg-yellow-500/10"
+                    >
+                      Expire hold
+                    </button>
+                  ) : null}
+                  {['confirmed', 'cancelled', 'payment_orphaned'].includes(booking.status) ? (
+                    <button
+                      onClick={() => {
+                        const amount = window.prompt('Manual refund amount in AUD', String(booking.refundAmountAud ?? 0))
+                        if (amount !== null) {
+                          runAction(
+                            booking._id,
+                            { action: 'mark_manual_refund', refundAmountAud: Number(amount), reason: 'Owner marked manual refund' },
+                            'Manual refund marked.'
+                          )
+                        }
+                      }}
+                      className="rounded-lg border border-purple-500/40 px-3 py-2 text-xs font-semibold text-purple-300 hover:bg-purple-500/10"
+                    >
+                      Mark manual refund
+                    </button>
+                  ) : null}
+                  <button
+                    onClick={() => loadEvents(booking._id)}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-gray-300 hover:border-luxury-gold hover:text-luxury-gold"
+                  >
+                    {openBookingId === booking._id ? 'Hide events' : 'Events'}
+                  </button>
                 </div>
               </div>
+              {openBookingId === booking._id ? (
+                <div className="mt-5 border-t border-white/10 pt-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Event timeline</p>
+                  <div className="space-y-2">
+                    {(eventsByBooking[booking._id] ?? []).map((event) => (
+                      <div key={event._id} className="rounded-lg bg-black/20 px-4 py-3 text-xs text-gray-400">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-semibold text-gray-200">{event.event}</span>
+                          <span>{event.createdAt ? new Date(event.createdAt).toLocaleString() : '—'}</span>
+                        </div>
+                        {event.data ? (
+                          <pre className="mt-2 overflow-auto whitespace-pre-wrap text-[11px] text-gray-500">
+                            {JSON.stringify(event.data, null, 2)}
+                          </pre>
+                        ) : null}
+                      </div>
+                    ))}
+                    {(eventsByBooking[booking._id] ?? []).length === 0 ? (
+                      <p className="text-sm text-gray-500">No events recorded yet.</p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
       )}
+
+      {pages > 1 ? (
+        <div className="mt-6 flex justify-center gap-2">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 disabled:opacity-30"
+          >
+            Prev
+          </button>
+          <span className="px-4 py-2 text-sm text-gray-500">{page} / {pages}</span>
+          <button
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            disabled={page === pages}
+            className="rounded-lg border border-white/10 px-4 py-2 text-sm text-gray-400 disabled:opacity-30"
+          >
+            Next
+          </button>
+        </div>
+      ) : null}
     </div>
   )
 }

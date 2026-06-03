@@ -5,7 +5,7 @@ import { getDb } from '@/lib/mongodb'
 import { getActiveBookingLockDates } from '@/lib/bookings'
 
 // Helper function to parse a single iCal feed
-async function parseICalFeed(icalUrl: string, australianTimezone: string): Promise<{ blockedDates: string[], eventCount: number }> {
+async function parseICalFeed(icalUrl: string, australianTimezone: string): Promise<{ blockedDates: string[], eventCount: number, success: boolean }> {
   const blockedDates: string[] = []
   
   try {
@@ -69,11 +69,11 @@ async function parseICalFeed(icalUrl: string, australianTimezone: string): Promi
       }
     })
 
-    return { blockedDates, eventCount: vevents.length }
+    return { blockedDates, eventCount: vevents.length, success: true }
   } catch (error) {
     console.error(`Error parsing iCal feed ${icalUrl}:`, error)
     // Return empty result instead of throwing - allows other feeds to still work
-    return { blockedDates: [], eventCount: 0 }
+    return { blockedDates: [], eventCount: 0, success: false }
   }
 }
 
@@ -141,10 +141,15 @@ export async function GET() {
       totalEventCount += result.eventCount
       feedStatus.push({
         source: icalFeeds[index]?.source ?? `ical_${index + 1}`,
-        success: result.eventCount > 0 || result.blockedDates.length > 0,
+        success: result.success,
         eventCount: result.eventCount,
       })
     })
+
+    const calendarHealth = {
+      healthy: feedStatus.some((feed) => feed.success),
+      degraded: feedStatus.length > 0 && feedStatus.every((feed) => !feed.success),
+    }
 
     // Merge manual blocks from MongoDB (if configured)
     if (process.env.MONGODB_URI) {
@@ -179,6 +184,7 @@ export async function GET() {
       eventCount: totalEventCount,
       feedCount: icalFeeds.length,
       feedStatus, // Safe debugging info (no URLs/tokens)
+      calendarHealth,
     })
   } catch (error) {
     console.error('Error fetching iCal feeds:', error)

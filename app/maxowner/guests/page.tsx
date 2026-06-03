@@ -40,9 +40,19 @@ export default function GuestsPage() {
     await fetch('/api/maxowner/guests', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: guest.email, tags: nextTags }),
+      body: JSON.stringify({ email: guest.email, tags: nextTags, marketingOptOut: guest.marketingOptOut }),
     })
     setGuests((prev) => prev.map((item) => item.email === guest.email ? { ...item, tags: nextTags } : item))
+  }
+
+  const toggleMarketingOptOut = async (guest: GuestRecord) => {
+    const next = !guest.marketingOptOut
+    await fetch('/api/maxowner/guests', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: guest.email, tags: guest.tags?.length ? guest.tags : ['other'], marketingOptOut: next }),
+    })
+    setGuests((prev) => prev.map((item) => item.email === guest.email ? { ...item, marketingOptOut: next } : item))
   }
 
   const sendOffer = async (guest: GuestRecord) => {
@@ -56,11 +66,33 @@ export default function GuestsPage() {
     setMessage(res.ok ? `Returning guest offer sent to ${guest.name}.` : data.error ?? 'Could not send offer.')
   }
 
+  const backfillGuests = async () => {
+    setMessage('')
+    const res = await fetch('/api/maxowner/guests', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'backfill_from_bookings' }),
+    })
+    const data = await res.json().catch(() => ({}))
+    setMessage(res.ok ? `Backfilled ${data.backfilled ?? 0} confirmed bookings into the guest CRM.` : data.error ?? 'Backfill failed.')
+    if (res.ok) load()
+  }
+
   return (
     <div className="p-8 text-white">
       <div className="mb-6">
-        <h1 className="mb-1 text-2xl font-serif text-luxury-gold">Guests</h1>
-        <p className="text-sm text-gray-400">{total} past guests in this view</p>
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="mb-1 text-2xl font-serif text-luxury-gold">Guests</h1>
+            <p className="text-sm text-gray-400">{total} past guests in this view</p>
+          </div>
+          <button
+            onClick={backfillGuests}
+            className="rounded-lg border border-luxury-gold/40 px-3 py-2 text-xs font-semibold text-luxury-gold hover:bg-luxury-gold/10"
+          >
+            Backfill from bookings
+          </button>
+        </div>
       </div>
 
       <div className="mb-6 flex flex-wrap gap-2">
@@ -126,9 +158,16 @@ export default function GuestsPage() {
                 </div>
                 <button
                   onClick={() => sendOffer(guest)}
+                  disabled={guest.marketingOptOut}
                   className="rounded-lg border border-luxury-gold/40 px-3 py-2 text-xs font-semibold text-luxury-gold hover:bg-luxury-gold/10"
                 >
                   Send returning offer
+                </button>
+                <button
+                  onClick={() => toggleMarketingOptOut(guest)}
+                  className="mt-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-gray-400 hover:border-white/30 hover:text-gray-200"
+                >
+                  {guest.marketingOptOut ? 'Allow offers' : 'Opt out offers'}
                 </button>
               </div>
             </div>

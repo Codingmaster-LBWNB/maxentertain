@@ -17,10 +17,12 @@ export default function Hero() {
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const [landingOpacity, setLandingOpacity] = useState(0)
+  const [videoEnabled, setVideoEnabled] = useState(false)
   const fadingOutRef = useRef(false)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const startCycle = useCallback(() => {
+    if (!videoEnabled) return
     fadingOutRef.current = false
     // Wait 3s on the image, then fade in the video
     timerRef.current = setTimeout(() => {
@@ -30,14 +32,23 @@ export default function Hero() {
       video.play().catch(() => {})
       setLandingOpacity(1)
     }, 3000)
+  }, [videoEnabled])
+
+  useEffect(() => {
+    const prefersReduced =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      window.matchMedia('(max-width: 767px)').matches
+    const saveData = Boolean((navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData)
+    setVideoEnabled(!prefersReduced && !saveData)
   }, [])
 
   useEffect(() => {
+    if (!videoEnabled) return
     startCycle()
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current)
     }
-  }, [startCycle])
+  }, [startCycle, videoEnabled])
 
   useEffect(() => {
     const video = videoRef.current
@@ -79,28 +90,31 @@ export default function Hero() {
     <section ref={sectionRef} className="relative h-screen w-full overflow-hidden">
       {/* Background layers */}
       <div className="absolute inset-0">
-        {/* Base image — always visible */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src={heroImage}
           alt="MAX Entertain beachfront retreat exterior — Tootgarook, Mornington Peninsula"
+          fill
+          priority
+          sizes="100vw"
           className="absolute inset-0 w-full h-full object-cover"
         />
 
         {/* Landing video — fades in/out over the image */}
-        <video
-          ref={videoRef}
-          muted
-          playsInline
-          preload="metadata"
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{
-            opacity: landingOpacity,
-            transition: 'opacity 1s ease-in-out',
-          }}
-        >
-          <source src={landingVideoSrc} type="video/mp4" />
-        </video>
+        {videoEnabled ? (
+          <video
+            ref={videoRef}
+            muted
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              opacity: landingOpacity,
+              transition: 'opacity 1s ease-in-out',
+            }}
+          >
+            <source src={landingVideoSrc} type="video/mp4" />
+          </video>
+        ) : null}
 
         {/* Cinematic overlay: heavy left, fades to transparent right */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/55 to-black/15" />
@@ -183,9 +197,9 @@ export default function Hero() {
               transition={{ duration: 0.7, ease: 'easeOut', delay: 1.05 }}
               className="flex flex-col sm:flex-row gap-3 flex-wrap"
             >
-              <Link href="/inquiry" onClick={() => trackClick('Book Directly', { location: 'Hero' })} className="btn-primary inline-flex items-center gap-2 justify-center">
+              <Link href="/#calendar" onClick={() => trackClick('Check Dates', { location: 'Hero' })} className="btn-primary inline-flex items-center gap-2 justify-center">
                 <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>
-                Book Directly &amp; Save
+                Check Dates &amp; Book Direct
               </Link>
 
               {propertyConfig.booking?.airbnb && (

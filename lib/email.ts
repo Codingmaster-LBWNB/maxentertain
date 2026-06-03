@@ -211,6 +211,33 @@ export async function sendOwnerCancellationAlert(
   })
 }
 
+export async function sendOwnerPaymentIssueAlert(booking: BookingRecord, reason: string) {
+  const guestName = escapeHtml(booking.guest.name)
+  const guestEmail = escapeHtml(booking.guest.email)
+  const dateRange = escapeHtml(dateRangeLine(booking))
+  const issue = escapeHtml(reason)
+
+  return sendEmail({
+    to: getOwnerEmail(),
+    subject: `Payment issue needs review: ${booking.checkIn} to ${booking.checkOut}`,
+    html: `
+      <h2>Payment issue needs review</h2>
+      <p><strong>Reason:</strong> ${issue}</p>
+      <p><strong>Guest:</strong> ${guestName} (${guestEmail})</p>
+      <p><strong>Dates:</strong> ${dateRange}</p>
+      <p><strong>Booking ID:</strong> ${escapeHtml(booking._id)}</p>
+      <p>Please check Stripe and the owner dashboard before releasing or rebooking these dates.</p>
+    `,
+    text: [
+      'Payment issue needs review',
+      `Reason: ${reason}`,
+      `Guest: ${booking.guest.name} (${booking.guest.email})`,
+      `Dates: ${dateRangeLine(booking)}`,
+      `Booking ID: ${booking._id}`,
+    ].join('\n'),
+  })
+}
+
 export async function sendPreStayEmail(booking: BookingRecord, daysBeforeCheckIn: number) {
   const subject = PRE_STAY_SUBJECTS[daysBeforeCheckIn] ?? `Your stay is coming up at ${propertyConfig.name}`
   const propertyName = escapeHtml(propertyConfig.name)

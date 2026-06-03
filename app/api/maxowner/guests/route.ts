@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { sendReturningGuestOfferEmail } from '@/lib/email'
-import type { BookingGroupType, GuestRecord } from '@/types/booking'
+import { upsertGuestFromBooking } from '@/lib/bookings'
+import type { BookingGroupType, BookingRecord, GuestRecord } from '@/types/booking'
 
 const VALID_TAGS: BookingGroupType[] = ['family', 'corporate', 'golf', 'milestone', 'other']
 
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const { email, tags } = await req.json()
+  const { email, tags, marketingOptOut } = await req.json()
   const nextTags = normaliseTags(tags)
   if (!email || nextTags.length === 0) {
     return NextResponse.json({ error: 'Valid email and at least one tag required' }, { status: 400 })
@@ -37,13 +38,22 @@ export async function PATCH(req: NextRequest) {
   const db = await getDb()
   await db.collection('guests').updateOne(
     { _id: String(email).toLowerCase() as any } as any,
-    { $set: { tags: nextTags, updatedAt: new Date() } }
+    { $set: { tags: nextTags, marketingOptOut: Boolean(marketingOptOut), updatedAt: new Date() } }
   )
   return NextResponse.json({ ok: true })
 }
 
 export async function POST(req: NextRequest) {
   const { email, action } = await req.json()
+  if (action === 'backfill_from_bookings') {
+    const db = await getDb()
+    const bookings = await db.collection<BookingRecord>('bookings').find({ status: { $in: ['confirmed', 'completed'] } }).toArray()
+    for (const booking of bookings) {
+      await upsertGuestFromBooking(booking)
+    }
+    return NextResponse.json({ ok: true, backfilled: bookings.length })
+  }
+
   if (!email || action !== 'send_returning_offer') {
     return NextResponse.json({ error: 'Valid email and action required' }, { status: 400 })
   }
@@ -51,6 +61,9 @@ export async function POST(req: NextRequest) {
   const db = await getDb()
   const guest = await db.collection<GuestRecord>('guests').findOne({ _id: String(email).toLowerCase() } as any)
   if (!guest) return NextResponse.json({ error: 'Guest not found' }, { status: 404 })
+  if (guest.marketingOptOut) {
+    return NextResponse.json({ error: 'Guest has opted out of marketing offers' }, { status: 400 })
+  }
 
   const campaign = {
     id: `manual-returning-offer-${new Date().toISOString().slice(0, 10)}`,
