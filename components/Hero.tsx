@@ -83,7 +83,7 @@ export default function Hero() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={heroImage}
-          alt=""
+          alt="MAX Entertain beachfront retreat exterior — Tootgarook, Mornington Peninsula"
           className="absolute inset-0 w-full h-full object-cover"
         />
 
@@ -92,7 +92,7 @@ export default function Hero() {
           ref={videoRef}
           muted
           playsInline
-          preload="auto"
+          preload="metadata"
           className="absolute inset-0 w-full h-full object-cover"
           style={{
             opacity: landingOpacity,
@@ -135,7 +135,7 @@ export default function Hero() {
               transition={{ duration: 0.9, ease: 'easeOut', delay: 0.4 }}
               className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-4 lg:mb-3 drop-shadow-2xl"
             >
-              {propertyConfig.name}
+              MAX Entertain Beachside Retreat — Mornington Peninsula
             </motion.h1>
 
             {/* Gold rule */}

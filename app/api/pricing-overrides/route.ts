@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { NIGHTLY_RATES, PricingTier } from '@/lib/pricing'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 
 export async function GET() {
   // If MongoDB is not configured, return defaults so the calendar shows tier prices as normal

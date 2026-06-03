@@ -14,7 +14,8 @@ Luxury property rental website built with Next.js (App Router) and Tailwind CSS.
 - Next.js 14 (App Router)
 - React 18 + TypeScript
 - Tailwind CSS
-- EmailJS (client-side inquiry sending)
+- Resend (server-side inquiry + booking emails)
+- Google Gemini API (guest chat)
 - iCal parsing: `ical.js`
 
 ## Local development
@@ -74,27 +75,25 @@ Use either:
 
 Verify locally at `http://localhost:3000/api/calendar` and in production at `https://maxentertain.com/api/calendar`.
 
-### EmailJS inquiry form (client-side)
+### Inquiry and booking email (server-side via Resend)
 
-The inquiry form uses EmailJS. Configure:
+Configure:
 
 ```bash
-NEXT_PUBLIC_EMAILJS_SERVICE_ID=...
-NEXT_PUBLIC_EMAILJS_TEMPLATE_ID=...
-NEXT_PUBLIC_EMAILJS_PUBLIC_KEY=...
+RESEND_API_KEY=...
+BOOKING_FROM_EMAIL="MAX Entertain <bookings@maxentertain.com>"
+OWNER_NOTIFICATION_EMAIL=owner@example.com
 ```
 
-Note: `config/emailjs.ts` currently includes defaults. For production, prefer setting env vars in Vercel.
+### AI guest chat (server + client, direct Gemini)
 
-### AI guest chat (server + client)
-
-The floating guest chat widget uses Anthropic (Claude) via `/api/chat`.
+The floating guest chat widget calls `/api/chat`, which calls Gemini directly.
 
 Server-side env vars:
 
 ```bash
-ANTHROPIC_API_KEY=...
-ANTHROPIC_MODEL=claude-3-5-sonnet-20241022
+GEMINI_API_KEY=...
+GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
 Client-side feature flag (optional):
@@ -111,7 +110,9 @@ Set `NEXT_PUBLIC_CHAT_ENABLED=false` to disable the widget without code changes.
 2. Set environment variables (Production):
    - Site URL (recommended): `NEXT_PUBLIC_BASE_URL=https://maxentertain.com`
    - iCal: `ICAL_URLS=...` (or the per-platform variables)
-   - EmailJS: `NEXT_PUBLIC_EMAILJS_*`
+   - Email: `RESEND_API_KEY`, `BOOKING_FROM_EMAIL`, `OWNER_NOTIFICATION_EMAIL`
+   - Chat: `GEMINI_API_KEY` (and optional `GEMINI_MODEL`)
+   - Booking/payment: `MONGODB_URI`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRON_SECRET`
 3. Redeploy
 4. Add your custom domain in Vercel and ensure it points to the project
 

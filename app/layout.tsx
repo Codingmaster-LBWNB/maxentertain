@@ -21,23 +21,31 @@ const playfair = Playfair_Display({
   style: ['normal', 'italic'],
 })
 
+const SEO_TITLE = 'Mornington Peninsula Beachfront Retreat | MAX Entertain'
+const SEO_DESCRIPTION =
+  'Award-winning beachfront retreat on the Mornington Peninsula. 6 bedrooms, heated pool & spa, home theatre, 10 m from beach. Book direct & save.'
+
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
-  title: `${propertyConfig.name} - Luxury Property Rental`,
-  description: propertyConfig.description,
-  keywords: 'luxury rental, vacation rental, property rental, luxury accommodation',
+  title: SEO_TITLE,
+  description: SEO_DESCRIPTION,
+  keywords: 'Mornington Peninsula beachfront retreat, luxury vacation rental, family holiday house, heated pool spa, Tootgarook accommodation',
   authors: [{ name: propertyConfig.name }],
+  alternates: {
+    canonical: '/',
+  },
+  robots: { index: true, follow: true },
   openGraph: {
-    title: `${propertyConfig.name} - Luxury Property Rental`,
-    description: propertyConfig.description,
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
     type: 'website',
     url: '/',
-    images: [{ url: '/opengraph-image' }],
+    images: [{ url: '/opengraph-image', alt: 'MAX Entertain beachfront retreat exterior — Mornington Peninsula' }],
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${propertyConfig.name} - Luxury Property Rental`,
-    description: propertyConfig.description,
+    title: SEO_TITLE,
+    description: SEO_DESCRIPTION,
     images: ['/twitter-image'],
   },
 }

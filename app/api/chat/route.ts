@@ -11,7 +11,7 @@ const MIN_CHARS_PER_MESSAGE = 2
 const MAX_CHARS_PER_MESSAGE = 2000
 const MAX_TOTAL_CHARS = 12000
 const MAX_BODY_BYTES = 50_000
-const N8N_TIMEOUT_MS = 9000
+const GEMINI_TIMEOUT_MS = 9000
 
 type Bucket = { count: number; resetAtMs: number }
 const RL_WINDOW_MS = 60_000
@@ -152,43 +152,64 @@ function validateMessages(input: unknown): ClientMessage[] {
   return msgs
 }
 
-async function callN8n(messages: ClientMessage[], sessionId: string): Promise<string> {
-  const webhookUrl = process.env.N8N_WEBHOOK_URL
-  if (!webhookUrl) throw Object.assign(new Error('N8N_WEBHOOK_URL not configured'), { status: 503 })
+function buildSystemInstruction() {
+  return [
+    'You are MAX, the guest concierge for MAX Entertain Beachside Retreat.',
+    'Reply in the same language as the guest.',
+    'Be concise, warm, and factual.',
+    'Use only the provided property context. If uncertain, say so and direct guests to the enquiry form.',
+    'Do not invent prices or availability.',
+    'If guest asks about booking, mention booking direct at maxentertain.com.',
+    '',
+    'Property context:',
+    compactPropertyContext(),
+  ].join('\n')
+}
 
-  const lastMessage = messages[messages.length - 1]!
+function toGeminiContents(messages: ClientMessage[]) {
+  return messages.map((m) => ({
+    role: m.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: m.content }],
+  }))
+}
 
+async function callGeminiDirect(messages: ClientMessage[]): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY
+  if (!apiKey) throw Object.assign(new Error('GEMINI_API_KEY not configured'), { status: 503 })
+  const model = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite'
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), N8N_TIMEOUT_MS)
+  const timer = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS)
 
   try {
-    const headers: Record<string, string> = { 'content-type': 'application/json' }
-    const secret = process.env.N8N_WEBHOOK_SECRET
-    if (secret) headers['x-webhook-secret'] = secret
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`
 
-    const res = await fetch(webhookUrl, {
+    const res = await fetch(endpoint, {
       method: 'POST',
-      headers,
+      headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        message: lastMessage.content,
-        sessionId,
-        history: messages.slice(0, -1).map((m) => ({ role: m.role, content: m.content })),
-        context: compactPropertyContext(),
+        system_instruction: {
+          parts: [{ text: buildSystemInstruction() }],
+        },
+        contents: toGeminiContents(messages),
+        generationConfig: {
+          temperature: 0.2,
+          maxOutputTokens: 700,
+        },
       }),
       signal: controller.signal,
     })
 
-    if (!res.ok) throw new Error(`N8N responded with ${res.status}`)
+    if (!res.ok) throw new Error(`Gemini responded with ${res.status}`)
 
-    const raw: unknown = await res.json()
-    const data: unknown = Array.isArray(raw) ? raw[0] : raw
-    if (!data || typeof data !== 'object') throw new Error('Empty response from N8N')
+    const data = (await res.json()) as {
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> }
+      }>
+    }
 
-    const d = data as Record<string, unknown>
-    const reply = d.reply ?? d.output ?? d.text ?? d.message ?? d.answer ?? d.response ?? null
-
-    if (typeof reply === 'string' && reply.trim()) return reply.trim()
-    throw new Error('No reply field in N8N response')
+    const reply = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('\n').trim()
+    if (reply) return reply
+    throw new Error('No reply field in Gemini response')
   } finally {
     clearTimeout(timer)
   }
@@ -218,7 +239,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message too short or empty' }, { status: 400 })
     }
 
-    const reply = await callN8n(messages, ip)
+    const reply = await callGeminiDirect(messages)
     return NextResponse.json({ reply })
   } catch (err: any) {
     const status = typeof err?.status === 'number' ? err.status : 500

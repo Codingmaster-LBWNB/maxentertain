@@ -16,13 +16,19 @@ import { getSiteUrl } from '@/lib/site'
 
 export default function Home() {
   const siteUrl = getSiteUrl()
+  const reviewCount = propertyConfig.testimonials.length
+  const avgRating =
+    Math.round(
+      (propertyConfig.testimonials.reduce((sum, t) => sum + t.rating, 0) / reviewCount) * 10
+    ) / 10
+
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'LodgingBusiness',
+    '@type': ['LodgingBusiness', 'VacationRental'],
     name: propertyConfig.name,
     description: propertyConfig.description,
     url: siteUrl,
-    image: propertyConfig.images.slice(0, 8).map((p) => `${siteUrl}${p}`),
+    image: propertyConfig.images.slice(0, 8).map((p) => `${siteUrl}${encodeURI(p)}`),
     address: {
       '@type': 'PostalAddress',
       streetAddress: propertyConfig.location,
@@ -33,8 +39,20 @@ export default function Home() {
     },
     email: propertyConfig.contact.email,
     petsAllowed: propertyConfig.amenities.some((a) => /pet/i.test(a)),
-    checkinTime: propertyConfig.policies.checkIn,
-    checkoutTime: propertyConfig.policies.checkOut,
+    checkinTime: '15:00',
+    checkoutTime: '10:00',
+    numberOfRooms: propertyConfig.bedrooms,
+    occupancy: {
+      '@type': 'QuantitativeValue',
+      maxValue: propertyConfig.maxGuests,
+    },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: avgRating.toFixed(1),
+      reviewCount: String(reviewCount),
+      bestRating: '5',
+      worstRating: '1',
+    },
     amenityFeature: propertyConfig.amenities.slice(0, 12).map((name) => ({
       '@type': 'LocationFeatureSpecification',
       name,

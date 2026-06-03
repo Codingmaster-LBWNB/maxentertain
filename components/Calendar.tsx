@@ -395,7 +395,7 @@ export default function Calendar({
                   {/* CTAs */}
                   <div className="flex flex-col sm:flex-row gap-3 mt-6">
                     <Link
-                      href={`/inquiry?checkIn=${checkIn ? auStr(checkIn) : ''}&checkOut=${checkOut ? auStr(checkOut) : ''}`}
+                      href={`/book?checkIn=${checkIn ? auStr(checkIn) : ''}&checkOut=${checkOut ? auStr(checkOut) : ''}`}
                       className="btn-primary flex-1 inline-flex items-center gap-2 justify-center"
                     >
                       <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>

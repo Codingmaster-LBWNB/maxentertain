@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import ICAL from 'ical.js'
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
 import { getDb } from '@/lib/mongodb'
+import { getActiveBookingLockDates } from '@/lib/bookings'
 
 // Helper function to parse a single iCal feed
 async function parseICalFeed(icalUrl: string, australianTimezone: string): Promise<{ blockedDates: string[], eventCount: number }> {
@@ -156,6 +157,16 @@ export async function GET() {
         for (const { date } of manualBlocks) allBlockedDates.add(date)
       } catch {
         // DB unavailable — continue with iCal-only blocks
+      }
+    }
+
+    // Merge direct bookings and active Stripe Checkout holds from MongoDB.
+    if (process.env.MONGODB_URI) {
+      try {
+        const directBookingDates = await getActiveBookingLockDates()
+        for (const date of directBookingDates) allBlockedDates.add(date)
+      } catch {
+        // Booking DB unavailable — continue with iCal/manual blocks only.
       }
     }
 

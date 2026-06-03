@@ -1,5 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    outputFileTracingExcludes: {
+      '*': [
+        'node_modules/ogl/**',
+        'node_modules/framer-motion/**',
+        'node_modules/motion-dom/**',
+        'node_modules/motion-utils/**',
+        'node_modules/@img/**',
+      ],
+    },
+  },
   images: {
     domains: [],
     formats: ['image/avif', 'image/webp'],
@@ -7,7 +18,6 @@ const nextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60,
   },
-  // Enable compression
   compress: true,
 }
 

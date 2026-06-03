@@ -2,15 +2,10 @@
 
 import { useMemo, useState, FormEvent, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import emailjs from '@emailjs/browser'
 import { propertyConfig } from '@/config/property'
-import { emailJsConfig } from '@/config/emailjs'
 import { useAvailability } from '@/hooks/useAvailability'
 import DatePicker from '@/components/DatePicker'
 import { trackClick } from '@/lib/analytics'
-
-// Note: this component runs client-side. We init EmailJS in an effect to match
-// @emailjs/browser v4 API and to ensure it only runs in the browser.
 
 interface FormData {
   name: string
@@ -63,18 +58,17 @@ export default function InquiryForm({
     })
   }
 
-  useEffect(() => {
-    if (emailJsConfig.publicKey) emailjs.init({ publicKey: emailJsConfig.publicKey })
-  }, [])
+  const prefillCheckIn = prefill?.checkIn
+  const prefillCheckOut = prefill?.checkOut
 
   useEffect(() => {
-    if (!prefill) return
+    if (!prefillCheckIn && !prefillCheckOut) return
     setFormData((prev) => ({
       ...prev,
-      checkIn: prefill.checkIn ?? prev.checkIn,
-      checkOut: prefill.checkOut ?? prev.checkOut,
+      checkIn: prefillCheckIn ?? prev.checkIn,
+      checkOut: prefillCheckOut ?? prev.checkOut,
     }))
-  }, [prefill?.checkIn, prefill?.checkOut])
+  }, [prefillCheckIn, prefillCheckOut])
 
   const dateStrToUtcDate = (dateStr: string) => {
     // dateStr: yyyy-MM-dd
@@ -214,35 +208,7 @@ export default function InquiryForm({
     setSubmitErrorMessage('')
 
     try {
-      const { serviceId, templateId, publicKey } = emailJsConfig
-
-      if (!serviceId || !templateId || !publicKey) {
-        throw new Error(
-          'Email service is not configured. Please verify EmailJS configuration and Allowed Origins / Domains.'
-        )
-      }
-
-      const templateParams = {
-        from_name: formData.name,
-        from_email: formData.email,
-        phone: formData.phone,
-        check_in: formData.checkIn,
-        check_out: formData.checkOut,
-        guests: formData.guests,
-        message: formData.message,
-        property_name: propertyConfig.name,
-        to_email: propertyConfig.contact.email,
-      }
-
-      // @emailjs/browser v4: pass publicKey in options (even if init ran)
-      await emailjs.send(serviceId, templateId, templateParams, { publicKey })
-
-      // Google Ads conversion: fire only after successful submit.
-      trackGoogleAdsLeadConversion()
-      trackClick('Enquiry Submitted', { location: 'Inquiry Form' })
-
-      // Store inquiry in MongoDB (fire-and-forget — don't block UX on this)
-      fetch('/api/inquiries', {
+      const response = await fetch('/api/inquiries', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -254,7 +220,16 @@ export default function InquiryForm({
           guests: formData.guests,
           message: formData.message,
         }),
-      }).catch(() => { /* silently ignore */ })
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data.error || 'Could not send inquiry. Please try again.')
+      }
+
+      // Google Ads conversion: fire only after successful submit.
+      trackGoogleAdsLeadConversion()
+      trackClick('Enquiry Submitted', { location: 'Inquiry Form' })
 
       setSubmitStatus('success')
       setFormData({
@@ -268,14 +243,10 @@ export default function InquiryForm({
       })
       setErrors({})
     } catch (error) {
-      const err = error as any
-      const rawMessage = err?.text || err?.message || ''
-      const status = err?.status
-      const message =
-        status === 403 || /origin|domain|not allowed/i.test(String(rawMessage))
-          ? 'Email service blocked this domain. In EmailJS, add your production site URL to Allowed Origins / Domains, then redeploy.'
-          : rawMessage || 'Email service unavailable. Please try again later or email us directly.'
-      console.error('EmailJS error:', error)
+      const message = error instanceof Error
+        ? error.message
+        : 'Inquiry service unavailable. Please try again later or email us directly.'
+      console.error('Inquiry submit error:', error)
       setSubmitErrorMessage(String(message))
       setSubmitStatus('error')
     } finally {
@@ -504,7 +475,7 @@ export default function InquiryForm({
                     <div>
                       <p className="text-red-800 font-semibold">Error sending enquiry</p>
                       <p className="text-red-700 text-base mt-1">
-                        {submitErrorMessage || 'Please check your EmailJS configuration or try again later.'}
+                        {submitErrorMessage || 'Please try again later.'}
                       </p>
                       <div className="mt-3">
                         <a

@@ -8,14 +8,16 @@ function getClientPromise(): Promise<MongoClient> {
   const uri = process.env.MONGODB_URI
   if (!uri) throw new Error('MONGODB_URI is not set')
 
+  const options = { serverSelectionTimeoutMS: 5000, connectTimeoutMS: 5000 }
+
   if (process.env.NODE_ENV === 'development') {
     const g = global as typeof global & { _mongoClientPromise?: Promise<MongoClient> }
     if (!g._mongoClientPromise) {
-      g._mongoClientPromise = new MongoClient(uri).connect()
+      g._mongoClientPromise = new MongoClient(uri, options).connect()
     }
     clientPromise = g._mongoClientPromise
   } else {
-    clientPromise = new MongoClient(uri).connect()
+    clientPromise = new MongoClient(uri, options).connect()
   }
 
   return clientPromise

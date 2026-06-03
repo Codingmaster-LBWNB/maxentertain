@@ -1,6 +1,8 @@
 'use client'
 
-import LineWaves from '@/components/LineWaves'
+import dynamic from 'next/dynamic'
+
+const LineWaves = dynamic(() => import('@/components/LineWaves'), { ssr: false })
 
 type SectionWavesBackgroundProps = {
   variant?: 'light' | 'dark'

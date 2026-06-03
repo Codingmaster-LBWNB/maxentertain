@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
+import { sendInquiryReceivedEmails } from '@/lib/email'
 
 export async function POST(req: NextRequest) {
   if (!process.env.MONGODB_URI) {
@@ -27,9 +28,24 @@ export async function POST(req: NextRequest) {
       status: 'new',
     })
 
+    await sendInquiryReceivedEmails({
+      name: String(name),
+      email: String(email),
+      phone: String(phone ?? ''),
+      checkIn: String(checkIn),
+      checkOut: String(checkOut),
+      guests: String(guests ?? ''),
+      message: String(message ?? ''),
+    })
+
     return NextResponse.json({ ok: true })
-  } catch {
-    // Don't fail the user's form submission if DB is down
-    return NextResponse.json({ ok: true })
+  } catch (error) {
+    if (!process.env.MONGODB_URI) {
+      return NextResponse.json({ error: 'Database is not configured' }, { status: 503 })
+    }
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Failed to process inquiry' },
+      { status: 500 }
+    )
   }
 }

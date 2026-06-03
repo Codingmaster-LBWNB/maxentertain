@@ -22,7 +22,7 @@ No test suite is configured.
 - `app/` — App Router pages and API routes
 - `components/` — All React components (flat, no subdirectories)
 - `config/property.ts` — **Single source of truth** for all property content: name, description, location, amenities, policies, images, testimonials, booking links, and fallback `blockedDates`
-- `config/emailjs.ts` — EmailJS credentials (prefer Vercel env vars in production)
+- `lib/email.ts` — Server-side transactional emails via Resend (inquiry + booking lifecycle)
 - `lib/site.ts` — `getSiteUrl()` helper used across metadata, JSON-LD, sitemap, robots
 
 ### Pages
@@ -31,7 +31,7 @@ No test suite is configured.
 - `/photos` — Full-screen gallery (`app/photos/`)
 - `/inquiry` — Standalone inquiry form page (`app/inquiry/`)
 - `/api/calendar` — Server route that fetches and merges iCal feeds, returns `{ blockedDates: string[] }` (dates as `YYYY-MM-DD` in `Australia/Melbourne` timezone), cached 1 hour via Next.js `fetch` revalidation
-- `/api/chat` — Anthropic Claude API proxy for the guest chat widget
+- `/api/chat` — Gemini API proxy for the guest chat widget
 
 ### Availability data flow
 
@@ -46,8 +46,12 @@ No test suite is configured.
 | `NEXT_PUBLIC_BASE_URL` / `NEXT_PUBLIC_SITE_URL` / `SITE_URL` | client/server | Canonical site URL for metadata, sitemap, JSON-LD |
 | `ICAL_URLS` | server only | Comma-separated iCal feed URLs |
 | `AIRBNB_ICAL_URL`, `VRBO_ICAL_URL`, `BOOKING_ICAL_URL` | server only | Per-platform iCal URLs (alternative to `ICAL_URLS`) |
-| `NEXT_PUBLIC_EMAILJS_SERVICE_ID`, `NEXT_PUBLIC_EMAILJS_TEMPLATE_ID`, `NEXT_PUBLIC_EMAILJS_PUBLIC_KEY` | client | EmailJS inquiry form |
-| `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | server only | Guest chat widget AI backend |
+| `RESEND_API_KEY` | server only | Resend API key for inquiry and booking emails |
+| `BOOKING_FROM_EMAIL`, `OWNER_NOTIFICATION_EMAIL` | server only | Outbound sender and owner notification destination |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | server only | Guest chat widget AI backend |
+| `MONGODB_URI` | server only | Inquiry + booking persistence |
+| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` | server only | Stripe Checkout and webhook verification |
+| `CRON_SECRET` | server only | Auth for booking cron endpoints |
 | `NEXT_PUBLIC_CHAT_ENABLED` | client | Set to `"true"` to show the chat widget |
 
 iCal URLs contain auth tokens — always use server-only env vars (no `NEXT_PUBLIC_` prefix).
