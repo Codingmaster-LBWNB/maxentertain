@@ -1,7 +1,20 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import PhotosGallery from '@/components/PhotosGallery'
 import StarBackground from '@/components/StarBackground'
 import { propertyConfig } from '@/config/property'
+
+export const metadata: Metadata = {
+  title: 'Photo Gallery | MAX Entertain Beachside Retreat',
+  description: `Browse ${propertyConfig.images.length}+ photos of our Mornington Peninsula beachfront retreat — solar-heated pool, home theatre, bedrooms, and more.`,
+  alternates: { canonical: '/photos' },
+  openGraph: {
+    title: 'Photo Gallery | MAX Entertain Beachside Retreat',
+    description: 'See every room and outdoor space at our award-winning Mornington Peninsula beachfront retreat.',
+    type: 'website',
+    url: '/photos',
+  },
+}
 
 export default function PhotosPage() {
   const totalPhotos = propertyConfig.images.length
