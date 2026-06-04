@@ -289,29 +289,32 @@ const GENERAL_SUGGESTIONS = [
   'What is there for kids?',
   'How many guests can stay?',
   'What is the cancellation policy?',
+  'Is parking available?',
+  'How much does it cost per night?',
+  'What is nearby to do?',
+  'Is there a home theatre?',
+  'Do you allow events or parties?',
+  'How do I book directly?',
+  'Are linens and towels provided?',
 ]
 
-/** Build 3 reliable follow-up suggestions server-side (no model sentinel needed). */
-function buildSuggestions(intents: Set<string>, lastUserText: string): string[] {
-  const out: string[] = []
-  if (intents.has('asked_availability') && !intents.has('asked_price')) {
-    out.push('What is the total price for those dates?')
+/** 3 random follow-up suggestions, never echoing what the guest just asked. */
+function buildSuggestions(_intents: Set<string>, lastUserText: string): string[] {
+  const askedWords = new Set(
+    lastUserText.toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter((w) => w.length > 3)
+  )
+  const isTooSimilar = (s: string) => {
+    const words = s.toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/).filter((w) => w.length > 3)
+    const overlap = words.filter((w) => askedWords.has(w)).length
+    return overlap >= 2
   }
-  if (intents.has('asked_price')) {
-    out.push('Can I book these dates?', 'What is the cancellation policy?')
+  // Shuffle a copy (Fisher–Yates) so suggestions vary every turn.
+  const pool = [...GENERAL_SUGGESTIONS]
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[pool[i], pool[j]] = [pool[j]!, pool[i]!]
   }
-  if (intents.has('booking_intent')) {
-    out.push('What is the cancellation policy?')
-  }
-  const asked = lastUserText.toLowerCase()
-  for (const s of GENERAL_SUGGESTIONS) {
-    if (out.length >= 3) break
-    // Skip a suggestion if it's basically what they just asked.
-    const key = s.toLowerCase().replace(/[^a-z]/g, '')
-    if (asked.replace(/[^a-z]/g, '').includes(key.slice(0, 8))) continue
-    if (!out.includes(s)) out.push(s)
-  }
-  return out.slice(0, 3)
+  return pool.filter((s) => !isTooSimilar(s)).slice(0, 3)
 }
 
 // Safety net: strip any machine artifacts the model might still emit.

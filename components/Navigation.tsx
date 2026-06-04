@@ -32,7 +32,7 @@ export default function Navigation() {
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
+        isScrolled || isMobileMenuOpen
           ? 'bg-white/96 dark:bg-[#0f0f0e]/96 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-white/8'
           : 'bg-transparent backdrop-blur-sm'
       }`}
@@ -44,7 +44,7 @@ export default function Navigation() {
           <Link
             href="/"
             className={`flex items-center gap-2 md:gap-3 font-serif font-bold transition-colors flex-shrink min-w-0 overflow-hidden ${
-              isScrolled ? 'text-luxury-dark dark:text-white' : 'text-white drop-shadow-lg'
+              isScrolled || isMobileMenuOpen ? 'text-luxury-dark dark:text-white' : 'text-white drop-shadow-lg'
             }`}
           >
             <span className="relative h-9 w-9 md:h-10 md:w-10 overflow-hidden rounded-full bg-white/90 ring-1 ring-black/5 flex-shrink-0">
@@ -70,9 +70,9 @@ export default function Navigation() {
             <span className="hidden xl:inline whitespace-nowrap text-xl truncate">
               Award Winning Luxury Retreat
             </span>
-            {/* Mobile */}
-            <span className="md:hidden block min-w-0 text-sm font-serif font-bold leading-tight whitespace-normal break-words max-w-[60vw]">
-              Award Winning Luxury Retreat
+            {/* Mobile: keep the property name on one line so it never gets cut */}
+            <span className="md:hidden block min-w-0 text-base font-serif font-bold leading-tight whitespace-nowrap truncate">
+              Max Entertain
             </span>
           </Link>
 
@@ -155,7 +155,7 @@ export default function Navigation() {
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className={`p-2 transition-colors ${
-                isScrolled ? 'text-luxury-dark' : 'text-white'
+                isScrolled || isMobileMenuOpen ? 'text-luxury-dark dark:text-white' : 'text-white'
               }`}
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}
@@ -187,7 +187,7 @@ export default function Navigation() {
                   key={link.label}
                   href={link.mobileHref}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-gray-700 dark:text-gray-300 hover:text-luxury-dark dark:hover:text-white transition-colors font-sans text-base font-semibold tracking-[0.12em] uppercase py-4 border-b border-gray-100 dark:border-white/8"
+                  className="block text-gray-800 dark:text-gray-100 hover:text-luxury-gold transition-colors font-sans text-base font-semibold tracking-[0.12em] uppercase py-4 border-b border-gray-100 dark:border-white/10"
                 >
                   {link.label}
                 </a>

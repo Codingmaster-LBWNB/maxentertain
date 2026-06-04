@@ -564,7 +564,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="p-8 text-white">
+    <div className="p-4 md:p-8 text-white">
       <h1 className="text-2xl font-serif text-luxury-gold mb-1">Pricing</h1>
       <p className="text-gray-400 text-sm mb-8 max-w-xl">
         Drag across nights or click individual dates to build a selection (like Airbnb). Then use{' '}
@@ -572,7 +572,7 @@ export default function PricingPage() {
       </p>
 
       {/* Calendar */}
-      <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6 mb-8">
+      <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-3 md:p-6 mb-8">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
           <div className="flex items-center gap-2">
             <button

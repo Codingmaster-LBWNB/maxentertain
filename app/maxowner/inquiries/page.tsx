@@ -55,7 +55,7 @@ export default function InquiriesPage() {
   }
 
   return (
-    <div className="p-8 text-white">
+    <div className="p-4 md:p-8 text-white">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-serif text-luxury-gold mb-1">Inquiries</h1>
@@ -88,11 +88,11 @@ export default function InquiriesPage() {
                       {inq.status}
                     </span>
                   </div>
-                  <div className="flex gap-4 text-xs text-gray-500">
-                    <span>{inq.email}</span>
-                    <span>·</span>
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-500">
+                    <span className="truncate max-w-full">{inq.email}</span>
+                    <span className="hidden sm:inline">·</span>
                     <span>{inq.checkIn} → {inq.checkOut}</span>
-                    <span>·</span>
+                    <span className="hidden sm:inline">·</span>
                     <span>{inq.guests} guests</span>
                   </div>
                 </div>

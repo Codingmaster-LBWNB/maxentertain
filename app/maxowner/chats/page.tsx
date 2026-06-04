@@ -115,7 +115,7 @@ export default function ChatsPage() {
     <div className="flex h-full min-h-0">
 
       {/* ── Left pane: conversation list ── */}
-      <div className="w-80 flex-shrink-0 border-r border-white/10 flex flex-col min-h-0">
+      <div className={`${selected ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-shrink-0 border-r border-white/10 flex-col min-h-0`}>
         <div className="px-5 py-4 border-b border-white/10 flex-shrink-0">
           <h1 className="text-white font-semibold text-sm tracking-wide">Chat Conversations</h1>
           <p className="text-gray-500 text-xs mt-0.5">{total} {filter === 'all' ? 'total stored' : 'match filter'}</p>
@@ -203,7 +203,7 @@ export default function ChatsPage() {
       </div>
 
       {/* ── Right pane: thread ── */}
-      <div className="flex-1 flex flex-col min-w-0 min-h-0">
+      <div className={`${selected ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-w-0 min-h-0`}>
         {loadingDetail ? (
           <div className="flex-1 flex items-center justify-center text-gray-500 text-xs">
             Loading conversation…
@@ -212,6 +212,13 @@ export default function ChatsPage() {
           <>
             {/* Thread header */}
             <div className="px-6 py-4 border-b border-white/10 flex-shrink-0">
+              <button
+                onClick={() => setSelected(null)}
+                className="md:hidden mb-2 inline-flex items-center gap-1 text-xs text-gray-400 hover:text-white"
+              >
+                <span className="material-icons" style={{ fontSize: '16px' }}>arrow_back</span>
+                Back to list
+              </button>
               <p className="text-white text-sm font-medium">
                 {formatDateTime(selected.startedAt)}
               </p>
