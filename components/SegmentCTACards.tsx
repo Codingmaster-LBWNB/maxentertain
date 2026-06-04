@@ -67,23 +67,26 @@ export default function SegmentCTACards() {
               </div>
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-luxury-gold">{segment.label}</p>
               <h3 className="mt-2 font-serif text-2xl font-bold text-white">{segment.title}</h3>
-              <p className="mt-3 min-h-[96px] text-base leading-relaxed text-white/70">{segment.description}</p>
-              <div className="mt-6 flex flex-col gap-3">
-                <Link
-                  href={`/?guestType=${segment.reviewFilter}#reviews`}
-                  className="text-sm font-semibold uppercase tracking-widest text-luxury-gold hover:underline"
-                >
-                  Read matching reviews
-                </Link>
-                <Link
-                  href="/#calendar"
-                  className="inline-flex items-center justify-center rounded-sm border border-white/15 px-4 py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:border-luxury-gold hover:text-luxury-gold"
-                >
-                  Check dates
-                </Link>
-              </div>
+              <p className="mt-3 text-base leading-relaxed text-white/70">{segment.description}</p>
             </motion.article>
           ))}
+        </div>
+
+        {/* Single shared CTA for the whole section */}
+        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <Link
+            href="/#calendar"
+            className="btn-primary inline-flex items-center justify-center gap-2"
+          >
+            <span className="material-icons" style={{ fontSize: 16 }}>calendar_today</span>
+            Check dates
+          </Link>
+          <Link
+            href="/#reviews"
+            className="inline-flex items-center justify-center rounded-sm border border-white/20 px-6 py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:border-luxury-gold hover:text-luxury-gold"
+          >
+            Read guest reviews
+          </Link>
         </div>
       </div>
     </section>

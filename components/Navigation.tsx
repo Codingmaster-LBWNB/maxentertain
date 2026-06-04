@@ -33,7 +33,7 @@ export default function Navigation() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         isScrolled || isMobileMenuOpen
-          ? 'bg-white/96 dark:bg-[#0f0f0e]/96 backdrop-blur-md shadow-sm border-b border-gray-100 dark:border-white/8'
+          ? 'bg-[#0f0f0e]/96 md:bg-white/96 md:dark:bg-[#0f0f0e]/96 backdrop-blur-md shadow-sm border-b border-white/10 md:border-gray-100 md:dark:border-white/8'
           : 'bg-transparent backdrop-blur-sm'
       }`}
     >
@@ -43,8 +43,8 @@ export default function Navigation() {
           {/* Logo */}
           <Link
             href="/"
-            className={`flex items-center gap-2 md:gap-3 font-serif font-bold transition-colors flex-shrink min-w-0 overflow-hidden ${
-              isScrolled || isMobileMenuOpen ? 'text-luxury-dark dark:text-white' : 'text-white drop-shadow-lg'
+            className={`flex items-center gap-2 md:gap-3 font-serif font-bold transition-colors flex-shrink min-w-0 text-white drop-shadow-lg ${
+              isScrolled ? 'md:text-luxury-dark md:dark:text-white md:drop-shadow-none' : 'md:text-white'
             }`}
           >
             <span className="relative h-9 w-9 md:h-10 md:w-10 overflow-hidden rounded-full bg-white/90 ring-1 ring-black/5 flex-shrink-0">
@@ -59,15 +59,15 @@ export default function Navigation() {
               />
             </span>
             {/* md to lg: short */}
-            <span className="hidden md:inline lg:hidden whitespace-nowrap text-sm truncate">
+            <span className="hidden md:inline lg:hidden whitespace-nowrap text-sm">
               Max Entertain
             </span>
             {/* lg to xl: medium */}
-            <span className="hidden lg:inline xl:hidden whitespace-nowrap text-base truncate">
+            <span className="hidden lg:inline xl:hidden whitespace-nowrap text-base">
               Max Entertain Retreat
             </span>
-            {/* xl+: full */}
-            <span className="hidden xl:inline whitespace-nowrap text-xl truncate">
+            {/* xl+: full tagline (sized to fit without clipping) */}
+            <span className="hidden xl:inline whitespace-nowrap text-base 2xl:text-lg">
               Award Winning Luxury Retreat
             </span>
             {/* Mobile: keep the property name on one line so it never gets cut */}
@@ -89,7 +89,7 @@ export default function Navigation() {
                   href={link.desktopHref}
                   className={`relative transition-colors font-sans text-sm font-semibold tracking-[0.1em] uppercase pb-0.5
                     after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-luxury-gold after:transition-all after:duration-300 hover:after:w-full
-                    ${isLessImportant ? 'hidden xl:inline' : 'inline'}
+                    ${isLessImportant ? 'hidden 2xl:inline' : 'inline'}
                     ${isScrolled ? 'text-gray-700 dark:text-gray-300 hover:text-luxury-dark dark:hover:text-white' : 'text-white/90 hover:text-white'}
                   `}
                 >
@@ -154,9 +154,7 @@ export default function Navigation() {
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className={`p-2 transition-colors ${
-                isScrolled || isMobileMenuOpen ? 'text-luxury-dark dark:text-white' : 'text-white'
-              }`}
+              className="p-2 text-white transition-colors"
               aria-label="Toggle menu"
               aria-expanded={isMobileMenuOpen}
               aria-controls="mobile-nav"
@@ -179,7 +177,7 @@ export default function Navigation() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white dark:bg-[#0f0f0e] border-t border-gray-100 dark:border-white/8 shadow-lg"
+            className="md:hidden bg-[#0f0f0e] border-t border-white/10 shadow-lg"
           >
             <div className="container-custom px-4 py-4 space-y-4">
               {navLinks.map((link) => (
@@ -187,7 +185,7 @@ export default function Navigation() {
                   key={link.label}
                   href={link.mobileHref}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="block text-gray-800 dark:text-gray-100 hover:text-luxury-gold transition-colors font-sans text-base font-semibold tracking-[0.12em] uppercase py-4 border-b border-gray-100 dark:border-white/10"
+                  className="block text-gray-100 hover:text-luxury-gold transition-colors font-sans text-base font-semibold tracking-[0.12em] uppercase py-4 border-b border-white/10"
                 >
                   {link.label}
                 </a>
