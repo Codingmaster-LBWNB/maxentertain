@@ -2,6 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react'
 
+interface Lead {
+  name?: string | null
+  email: string
+  reason: 'booking' | 'unanswered'
+  checkIn?: string | null
+  checkOut?: string | null
+  capturedAt?: string
+}
+
 interface ConversationSummary {
   _id: string
   sessionId: string
@@ -10,6 +19,9 @@ interface ConversationSummary {
   messageCount: number
   firstUserMessage: string
   ipAddress?: string
+  intents?: string[]
+  escalated?: boolean
+  lead?: Lead | null
 }
 
 interface ChatMessage {
@@ -25,6 +37,27 @@ interface ConversationDetail {
   lastMessageAt: string
   messages: ChatMessage[]
   ipAddress?: string
+  intents?: string[]
+  escalated?: boolean
+  escalatedQuestions?: string[]
+  lead?: Lead | null
+}
+
+type Filter = 'all' | 'booking' | 'escalated' | 'leads'
+const FILTERS: { id: Filter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'booking', label: '🔥 Booking intent' },
+  { id: 'escalated', label: '⚠️ Escalated' },
+  { id: 'leads', label: '✉️ Leads' },
+]
+
+function Badges({ intents, escalated, lead }: { intents?: string[]; escalated?: boolean; lead?: Lead | null }) {
+  const badges: string[] = []
+  if (intents?.includes('booking_intent')) badges.push('🔥')
+  if (escalated) badges.push('⚠️')
+  if (lead) badges.push('✉️')
+  if (!badges.length) return null
+  return <span className="flex-shrink-0 text-[11px]">{badges.join(' ')}</span>
 }
 
 function formatDateTime(iso: string) {
@@ -47,18 +80,19 @@ export default function ChatsPage() {
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<ConversationDetail | null>(null)
   const [loadingDetail, setLoadingDetail] = useState(false)
+  const [filter, setFilter] = useState<Filter>('all')
   const threadRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     setLoading(true)
-    fetch(`/api/maxowner/chats?page=${page}`)
+    fetch(`/api/maxowner/chats?page=${page}&filter=${filter}`)
       .then((r) => r.json())
       .then((data) => {
         setConversations(data.conversations ?? [])
         setTotal(data.total ?? 0)
       })
       .finally(() => setLoading(false))
-  }, [page])
+  }, [page, filter])
 
   useEffect(() => {
     if (selected && threadRef.current) {
@@ -84,7 +118,25 @@ export default function ChatsPage() {
       <div className="w-80 flex-shrink-0 border-r border-white/10 flex flex-col min-h-0">
         <div className="px-5 py-4 border-b border-white/10 flex-shrink-0">
           <h1 className="text-white font-semibold text-sm tracking-wide">Chat Conversations</h1>
-          <p className="text-gray-500 text-xs mt-0.5">{total} total stored</p>
+          <p className="text-gray-500 text-xs mt-0.5">{total} {filter === 'all' ? 'total stored' : 'match filter'}</p>
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {FILTERS.map((f) => (
+              <button
+                key={f.id}
+                onClick={() => {
+                  setFilter(f.id)
+                  setPage(1)
+                }}
+                className={`text-[11px] px-2.5 py-1 rounded-full border transition-colors ${
+                  filter === f.id
+                    ? 'border-luxury-gold bg-luxury-gold/15 text-luxury-gold'
+                    : 'border-white/10 text-gray-400 hover:text-white hover:border-white/20'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto">
@@ -111,9 +163,12 @@ export default function ChatsPage() {
                   <span className="text-[11px] text-gray-400 leading-none">
                     {formatDateTime(c.startedAt)}
                   </span>
-                  <span className="text-[11px] bg-white/10 text-gray-300 rounded-full px-2 py-0.5 flex-shrink-0">
-                    {c.messageCount}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Badges intents={c.intents} escalated={c.escalated} lead={c.lead} />
+                    <span className="text-[11px] bg-white/10 text-gray-300 rounded-full px-2 py-0.5">
+                      {c.messageCount}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-xs text-gray-200 leading-snug line-clamp-2">
                   {c.firstUserMessage || '(empty)'}
@@ -165,6 +220,38 @@ export default function ChatsPage() {
                 {' · '}session <span className="font-mono">{selected.sessionId.slice(0, 8)}…</span>
                 {selected.ipAddress ? ` · IP ${selected.ipAddress}` : ''}
               </p>
+
+              {selected.lead && (
+                <div className="mt-3 rounded-lg border border-luxury-gold/30 bg-luxury-gold/10 px-3 py-2 text-xs">
+                  <span className="text-luxury-gold font-semibold">
+                    {selected.lead.reason === 'booking' ? '✉️ Booking lead' : '⚠️ Wants owner reply'}
+                  </span>
+                  <span className="text-gray-200 ml-2">
+                    {selected.lead.name ? `${selected.lead.name} · ` : ''}
+                    <a href={`mailto:${selected.lead.email}`} className="text-luxury-gold underline">{selected.lead.email}</a>
+                    {selected.lead.checkIn ? ` · ${selected.lead.checkIn} → ${selected.lead.checkOut}` : ''}
+                  </span>
+                </div>
+              )}
+
+              {(selected.escalatedQuestions?.length ?? 0) > 0 && (
+                <div className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs">
+                  <p className="text-amber-300 font-semibold mb-1">Couldn&apos;t answer:</p>
+                  <ul className="text-gray-200 space-y-0.5 list-disc list-inside">
+                    {selected.escalatedQuestions!.map((q, i) => <li key={i}>{q}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {(selected.intents?.length ?? 0) > 0 && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {selected.intents!.map((intent) => (
+                    <span key={intent} className="text-[10px] uppercase tracking-wide bg-white/10 text-gray-300 rounded px-2 py-0.5">
+                      {intent.replace(/_/g, ' ')}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Messages thread */}

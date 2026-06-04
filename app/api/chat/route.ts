@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { propertyConfig } from '@/config/property'
 import { getDb } from '@/lib/mongodb'
+import { chatToolDeclarations, executeChatTool, type ToolResult } from '@/lib/chatTools'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -12,7 +13,8 @@ const MIN_CHARS_PER_MESSAGE = 2
 const MAX_CHARS_PER_MESSAGE = 2000
 const MAX_TOTAL_CHARS = 12000
 const MAX_BODY_BYTES = 50_000
-const GEMINI_TIMEOUT_MS = 9000
+const GEMINI_TIMEOUT_MS = 12000
+const MAX_TOOL_ITERATIONS = 3
 
 type Bucket = { count: number; resetAtMs: number }
 const RL_WINDOW_MS = 60_000
@@ -154,27 +156,38 @@ function validateMessages(input: unknown): ClientMessage[] {
 }
 
 function buildSystemInstruction() {
+  const today = new Date().toLocaleDateString('en-AU', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Australia/Melbourne',
+  })
+  const todayIso = new Date().toLocaleDateString('en-CA', { timeZone: 'Australia/Melbourne' })
+
   return [
     'You are MAX, the guest concierge for MAX Entertain Beachside Retreat.',
+    `Today is ${today} (${todayIso}, Australia/Melbourne). Resolve all relative dates ("this weekend", "next month", "10–15 July") to absolute YYYY-MM-DD before calling tools.`,
     'Reply in the same language as the guest.',
     '',
-    '## Formatting rules (always follow these)',
-    'Use markdown formatting in every reply:',
-    '- Use **bold** to highlight key details (check-in times, distances, important rules).',
-    '- Use bullet lists (- item) for anything with 3 or more items, e.g. amenity lists, house rules, what to bring.',
-    '- Use numbered lists for step-by-step processes, e.g. how to book.',
-    '- Use short bold headers (e.g. **Pool & Spa:**) to organise longer answers into sections.',
-    '- Keep individual bullet points short (one clear fact per point).',
-    '- Never output one big block of prose for a question that has multiple distinct facts.',
+    '## Your goal',
+    'You actively help guests book direct. Be warm and helpful, but always move the conversation toward checking dates, quoting a price, and booking direct (which saves vs OTAs).',
     '',
-    '## Answering style',
-    '- Be thorough: cover all aspects of the question using the property context below.',
-    '- Lead with the direct answer, then add supporting detail.',
-    '- If a question touches multiple areas (e.g. "what entertainment is there?"), group your answer by category.',
-    '- For questions about policies, quote the exact rule from the context, then explain what it means in practice.',
-    '- Always mention the enquiry form (maxentertain.com/inquiry) or the availability calendar (maxentertain.com/#calendar) when relevant.',
-    '- Do not invent prices, availability, or facts not in the property context.',
-    '- If something is genuinely unknown, say so briefly and direct the guest to contact Jason directly.',
+    '## Tools — use them, never guess live data',
+    '- When a guest mentions or implies dates, call check_availability.',
+    '- When a guest asks about price/cost, or after confirming availability, call get_price_quote.',
+    '- After a successful quote, tell them the total, highlight the direct-booking saving, and encourage booking. A "Book" button is shown automatically.',
+    '- When the guest is ready to book or wants a human follow-up, call capture_booking_lead, then ask for their name and email.',
+    '- If you CANNOT answer a property-specific question from the context below, call escalate_to_owner with their question. Do not guess. Then offer an email reply from the owner and ask for their email.',
+    '',
+    '## Formatting (always)',
+    '- Use markdown: **bold** for key facts, bullet lists for 3+ items, numbered lists for steps, short bold headers for long answers.',
+    '- One clear fact per bullet. Never a wall of prose when there are distinct facts.',
+    '',
+    '## Follow-up suggestions',
+    'At the very END of every reply, append a machine block on its own line with 2–3 short suggested follow-up questions the guest might ask next:',
+    '<<META>>{"suggestions":["...","...","..."]}<<END>>',
+    'Never mention this block in your prose; it is stripped before display.',
     '',
     'Property context:',
     compactPropertyContext(),
@@ -188,47 +201,111 @@ function toGeminiContents(messages: ClientMessage[]) {
   }))
 }
 
-async function callGeminiDirect(messages: ClientMessage[]): Promise<string> {
+function geminiEndpoint(method: 'generateContent') {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw Object.assign(new Error('GEMINI_API_KEY not configured'), { status: 503 })
   const model = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite'
+  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:${method}?key=${encodeURIComponent(apiKey)}`
+}
+
+async function callGemini(contents: any[]): Promise<any> {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS)
-
   try {
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`
-
-    const res = await fetch(endpoint, {
+    const res = await fetch(geminiEndpoint('generateContent'), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        system_instruction: {
-          parts: [{ text: buildSystemInstruction() }],
-        },
-        contents: toGeminiContents(messages),
-        generationConfig: {
-          temperature: 0.2,
-          maxOutputTokens: 1200,
-        },
+        system_instruction: { parts: [{ text: buildSystemInstruction() }] },
+        contents,
+        tools: [{ functionDeclarations: chatToolDeclarations }],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 1200 },
       }),
       signal: controller.signal,
     })
-
     if (!res.ok) throw new Error(`Gemini responded with ${res.status}`)
-
-    const data = (await res.json()) as {
-      candidates?: Array<{
-        content?: { parts?: Array<{ text?: string }> }
-      }>
-    }
-
-    const reply = data.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('\n').trim()
-    if (reply) return reply
-    throw new Error('No reply field in Gemini response')
+    return await res.json()
   } finally {
     clearTimeout(timer)
   }
 }
+
+type AgentOutcome = {
+  text: string
+  actions: any[]
+  suggestions: string[]
+  intents: string[]
+  escalatedQuestions: string[]
+}
+
+function extractParts(resp: any): any[] {
+  return resp?.candidates?.[0]?.content?.parts ?? []
+}
+
+/** Run the tool-resolution loop and return the final text plus collected side-data. */
+async function runAgent(messages: ClientMessage[]): Promise<AgentOutcome> {
+  const contents: any[] = toGeminiContents(messages)
+  const actions: any[] = []
+  const intents = new Set<string>()
+  const escalatedQuestions: string[] = []
+
+  for (let iter = 0; iter < MAX_TOOL_ITERATIONS; iter++) {
+    const resp = await callGemini(contents)
+    const parts = extractParts(resp)
+    const functionCalls = parts.filter((p: any) => p.functionCall)
+
+    if (functionCalls.length === 0) {
+      const text = parts.map((p: any) => p.text ?? '').join('').trim()
+      return finalize(text, actions, intents, escalatedQuestions)
+    }
+
+    // Echo the model's function-call turn back into the conversation.
+    contents.push({ role: 'model', parts })
+
+    // Execute each requested tool and append the responses.
+    const responseParts: any[] = []
+    for (const part of functionCalls) {
+      const name = part.functionCall.name as string
+      const args = part.functionCall.args ?? {}
+      const result: ToolResult = await executeChatTool(name, args)
+      if (result.intent) intents.add(result.intent)
+      if (result.escalateQuestion) escalatedQuestions.push(result.escalateQuestion)
+      if (result.bookCta) actions.push({ type: 'book_cta', ...result.bookCta })
+      if (result.collectContact) actions.push({ type: 'collect_contact', ...result.collectContact })
+      responseParts.push({ functionResponse: { name, response: result.response } })
+    }
+    contents.push({ role: 'user', parts: responseParts })
+  }
+
+  // Tool budget exhausted — ask once more for a plain text answer.
+  const resp = await callGemini(contents)
+  const text = extractParts(resp).map((p: any) => p.text ?? '').join('').trim()
+  return finalize(text, actions, intents, escalatedQuestions)
+}
+
+const META_RE = /<<META>>([\s\S]*?)<<END>>/
+
+function finalize(rawText: string, actions: any[], intents: Set<string>, escalatedQuestions: string[]): AgentOutcome {
+  let text = rawText
+  let suggestions: string[] = []
+  const m = rawText.match(META_RE)
+  if (m) {
+    text = rawText.replace(META_RE, '').trim()
+    try {
+      const parsed = JSON.parse(m[1]!.trim())
+      if (Array.isArray(parsed?.suggestions)) {
+        suggestions = parsed.suggestions
+          .filter((s: unknown) => typeof s === 'string' && s.trim())
+          .slice(0, 3)
+          .map((s: string) => s.trim())
+      }
+    } catch { /* ignore malformed meta */ }
+  }
+  if (!text) text = "Sorry, I couldn't generate a response. Please try again or use the enquiry form."
+  return { text, actions, suggestions, intents: [...intents], escalatedQuestions }
+}
+
+// ─────────────────────────── Persistence ───────────────────────────
 
 let chatIndexesEnsured = false
 async function ensureChatIndexes() {
@@ -242,33 +319,68 @@ async function ensureChatIndexes() {
   } catch { /* non-fatal */ }
 }
 
-async function persistChatTurn(
-  sessionId: string,
-  ip: string,
-  userContent: string,
+async function persistChatTurn(args: {
+  sessionId: string
+  ip: string
+  userContent: string
   aiReply: string
-) {
+  intents: string[]
+  escalatedQuestions: string[]
+}) {
   try {
     await ensureChatIndexes()
     const db = await getDb()
     const now = new Date()
-    await db.collection('chat_conversations').updateOne(
-      { sessionId },
-      {
-        $setOnInsert: { sessionId, propertyId: 'maxentertain', startedAt: now, ipAddress: ip },
-        $set: { lastMessageAt: now },
-        $push: {
-          messages: {
-            $each: [
-              { role: 'user', content: userContent, timestamp: now },
-              { role: 'assistant', content: aiReply, timestamp: now },
-            ],
-          },
-        } as any,
+    const addToSet: Record<string, unknown> = {}
+    if (args.intents.length) addToSet.intents = { $each: args.intents }
+    if (args.escalatedQuestions.length) addToSet.escalatedQuestions = { $each: args.escalatedQuestions }
+
+    const update: any = {
+      $setOnInsert: { sessionId: args.sessionId, propertyId: 'maxentertain', startedAt: now, ipAddress: args.ip },
+      $set: { lastMessageAt: now },
+      $push: {
+        messages: {
+          $each: [
+            { role: 'user', content: args.userContent, timestamp: now },
+            { role: 'assistant', content: args.aiReply, timestamp: now },
+          ],
+        },
       },
-      { upsert: true }
-    )
+    }
+    if (args.escalatedQuestions.length) update.$set.escalated = true
+    if (Object.keys(addToSet).length) update.$addToSet = addToSet
+
+    await db.collection('chat_conversations').updateOne({ sessionId: args.sessionId }, update, { upsert: true })
   } catch { /* persist failures must not break the chat */ }
+}
+
+// ─────────────────────────── SSE streaming ───────────────────────────
+
+function sse(data: unknown) {
+  return `data: ${JSON.stringify(data)}\n\n`
+}
+
+function streamOutcome(outcome: AgentOutcome): ReadableStream {
+  const encoder = new TextEncoder()
+  // Chunk the buffered answer into small word groups for a live typing feel.
+  const tokens = outcome.text.split(/(\s+)/).filter((t) => t.length > 0)
+  return new ReadableStream({
+    async start(controller) {
+      let buf = ''
+      for (let i = 0; i < tokens.length; i++) {
+        buf += tokens[i]
+        // Flush every ~3 tokens.
+        if (i % 3 === 2 || i === tokens.length - 1) {
+          controller.enqueue(encoder.encode(sse({ type: 'text', delta: buf })))
+          buf = ''
+          await new Promise((r) => setTimeout(r, 18))
+        }
+      }
+      controller.enqueue(encoder.encode(sse({ type: 'meta', actions: outcome.actions, suggestions: outcome.suggestions })))
+      controller.enqueue(encoder.encode('data: [DONE]\n\n'))
+      controller.close()
+    },
+  })
 }
 
 export async function POST(req: NextRequest) {
@@ -296,20 +408,31 @@ export async function POST(req: NextRequest) {
     }
 
     const sessionId =
-      typeof body?.sessionId === 'string' &&
-      body.sessionId.length > 0 &&
-      body.sessionId.length <= 64
+      typeof body?.sessionId === 'string' && body.sessionId.length > 0 && body.sessionId.length <= 64
         ? body.sessionId
         : null
 
-    const reply = await callGeminiDirect(messages)
+    const outcome = await runAgent(messages)
 
     if (sessionId) {
       const lastUserContent = messages[messages.length - 1]?.content ?? ''
-      void persistChatTurn(sessionId, ip, lastUserContent, reply)
+      void persistChatTurn({
+        sessionId,
+        ip,
+        userContent: lastUserContent,
+        aiReply: outcome.text,
+        intents: outcome.intents,
+        escalatedQuestions: outcome.escalatedQuestions,
+      })
     }
 
-    return NextResponse.json({ reply })
+    return new Response(streamOutcome(outcome), {
+      headers: {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        Connection: 'keep-alive',
+      },
+    })
   } catch (err: any) {
     const status = typeof err?.status === 'number' ? err.status : 500
     if (status === 429) {

@@ -6,19 +6,29 @@ export const dynamic = 'force-dynamic'
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
+  const filter = searchParams.get('filter') ?? 'all'
   const limit = 30
 
   const db = await getDb()
   const col = db.collection('chat_conversations')
 
+  const query: Record<string, unknown> =
+    filter === 'booking'
+      ? { intents: 'booking_intent' }
+      : filter === 'escalated'
+      ? { escalated: true }
+      : filter === 'leads'
+      ? { lead: { $exists: true } }
+      : {}
+
   const [docs, total] = await Promise.all([
     col
-      .find({})
+      .find(query)
       .sort({ lastMessageAt: -1 })
       .skip((page - 1) * limit)
       .limit(limit)
       .toArray(),
-    col.countDocuments(),
+    col.countDocuments(query),
   ])
 
   const conversations = docs.map((doc) => {
@@ -32,6 +42,9 @@ export async function GET(req: NextRequest) {
       ipAddress: doc.ipAddress,
       messageCount: msgs.length,
       firstUserMessage: firstUserMsg.slice(0, 120),
+      intents: doc.intents ?? [],
+      escalated: !!doc.escalated,
+      lead: doc.lead ?? null,
     }
   })
 

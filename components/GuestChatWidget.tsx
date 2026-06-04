@@ -6,7 +6,18 @@ import { useEffect, useRef, useState } from 'react'
 import { trackClick } from '@/lib/analytics'
 
 type Role = 'user' | 'assistant'
-type ChatMessage = { id: string; role: Role; content: string; time: string }
+type ChatAction =
+  | { type: 'book_cta'; checkIn: string; checkOut: string; totalAud: number }
+  | { type: 'collect_contact'; reason: 'booking' | 'unanswered'; checkIn?: string; checkOut?: string; question?: string }
+type ChatMessage = {
+  id: string
+  role: Role
+  content: string
+  time: string
+  actions?: ChatAction[]
+  suggestions?: string[]
+  leadDone?: boolean
+}
 
 function uid() {
   return `${Date.now()}_${Math.random().toString(16).slice(2)}`
@@ -138,6 +149,80 @@ function MarkdownMessage({ text }: { text: string }) {
   )
 }
 
+function ContactForm({
+  reason,
+  sessionId,
+  checkIn,
+  checkOut,
+  question,
+  onDone,
+}: {
+  reason: 'booking' | 'unanswered'
+  sessionId: string | null
+  checkIn?: string
+  checkOut?: string
+  question?: string
+  onDone: () => void
+}) {
+  const [name, setName] = React.useState('')
+  const [email, setEmail] = React.useState('')
+  const [busy, setBusy] = React.useState(false)
+  const [err, setErr] = React.useState('')
+
+  const submit = async () => {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setErr('Please enter a valid email.')
+      return
+    }
+    setBusy(true)
+    setErr('')
+    try {
+      const res = await fetch('/api/chat/lead', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ reason, sessionId, name, email, checkIn, checkOut, question }),
+      })
+      if (!res.ok) throw new Error()
+      onDone()
+    } catch {
+      setErr('Could not send. Please try again or email us directly.')
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="mt-2 w-full rounded-xl border border-luxury-gold/25 bg-luxury-gold/[0.06] p-3">
+      <p className="text-sm text-white/80 mb-2">
+        {reason === 'booking' ? 'Leave your details and Jason will help you book.' : "Leave your email and Jason will reply personally."}
+      </p>
+      <div className="flex flex-col gap-2">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Your name"
+          className="w-full rounded-lg bg-white/95 px-3 py-2 text-sm text-black outline-none focus:ring-2 focus:ring-luxury-gold"
+        />
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          type="email"
+          placeholder="Your email"
+          className="w-full rounded-lg bg-white/95 px-3 py-2 text-sm text-black outline-none focus:ring-2 focus:ring-luxury-gold"
+        />
+        {err && <p className="text-xs text-red-300">{err}</p>}
+        <button
+          type="button"
+          onClick={submit}
+          disabled={busy}
+          className="rounded-lg bg-luxury-gold px-3 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          {busy ? 'Sending…' : reason === 'booking' ? 'Request booking help' : 'Send to Jason'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function BotAvatar({ size = 28 }: { size?: number }) {
   return (
     <div
@@ -248,6 +333,10 @@ export default function GuestChatWidget() {
     return () => window.removeEventListener('keydown', onKey)
   }, [open])
 
+  const markLeadDone = (messageId: string) => {
+    setMessages((prev) => prev.map((m) => (m.id === messageId ? { ...m, leadDone: true } : m)))
+  }
+
   const clearChat = () => {
     try { localStorage.removeItem(CHAT_STORAGE_KEY) } catch {}
     sessionIdRef.current = null
@@ -287,7 +376,7 @@ export default function GuestChatWidget() {
         }),
       })
 
-      if (!res.ok) {
+      if (!res.ok || !res.body) {
         const ra = res.headers.get('retry-after')
         const body = await res.json().catch(() => null)
         throw new Error(
@@ -297,14 +386,60 @@ export default function GuestChatWidget() {
         )
       }
 
-      const data = (await res.json()) as { reply?: string }
-      const assistantMsg: ChatMessage = {
-        id: uid(),
-        role: 'assistant',
-        content: (data.reply || '').trim() || "Sorry, I couldn't generate a response.",
-        time: getTime(),
+      const assistantId = uid()
+      const baseTime = getTime()
+      let accumulated = ''
+      let actions: ChatAction[] = []
+      let suggestions: string[] = []
+
+      const renderAssistant = () =>
+        setMessages([
+          ...next,
+          { id: assistantId, role: 'assistant', content: accumulated, time: baseTime, actions, suggestions },
+        ])
+
+      renderAssistant() // show empty bubble immediately
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const events = buffer.split('\n\n')
+        buffer = events.pop() ?? ''
+        for (const evt of events) {
+          const line = evt.split('\n').find((l) => l.startsWith('data: '))
+          if (!line) continue
+          const payload = line.slice(6)
+          if (payload === '[DONE]') continue
+          try {
+            const data = JSON.parse(payload)
+            if (data.type === 'text') {
+              accumulated += data.delta
+            } else if (data.type === 'meta') {
+              actions = Array.isArray(data.actions) ? data.actions : []
+              suggestions = Array.isArray(data.suggestions) ? data.suggestions : []
+            }
+            renderAssistant()
+            scrollToBottom()
+          } catch { /* ignore malformed event */ }
+        }
       }
-      setMessages([...next, assistantMsg])
+
+      const finalAssistant: ChatMessage = {
+        id: assistantId,
+        role: 'assistant',
+        content: accumulated.trim() || "Sorry, I couldn't generate a response.",
+        time: baseTime,
+        actions,
+        suggestions,
+      }
+      const finalMessages = [...next, finalAssistant]
+      setMessages(finalMessages)
+      saveSession(sessionId, finalMessages)
     } catch (e: any) {
       setError(e?.message || 'Something went wrong.')
     } finally {
@@ -449,15 +584,71 @@ export default function GuestChatWidget() {
                       }
                     >
                       {m.role === 'assistant'
-                        ? <MarkdownMessage text={m.content} />
+                        ? (m.content ? <MarkdownMessage text={m.content} /> : <TypingDots />)
                         : m.content}
                     </div>
-                    <span className="text-xs text-white/45 px-1">{m.time}</span>
+                    {m.time && <span className="text-xs text-white/45 px-1">{m.time}</span>}
+
+                    {/* Action buttons / lead capture */}
+                    {m.role === 'assistant' && m.actions?.map((action, ai) => {
+                      if (action.type === 'book_cta') {
+                        const href = `/book?checkIn=${action.checkIn}&checkOut=${action.checkOut}`
+                        return (
+                          <a
+                            key={ai}
+                            href={href}
+                            onClick={() => trackClick('Chat Book CTA')}
+                            className="mt-2 inline-flex items-center justify-center gap-1.5 rounded-lg bg-luxury-gold px-3.5 py-2 text-sm font-semibold text-black transition-opacity hover:opacity-90"
+                          >
+                            <span className="material-icons" style={{ fontSize: '16px' }}>event_available</span>
+                            Book {action.checkIn} → {action.checkOut} · ${action.totalAud.toLocaleString()}
+                          </a>
+                        )
+                      }
+                      if (action.type === 'collect_contact') {
+                        return m.leadDone ? (
+                          <div key={ai} className="mt-2 flex items-center gap-1.5 text-sm text-emerald-300">
+                            <span className="material-icons" style={{ fontSize: '16px' }}>check_circle</span>
+                            Sent — Jason will be in touch by email.
+                          </div>
+                        ) : (
+                          <ContactForm
+                            key={ai}
+                            reason={action.reason}
+                            sessionId={sessionIdRef.current}
+                            checkIn={action.checkIn}
+                            checkOut={action.checkOut}
+                            question={action.question}
+                            onDone={() => markLeadDone(m.id)}
+                          />
+                        )
+                      }
+                      return null
+                    })}
+
+                    {/* Follow-up suggestion chips (latest assistant message only) */}
+                    {m.role === 'assistant' &&
+                      !isSending &&
+                      m.id === messages[messages.length - 1]?.id &&
+                      (m.suggestions?.length ?? 0) > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {m.suggestions!.map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => send(s)}
+                              className="text-sm px-3 py-1.5 rounded-full text-white/75 bg-white/7 border border-white/10 hover:text-luxury-gold hover:border-luxury-gold/40 hover:bg-luxury-gold/8 transition-all"
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                   </div>
                 </div>
               ))}
 
-              {isSending && (
+              {isSending && messages[messages.length - 1]?.role === 'user' && (
                 <div className="flex gap-2 flex-row animate-fade-in">
                   <BotAvatar size={28} />
                   <div

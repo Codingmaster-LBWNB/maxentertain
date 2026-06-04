@@ -45,6 +45,7 @@ async function sendEmail(params: {
   subject: string
   html: string
   text: string
+  replyTo?: string
 }) {
   const resend = getResendClient()
   return resend.emails.send({
@@ -53,6 +54,7 @@ async function sendEmail(params: {
     subject: params.subject,
     html: params.html,
     text: params.text,
+    ...(params.replyTo ? { replyTo: params.replyTo } : {}),
   })
 }
 
@@ -346,6 +348,48 @@ export async function sendInquiryReceivedEmails(input: {
       'We will get back to you within 24 hours.',
       `Requested dates: ${input.checkIn} to ${input.checkOut}`,
       `Guests: ${input.guests}`,
+    ].join('\n'),
+  })
+}
+
+export async function sendUnansweredQuestionAlert(input: {
+  guestName?: string
+  guestEmail: string
+  question: string
+  transcript?: Array<{ role: string; content: string }>
+  sessionId?: string
+}) {
+  const guestName = escapeHtml(input.guestName || 'A guest')
+  const guestEmail = escapeHtml(input.guestEmail)
+  const question = escapeHtml(input.question)
+  const propertyName = escapeHtml(propertyConfig.name)
+
+  const transcriptLines = (input.transcript ?? [])
+    .slice(-8)
+    .map((m) => `${m.role === 'user' ? 'Guest' : 'MAX'}: ${m.content}`)
+  const transcriptHtml = transcriptLines.length
+    ? `<h3>Recent conversation</h3><pre style="white-space:pre-wrap;font-family:inherit;background:#f5f5f5;padding:12px;border-radius:8px">${escapeHtml(transcriptLines.join('\n'))}</pre>`
+    : ''
+
+  await sendEmail({
+    to: getOwnerEmail(),
+    replyTo: input.guestEmail,
+    subject: `MAX couldn't answer: "${input.question.slice(0, 60)}"`,
+    html: `
+      <h2>A guest question needs your reply</h2>
+      <p>MAX (the chat assistant) could not answer this from the property info, so the guest asked to hear from you directly.</p>
+      <p><strong>Guest:</strong> ${guestName}</p>
+      <p><strong>Email:</strong> ${guestEmail} (just reply to this email to respond)</p>
+      <p><strong>Question:</strong> ${question}</p>
+      ${transcriptHtml}
+      <p style="color:#888;font-size:12px">${propertyName}${input.sessionId ? ` · session ${escapeHtml(input.sessionId)}` : ''}</p>
+    `,
+    text: [
+      'A guest question needs your reply.',
+      `Guest: ${input.guestName || 'A guest'}`,
+      `Email: ${input.guestEmail} (reply to this email to respond)`,
+      `Question: ${input.question}`,
+      transcriptLines.length ? `\nRecent conversation:\n${transcriptLines.join('\n')}` : '',
     ].join('\n'),
   })
 }
