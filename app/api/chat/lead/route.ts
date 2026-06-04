@@ -35,6 +35,8 @@ export async function POST(req: NextRequest) {
       } catch { /* non-fatal */ }
     }
 
+    let emailSent = true
+
     if (reason === 'booking') {
       if (process.env.MONGODB_URI) {
         try {
@@ -53,24 +55,34 @@ export async function POST(req: NextRequest) {
           })
         } catch { /* non-fatal */ }
       }
-      await sendInquiryReceivedEmails({
-        name: name || 'Chat guest',
-        email,
-        phone: '',
-        checkIn,
-        checkOut,
-        guests: '',
-        message: `Booking enquiry submitted via the website chat assistant.${question ? `\nContext: ${question}` : ''}`,
-      }).catch(() => {})
+      try {
+        await sendInquiryReceivedEmails({
+          name: name || 'Chat guest',
+          email,
+          phone: '',
+          checkIn,
+          checkOut,
+          guests: '',
+          message: `Booking enquiry submitted via the website chat assistant.${question ? `\nContext: ${question}` : ''}`,
+        })
+      } catch (e) {
+        emailSent = false
+        console.error('[chat/lead] booking email failed:', e)
+      }
     } else {
       // unanswered
-      await sendUnansweredQuestionAlert({
-        guestName: name,
-        guestEmail: email,
-        question: question || '(question not captured)',
-        transcript,
-        sessionId,
-      }).catch(() => {})
+      try {
+        await sendUnansweredQuestionAlert({
+          guestName: name,
+          guestEmail: email,
+          question: question || '(question not captured)',
+          transcript,
+          sessionId,
+        })
+      } catch (e) {
+        emailSent = false
+        console.error('[chat/lead] unanswered email failed:', e)
+      }
     }
 
     // Flag the conversation so the owner can spot it in the admin Chats page.
@@ -90,7 +102,7 @@ export async function POST(req: NextRequest) {
       } catch { /* non-fatal */ }
     }
 
-    return NextResponse.json({ ok: true })
+    return NextResponse.json({ ok: true, emailSent })
   } catch {
     return NextResponse.json({ error: 'Could not submit. Please email us directly.' }, { status: 500 })
   }

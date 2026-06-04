@@ -183,11 +183,7 @@ function buildSystemInstruction() {
     '## Formatting (always)',
     '- Use markdown: **bold** for key facts, bullet lists for 3+ items, numbered lists for steps, short bold headers for long answers.',
     '- One clear fact per bullet. Never a wall of prose when there are distinct facts.',
-    '',
-    '## Follow-up suggestions',
-    'At the very END of every reply, append a machine block on its own line with 2–3 short suggested follow-up questions the guest might ask next:',
-    '<<META>>{"suggestions":["...","...","..."]}<<END>>',
-    'Never mention this block in your prose; it is stripped before display.',
+    '- Reply with conversational prose only. Never output JSON, code blocks, or function-call syntax in your message — use the provided tools to take actions instead.',
     '',
     'Property context:',
     compactPropertyContext(),
@@ -219,6 +215,7 @@ async function callGemini(contents: any[]): Promise<any> {
         system_instruction: { parts: [{ text: buildSystemInstruction() }] },
         contents,
         tools: [{ functionDeclarations: chatToolDeclarations }],
+        toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
         generationConfig: { temperature: 0.3, maxOutputTokens: 1200 },
       }),
       signal: controller.signal,
@@ -248,6 +245,7 @@ async function runAgent(messages: ClientMessage[]): Promise<AgentOutcome> {
   const actions: any[] = []
   const intents = new Set<string>()
   const escalatedQuestions: string[] = []
+  const lastUserText = messages[messages.length - 1]?.content ?? ''
 
   for (let iter = 0; iter < MAX_TOOL_ITERATIONS; iter++) {
     const resp = await callGemini(contents)
@@ -256,7 +254,7 @@ async function runAgent(messages: ClientMessage[]): Promise<AgentOutcome> {
 
     if (functionCalls.length === 0) {
       const text = parts.map((p: any) => p.text ?? '').join('').trim()
-      return finalize(text, actions, intents, escalatedQuestions)
+      return finalize(text, actions, intents, escalatedQuestions, lastUserText)
     }
 
     // Echo the model's function-call turn back into the conversation.
@@ -280,29 +278,66 @@ async function runAgent(messages: ClientMessage[]): Promise<AgentOutcome> {
   // Tool budget exhausted — ask once more for a plain text answer.
   const resp = await callGemini(contents)
   const text = extractParts(resp).map((p: any) => p.text ?? '').join('').trim()
-  return finalize(text, actions, intents, escalatedQuestions)
+  return finalize(text, actions, intents, escalatedQuestions, lastUserText)
 }
 
-const META_RE = /<<META>>([\s\S]*?)<<END>>/
+const GENERAL_SUGGESTIONS = [
+  'Is the pool heated?',
+  'How far is the beach?',
+  'Is it pet friendly?',
+  'What time is check-in?',
+  'What is there for kids?',
+  'How many guests can stay?',
+  'What is the cancellation policy?',
+]
 
-function finalize(rawText: string, actions: any[], intents: Set<string>, escalatedQuestions: string[]): AgentOutcome {
-  let text = rawText
-  let suggestions: string[] = []
-  const m = rawText.match(META_RE)
-  if (m) {
-    text = rawText.replace(META_RE, '').trim()
-    try {
-      const parsed = JSON.parse(m[1]!.trim())
-      if (Array.isArray(parsed?.suggestions)) {
-        suggestions = parsed.suggestions
-          .filter((s: unknown) => typeof s === 'string' && s.trim())
-          .slice(0, 3)
-          .map((s: string) => s.trim())
-      }
-    } catch { /* ignore malformed meta */ }
+/** Build 3 reliable follow-up suggestions server-side (no model sentinel needed). */
+function buildSuggestions(intents: Set<string>, lastUserText: string): string[] {
+  const out: string[] = []
+  if (intents.has('asked_availability') && !intents.has('asked_price')) {
+    out.push('What is the total price for those dates?')
   }
+  if (intents.has('asked_price')) {
+    out.push('Can I book these dates?', 'What is the cancellation policy?')
+  }
+  if (intents.has('booking_intent')) {
+    out.push('What is the cancellation policy?')
+  }
+  const asked = lastUserText.toLowerCase()
+  for (const s of GENERAL_SUGGESTIONS) {
+    if (out.length >= 3) break
+    // Skip a suggestion if it's basically what they just asked.
+    const key = s.toLowerCase().replace(/[^a-z]/g, '')
+    if (asked.replace(/[^a-z]/g, '').includes(key.slice(0, 8))) continue
+    if (!out.includes(s)) out.push(s)
+  }
+  return out.slice(0, 3)
+}
+
+// Safety net: strip any machine artifacts the model might still emit.
+function stripArtifacts(text: string): string {
+  return text
+    .replace(/<<META>>[\s\S]*?(<<END>>|$)/g, '')
+    .replace(/```(?:json)?[\s\S]*?```/g, (block) => (/"suggestions"|functionCall|tool_code/.test(block) ? '' : block))
+    .trim()
+}
+
+function finalize(
+  rawText: string,
+  actions: any[],
+  intents: Set<string>,
+  escalatedQuestions: string[],
+  lastUserText: string
+): AgentOutcome {
+  let text = stripArtifacts(rawText)
   if (!text) text = "Sorry, I couldn't generate a response. Please try again or use the enquiry form."
-  return { text, actions, suggestions, intents: [...intents], escalatedQuestions }
+  return {
+    text,
+    actions,
+    suggestions: buildSuggestions(intents, lastUserText),
+    intents: [...intents],
+    escalatedQuestions,
+  }
 }
 
 // ─────────────────────────── Persistence ───────────────────────────

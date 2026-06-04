@@ -44,16 +44,19 @@ async function fetchBlockedDates(): Promise<Set<string>> {
 
 // ─────────────────────────── Gemini function declarations ───────────────────────────
 
+// NOTE: Gemini's Schema.type is an enum and must be UPPERCASE (OBJECT, STRING, …).
+// Lowercase values cause the tool declarations to be ignored, so the model can
+// describe tools but never actually call them.
 export const chatToolDeclarations = [
   {
     name: 'check_availability',
     description:
       "Check whether the property is available for a specific date range. Call this whenever the guest asks if dates are free, or mentions/implies specific dates. Dates must be resolved to absolute YYYY-MM-DD (today's date is provided in the system context).",
     parameters: {
-      type: 'object',
+      type: 'OBJECT',
       properties: {
-        checkIn: { type: 'string', description: 'Check-in date, YYYY-MM-DD' },
-        checkOut: { type: 'string', description: 'Check-out date, YYYY-MM-DD' },
+        checkIn: { type: 'STRING', description: 'Check-in date, YYYY-MM-DD' },
+        checkOut: { type: 'STRING', description: 'Check-out date, YYYY-MM-DD' },
       },
       required: ['checkIn', 'checkOut'],
     },
@@ -63,10 +66,10 @@ export const chatToolDeclarations = [
     description:
       'Get the exact total price for a date range, including the per-night breakdown and the estimated saving vs booking through an OTA. Call this when the guest asks about price/cost, or after confirming availability when guiding them toward booking.',
     parameters: {
-      type: 'object',
+      type: 'OBJECT',
       properties: {
-        checkIn: { type: 'string', description: 'Check-in date, YYYY-MM-DD' },
-        checkOut: { type: 'string', description: 'Check-out date, YYYY-MM-DD' },
+        checkIn: { type: 'STRING', description: 'Check-in date, YYYY-MM-DD' },
+        checkOut: { type: 'STRING', description: 'Check-out date, YYYY-MM-DD' },
       },
       required: ['checkIn', 'checkOut'],
     },
@@ -76,10 +79,10 @@ export const chatToolDeclarations = [
     description:
       'Call this when the guest is ready to book, asks to be contacted, or wants a human to follow up about a booking. After calling, ask the guest for their name and email so the owner can follow up.',
     parameters: {
-      type: 'object',
+      type: 'OBJECT',
       properties: {
-        checkIn: { type: 'string', description: 'Check-in date if known, YYYY-MM-DD' },
-        checkOut: { type: 'string', description: 'Check-out date if known, YYYY-MM-DD' },
+        checkIn: { type: 'STRING', description: 'Check-in date if known, YYYY-MM-DD' },
+        checkOut: { type: 'STRING', description: 'Check-out date if known, YYYY-MM-DD' },
       },
       required: [],
     },
@@ -89,9 +92,9 @@ export const chatToolDeclarations = [
     description:
       "Call this when the guest asks a property-specific question that you cannot answer from the provided context (do NOT guess). After calling, apologise briefly and offer to have the owner email them back, then ask for their email.",
     parameters: {
-      type: 'object',
+      type: 'OBJECT',
       properties: {
-        question: { type: 'string', description: 'The exact question the guest asked that you could not answer.' },
+        question: { type: 'STRING', description: 'The exact question the guest asked that you could not answer.' },
       },
       required: ['question'],
     },
