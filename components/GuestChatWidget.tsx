@@ -164,11 +164,11 @@ export default function GuestChatWidget() {
   const [panelVisible, setPanelVisible] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
-      id: uid(),
+      id: 'greeting',
       role: 'assistant',
       content:
         "Hi! I'm MAX, your virtual concierge. Ask me anything about the property — amenities, house rules, nearby attractions, and more.",
-      time: getTime(),
+      time: '',
     },
   ])
   const [input, setInput] = useState('')
@@ -203,15 +203,25 @@ export default function GuestChatWidget() {
     if (open) scrollToBottom()
   }, [open, messages.length])
 
-  // Restore session from localStorage on mount
+  // Restore session from localStorage on mount (client-only, avoids SSR mismatch)
   useEffect(() => {
     const saved = loadSession()
-    if (saved) {
+    if (saved && saved.messages.length > 0) {
       sessionIdRef.current = saved.sessionId
       setMessages(saved.messages)
       if (saved.messages.some((m) => m.role === 'user')) setHasSent(true)
+    } else {
+      // No saved session: fill in the greeting timestamp on the client
+      setMessages((prev) => prev.map((m, i) => (i === 0 ? { ...m, time: getTime() } : m)))
     }
   }, [])
+
+  // Persist the session on every message change (survives refresh, keeps same sessionId)
+  useEffect(() => {
+    if (!sessionIdRef.current) return
+    if (messages.length <= 1) return
+    saveSession(sessionIdRef.current, messages)
+  }, [messages])
 
   useEffect(() => {
     if (!open) return
@@ -294,9 +304,7 @@ export default function GuestChatWidget() {
         content: (data.reply || '').trim() || "Sorry, I couldn't generate a response.",
         time: getTime(),
       }
-      const finalMessages = [...next, assistantMsg]
-      setMessages(finalMessages)
-      saveSession(sessionId, finalMessages)
+      setMessages([...next, assistantMsg])
     } catch (e: any) {
       setError(e?.message || 'Something went wrong.')
     } finally {
