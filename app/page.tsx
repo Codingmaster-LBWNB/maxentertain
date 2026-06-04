@@ -13,6 +13,7 @@ import StarBackground from '@/components/StarBackground'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
 import AvailabilityInquirySync from '@/components/AvailabilityInquirySync'
+import GuestChatWidget from '@/components/GuestChatWidget'
 import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
 import { faqs } from '@/lib/faqs'
@@ -124,6 +125,7 @@ export default function Home() {
         <FAQ />
       </div>
       <Footer />
+      <GuestChatWidget />
     </main>
   )
 }
