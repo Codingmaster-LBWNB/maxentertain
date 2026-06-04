@@ -169,6 +169,7 @@ export default function Testimonials() {
           <AwardBanner embedded />
         </div>
 
+        <div id="reviews" className="scroll-mt-24 md:scroll-mt-28">
         <motion.div
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -243,6 +244,7 @@ export default function Testimonials() {
             </button>
           </div>
         )}
+        </div> {/* end #reviews */}
       </div>
     </section>
   )

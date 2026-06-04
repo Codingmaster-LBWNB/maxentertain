@@ -118,10 +118,10 @@ export default function Home() {
         <SleepArrangements />
         <PropertyDetails />
         <Amenities />
-        <FAQ />
         <Testimonials />
         <LocalArea />
         <AvailabilityInquirySync />
+        <FAQ />
       </div>
       <Footer />
     </main>
