@@ -1,5 +1,6 @@
 'use client'
 
+import React from 'react'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { trackClick } from '@/lib/analytics'
@@ -43,6 +44,69 @@ function TypingDots() {
           }}
         />
       ))}
+    </div>
+  )
+}
+
+function renderInline(text: string): React.ReactNode {
+  const parts = text.split(/(\*\*[^*]+\*\*)/g)
+  if (parts.length === 1) return text
+  return parts.map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i} className="font-semibold text-white">{part.slice(2, -2)}</strong>
+      : <span key={i}>{part}</span>
+  )
+}
+
+function MarkdownMessage({ text }: { text: string }) {
+  const paragraphs = text.split(/\n\n+/)
+  return (
+    <div className="space-y-2 text-base leading-relaxed">
+      {paragraphs.map((para, pi) => {
+        const lines = para.split('\n').filter((l) => l.trim())
+        const isBullet = lines.length > 0 && lines.every((l) => /^[-•*]\s/.test(l))
+        const isNumbered = lines.length > 0 && lines.every((l) => /^\d+\.\s/.test(l))
+
+        if (isBullet) {
+          return (
+            <ul key={pi} className="space-y-1">
+              {lines.map((line, li) => (
+                <li key={li} className="flex gap-2">
+                  <span className="text-luxury-gold mt-0.5 flex-shrink-0 text-sm">•</span>
+                  <span>{renderInline(line.replace(/^[-•*]\s+/, ''))}</span>
+                </li>
+              ))}
+            </ul>
+          )
+        }
+
+        if (isNumbered) {
+          return (
+            <ol key={pi} className="space-y-1">
+              {lines.map((line, li) => {
+                const m = line.match(/^(\d+)\.\s+(.*)/)
+                return (
+                  <li key={li} className="flex gap-2">
+                    <span className="text-luxury-gold font-semibold flex-shrink-0 text-sm min-w-[18px]">{m?.[1] ?? li + 1}.</span>
+                    <span>{renderInline(m?.[2] ?? line)}</span>
+                  </li>
+                )
+              })}
+            </ol>
+          )
+        }
+
+        return (
+          <p key={pi}>
+            {lines.map((line, li) => (
+              <React.Fragment key={li}>
+                {li > 0 && <br />}
+                {renderInline(line)}
+              </React.Fragment>
+            ))}
+          </p>
+        )
+      })}
     </div>
   )
 }
@@ -338,7 +402,9 @@ export default function GuestChatWidget() {
                             }
                       }
                     >
-                      {m.content}
+                      {m.role === 'assistant'
+                        ? <MarkdownMessage text={m.content} />
+                        : m.content}
                     </div>
                     <span className="text-xs text-white/45 px-1">{m.time}</span>
                   </div>

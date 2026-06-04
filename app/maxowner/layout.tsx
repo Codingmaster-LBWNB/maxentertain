@@ -8,7 +8,6 @@ const NAV = [
   { href: '/maxowner/guests', label: 'Guests', icon: '👥' },
   { href: '/maxowner/pricing', label: 'Pricing', icon: '💰' },
   { href: '/maxowner/inquiries', label: 'Inquiries', icon: '📋' },
-  { href: '/maxowner/chats', label: 'Chats', icon: '💬' },
 ]
 
 export default function OwnerLayout({ children }: { children: React.ReactNode }) {
