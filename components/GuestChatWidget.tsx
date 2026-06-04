@@ -26,6 +26,33 @@ const SUGGESTED = [
 ]
 
 const CHATBOT_ICON = encodeURI('/Airbnb picture/icons_files/chatbot.png')
+const CHAT_STORAGE_KEY = 'max_chat_v1'
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
+
+function loadSession(): { sessionId: string; messages: ChatMessage[] } | null {
+  try {
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as { sessionId: string; messages: ChatMessage[]; expiresAt: number }
+    if (!parsed.sessionId || !Array.isArray(parsed.messages) || Date.now() > parsed.expiresAt) {
+      localStorage.removeItem(CHAT_STORAGE_KEY)
+      return null
+    }
+    return { sessionId: parsed.sessionId, messages: parsed.messages }
+  } catch {
+    return null
+  }
+}
+
+function saveSession(sessionId: string, msgs: ChatMessage[]) {
+  try {
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify({
+      sessionId,
+      messages: msgs,
+      expiresAt: Date.now() + SESSION_TTL_MS,
+    }))
+  } catch {}
+}
 
 function TypingDots() {
   return (
@@ -176,6 +203,16 @@ export default function GuestChatWidget() {
     if (open) scrollToBottom()
   }, [open, messages.length])
 
+  // Restore session from localStorage on mount
+  useEffect(() => {
+    const saved = loadSession()
+    if (saved) {
+      sessionIdRef.current = saved.sessionId
+      setMessages(saved.messages)
+      if (saved.messages.some((m) => m.role === 'user')) setHasSent(true)
+    }
+  }, [])
+
   useEffect(() => {
     if (!open) return
     const onKey = (e: KeyboardEvent) => {
@@ -202,6 +239,7 @@ export default function GuestChatWidget() {
   }, [open])
 
   const clearChat = () => {
+    try { localStorage.removeItem(CHAT_STORAGE_KEY) } catch {}
     sessionIdRef.current = null
     setMessages([
       { id: uid(), role: 'assistant', content: 'Chat cleared. How can I help you?', time: getTime() },
@@ -250,15 +288,15 @@ export default function GuestChatWidget() {
       }
 
       const data = (await res.json()) as { reply?: string }
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: uid(),
-          role: 'assistant',
-          content: (data.reply || '').trim() || "Sorry, I couldn't generate a response.",
-          time: getTime(),
-        },
-      ])
+      const assistantMsg: ChatMessage = {
+        id: uid(),
+        role: 'assistant',
+        content: (data.reply || '').trim() || "Sorry, I couldn't generate a response.",
+        time: getTime(),
+      }
+      const finalMessages = [...next, assistantMsg]
+      setMessages(finalMessages)
+      saveSession(sessionId, finalMessages)
     } catch (e: any) {
       setError(e?.message || 'Something went wrong.')
     } finally {
