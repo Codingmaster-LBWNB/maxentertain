@@ -37,7 +37,7 @@ const SUGGESTED = [
 ]
 
 const CHATBOT_ICON = encodeURI('/Airbnb picture/icons_files/chatbot.png')
-const CHAT_STORAGE_KEY = 'max_chat_v1'
+const CHAT_STORAGE_KEY = 'max_chat_v2'
 const SESSION_TTL_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 function loadSession(): { sessionId: string; messages: ChatMessage[] } | null {
@@ -84,6 +84,35 @@ function TypingDots() {
       ))}
     </div>
   )
+}
+
+/**
+ * Split an assistant message into clean display text + follow-up suggestions.
+ * Handles legacy/leaked metadata in either `<<META>>{...}<<END>>` or a
+ * ```json {"suggestions":[...]}``` code fence, so raw metadata never shows in
+ * the bubble and the questions render as clickable chips instead.
+ */
+function splitMeta(content: string): { text: string; suggestions: string[] } {
+  let suggestions: string[] = []
+  const metaMatch = content.match(/<<META>>([\s\S]*?)(?:<<END>>|$)/)
+  const fenceMatch = content.match(/```(?:json)?\s*(\{[\s\S]*?"suggestions"[\s\S]*?\})\s*```/)
+  const jsonStr = metaMatch?.[1] ?? fenceMatch?.[1]
+  if (jsonStr) {
+    try {
+      const p = JSON.parse(jsonStr.trim())
+      if (Array.isArray(p?.suggestions)) {
+        suggestions = p.suggestions
+          .filter((s: unknown) => typeof s === 'string' && s.trim())
+          .map((s: string) => s.trim())
+          .slice(0, 3)
+      }
+    } catch { /* ignore malformed metadata */ }
+  }
+  const text = content
+    .replace(/<<META>>[\s\S]*?(?:<<END>>|$)/g, '')
+    .replace(/```(?:json)?\s*\{[\s\S]*?"suggestions"[\s\S]*?\}\s*```/g, '')
+    .trim()
+  return { text, suggestions }
 }
 
 function renderInline(text: string): React.ReactNode {
@@ -557,7 +586,10 @@ export default function GuestChatWidget() {
               className="flex-1 overflow-y-auto px-4 py-4 space-y-4"
               style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(212,175,55,0.15) transparent' }}
             >
-              {messages.map((m) => (
+              {messages.map((m) => {
+                const parsed = m.role === 'assistant' ? splitMeta(m.content) : { text: m.content, suggestions: [] }
+                const chips = (m.suggestions?.length ? m.suggestions : parsed.suggestions) ?? []
+                return (
                 <div
                   key={m.id}
                   className={`flex gap-2 animate-fade-in ${
@@ -584,7 +616,7 @@ export default function GuestChatWidget() {
                       }
                     >
                       {m.role === 'assistant'
-                        ? (m.content ? <MarkdownMessage text={m.content} /> : <TypingDots />)
+                        ? (parsed.text ? <MarkdownMessage text={parsed.text} /> : <TypingDots />)
                         : m.content}
                     </div>
                     {m.time && <span className="text-xs text-white/45 px-1">{m.time}</span>}
@@ -630,9 +662,9 @@ export default function GuestChatWidget() {
                     {m.role === 'assistant' &&
                       !isSending &&
                       m.id === messages[messages.length - 1]?.id &&
-                      (m.suggestions?.length ?? 0) > 0 && (
+                      chips.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1.5">
-                          {m.suggestions!.map((s) => (
+                          {chips.map((s) => (
                             <button
                               key={s}
                               type="button"
@@ -646,7 +678,8 @@ export default function GuestChatWidget() {
                       )}
                   </div>
                 </div>
-              ))}
+                )
+              })}
 
               {isSending && messages[messages.length - 1]?.role === 'user' && (
                 <div className="flex gap-2 flex-row animate-fade-in">

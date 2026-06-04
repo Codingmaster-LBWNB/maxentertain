@@ -48,7 +48,7 @@ async function sendEmail(params: {
   replyTo?: string
 }) {
   const resend = getResendClient()
-  return resend.emails.send({
+  const result = await resend.emails.send({
     from: getFromEmail(),
     to: params.to,
     subject: params.subject,
@@ -56,6 +56,12 @@ async function sendEmail(params: {
     text: params.text,
     ...(params.replyTo ? { replyTo: params.replyTo } : {}),
   })
+  // Resend returns { data, error } and does NOT throw on API errors
+  // (e.g. unverified sender domain). Surface those as real errors.
+  if (result.error) {
+    throw new Error(`Resend error: ${result.error.message ?? 'unknown'} (to: ${Array.isArray(params.to) ? params.to.join(', ') : params.to})`)
+  }
+  return result
 }
 
 export async function sendBookingConfirmedEmail(booking: BookingRecord) {
