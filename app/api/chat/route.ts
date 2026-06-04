@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { propertyConfig } from '@/config/property'
+import { getDb } from '@/lib/mongodb'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -215,6 +216,47 @@ async function callGeminiDirect(messages: ClientMessage[]): Promise<string> {
   }
 }
 
+let chatIndexesEnsured = false
+async function ensureChatIndexes() {
+  if (chatIndexesEnsured) return
+  try {
+    const db = await getDb()
+    const col = db.collection('chat_conversations')
+    await col.createIndex({ sessionId: 1 }, { unique: true, background: true })
+    await col.createIndex({ lastMessageAt: -1 }, { background: true })
+    chatIndexesEnsured = true
+  } catch { /* non-fatal */ }
+}
+
+async function persistChatTurn(
+  sessionId: string,
+  ip: string,
+  userContent: string,
+  aiReply: string
+) {
+  try {
+    await ensureChatIndexes()
+    const db = await getDb()
+    const now = new Date()
+    await db.collection('chat_conversations').updateOne(
+      { sessionId },
+      {
+        $setOnInsert: { sessionId, propertyId: 'maxentertain', startedAt: now, ipAddress: ip },
+        $set: { lastMessageAt: now },
+        $push: {
+          messages: {
+            $each: [
+              { role: 'user', content: userContent, timestamp: now },
+              { role: 'assistant', content: aiReply, timestamp: now },
+            ],
+          },
+        } as any,
+      },
+      { upsert: true }
+    )
+  } catch { /* persist failures must not break the chat */ }
+}
+
 export async function POST(req: NextRequest) {
   try {
     if (!checkOrigin(req)) {
@@ -239,7 +281,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Message too short or empty' }, { status: 400 })
     }
 
+    const sessionId =
+      typeof body?.sessionId === 'string' &&
+      body.sessionId.length > 0 &&
+      body.sessionId.length <= 64
+        ? body.sessionId
+        : null
+
     const reply = await callGeminiDirect(messages)
+
+    if (sessionId) {
+      const lastUserContent = messages[messages.length - 1]?.content ?? ''
+      void persistChatTurn(sessionId, ip, lastUserContent, reply)
+    }
+
     return NextResponse.json({ reply })
   } catch (err: any) {
     const status = typeof err?.status === 'number' ? err.status : 500

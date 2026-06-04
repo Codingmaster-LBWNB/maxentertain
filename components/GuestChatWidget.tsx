@@ -85,6 +85,7 @@ export default function GuestChatWidget() {
   const [error, setError] = useState('')
   const [hasSent, setHasSent] = useState(false)
 
+  const sessionIdRef = useRef<string | null>(null)
   const panelRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -137,6 +138,7 @@ export default function GuestChatWidget() {
   }, [open])
 
   const clearChat = () => {
+    sessionIdRef.current = null
     setMessages([
       { id: uid(), role: 'assistant', content: 'Chat cleared. How can I help you?', time: getTime() },
     ])
@@ -156,6 +158,9 @@ export default function GuestChatWidget() {
     setInput('')
     setHasSent(true)
 
+    if (!sessionIdRef.current) sessionIdRef.current = crypto.randomUUID()
+    const sessionId = sessionIdRef.current
+
     const userMsg: ChatMessage = { id: uid(), role: 'user', content: trimmed, time: getTime() }
     const next = [...messages, userMsg]
     setMessages(next)
@@ -164,7 +169,10 @@ export default function GuestChatWidget() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ messages: next.map((m) => ({ role: m.role, content: m.content })) }),
+        body: JSON.stringify({
+          messages: next.map((m) => ({ role: m.role, content: m.content })),
+          sessionId,
+        }),
       })
 
       if (!res.ok) {
