@@ -58,22 +58,6 @@ export default function Navigation() {
                 priority
               />
             </span>
-            {/* md to lg: short */}
-            <span className="hidden md:inline lg:hidden whitespace-nowrap text-sm">
-              Max Entertain
-            </span>
-            {/* lg to xl: medium */}
-            <span className="hidden lg:inline xl:hidden whitespace-nowrap text-base">
-              Max Entertain Retreat
-            </span>
-            {/* xl+: full tagline (sized to fit without clipping) */}
-            <span className="hidden xl:inline whitespace-nowrap text-base 2xl:text-lg">
-              Award Winning Luxury Retreat
-            </span>
-            {/* Mobile: keep the property name on one line so it never gets cut */}
-            <span className="md:hidden block min-w-0 text-base font-serif font-bold leading-tight whitespace-nowrap truncate">
-              Max Entertain
-            </span>
           </Link>
 
           {/* Desktop Navigation */}

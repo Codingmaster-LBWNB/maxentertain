@@ -195,69 +195,85 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: 'easeOut', delay: 1.05 }}
-              className="flex flex-col sm:flex-row gap-3 flex-wrap"
+              className="flex flex-col gap-5"
             >
-              <Link href="/#calendar" onClick={() => trackClick('Check Dates', { location: 'Hero' })} className="btn-primary inline-flex items-center gap-2 justify-center">
-                <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>
-                Check Dates &amp; Book Direct
-              </Link>
+              {/* Direct booking */}
+              <div>
+                <p className="text-luxury-gold text-xs font-sans font-semibold tracking-[0.18em] uppercase mb-2">
+                  Best rate · Book direct &amp; save
+                </p>
+                <Link href="/#calendar" onClick={() => trackClick('Check Dates', { location: 'Hero' })} className="btn-primary inline-flex items-center gap-2 justify-center">
+                  <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>
+                  Check Dates &amp; Book Direct
+                </Link>
+              </div>
 
-              {propertyConfig.booking?.airbnb && (
-                <a
-                  href={propertyConfig.booking.airbnb}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackClick('Airbnb', { location: 'Hero' })}
-                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
-                  style={{ borderRadius: '2px' }}
-                >
-                  <Image
-                    src={safeSrc('/Airbnb picture/icons_files/airbnb_icon.jpg')}
-                    alt="Airbnb"
-                    width={16}
-                    height={16}
-                    className="w-4 h-4 object-contain rounded-sm"
-                  />
-                  Airbnb
-                </a>
-              )}
-              {propertyConfig.booking?.bookingCom && (
-                <a
-                  href={propertyConfig.booking.bookingCom}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackClick('Booking.com', { location: 'Hero' })}
-                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
-                  style={{ borderRadius: '2px' }}
-                >
-                  <Image
-                    src={safeSrc('/Airbnb picture/icons_files/booking_icon.jpeg')}
-                    alt="Booking.com"
-                    width={16}
-                    height={16}
-                    className="w-4 h-4 object-contain bg-white rounded-sm p-0.5"
-                  />
-                  Booking.com
-                </a>
-              )}
-              {propertyConfig.booking?.vrbo && (
-                <a
-                  href={propertyConfig.booking.vrbo}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => trackClick('VRBO', { location: 'Hero' })}
-                  className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
-                  style={{ borderRadius: '2px' }}
-                >
-                  <Image
-                    src={safeSrc('/Airbnb picture/icons_files/vrbo.png')}
-                    alt="VRBO"
-                    width={16}
-                    height={16}
-                    className="w-4 h-4 object-contain"
-                  />
-                  VRBO
-                </a>
+              {/* Other platforms */}
+              {(propertyConfig.booking?.airbnb || propertyConfig.booking?.bookingCom || propertyConfig.booking?.vrbo) && (
+                <div>
+                  <p className="text-white/55 text-xs font-sans font-semibold tracking-[0.18em] uppercase mb-2">
+                    Or find us on
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+                    {propertyConfig.booking?.airbnb && (
+                      <a
+                        href={propertyConfig.booking.airbnb}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackClick('Airbnb', { location: 'Hero' })}
+                        className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
+                        style={{ borderRadius: '2px' }}
+                      >
+                        <Image
+                          src={safeSrc('/Airbnb picture/icons_files/airbnb_icon.jpg')}
+                          alt="Airbnb"
+                          width={16}
+                          height={16}
+                          className="w-4 h-4 object-contain rounded-sm"
+                        />
+                        Airbnb
+                      </a>
+                    )}
+                    {propertyConfig.booking?.bookingCom && (
+                      <a
+                        href={propertyConfig.booking.bookingCom}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackClick('Booking.com', { location: 'Hero' })}
+                        className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
+                        style={{ borderRadius: '2px' }}
+                      >
+                        <Image
+                          src={safeSrc('/Airbnb picture/icons_files/booking_icon.jpeg')}
+                          alt="Booking.com"
+                          width={16}
+                          height={16}
+                          className="w-4 h-4 object-contain bg-white rounded-sm p-0.5"
+                        />
+                        Booking.com
+                      </a>
+                    )}
+                    {propertyConfig.booking?.vrbo && (
+                      <a
+                        href={propertyConfig.booking.vrbo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => trackClick('VRBO', { location: 'Hero' })}
+                        className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
+                        style={{ borderRadius: '2px' }}
+                      >
+                        <Image
+                          src={safeSrc('/Airbnb picture/icons_files/vrbo.png')}
+                          alt="VRBO"
+                          width={16}
+                          height={16}
+                          className="w-4 h-4 object-contain"
+                        />
+                        VRBO
+                      </a>
+                    )}
+                  </div>
+                </div>
               )}
             </motion.div>
 
