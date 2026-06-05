@@ -354,15 +354,15 @@ export default function Calendar({
                         {grouped.map(({ tier, count, subtotal, hasOverride }) => {
                           const perNight = Math.round(subtotal / count)
                           return (
-                            <div key={tier} className="flex items-center justify-between text-base">
-                              <div className="flex items-center gap-2">
+                            <div key={tier} className="flex items-start justify-between gap-3 text-base">
+                              <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 min-w-0">
                                 <span className="text-gray-700">{count} × {TIER_LABELS[tier]}</span>
                                 <span className="text-gray-600 text-sm">
                                   @ ${perNight.toLocaleString()}/night
                                   {hasOverride && <span className="ml-1 text-luxury-gold text-xs">(custom)</span>}
                                 </span>
                               </div>
-                              <span className="font-semibold text-luxury-dark">${subtotal.toLocaleString()}</span>
+                              <span className="font-semibold text-luxury-dark whitespace-nowrap">${subtotal.toLocaleString()}</span>
                             </div>
                           )
                         })}

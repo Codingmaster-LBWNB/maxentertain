@@ -47,13 +47,13 @@ export default function Navigation() {
               isScrolled ? 'md:text-luxury-dark md:dark:text-white md:drop-shadow-none' : 'md:text-white'
             }`}
           >
-            <span className="relative h-9 w-9 md:h-10 md:w-10 overflow-hidden rounded-full bg-white/90 ring-1 ring-black/5 flex-shrink-0">
+            <span className="relative h-11 w-11 md:h-12 md:w-12 overflow-hidden rounded-full bg-white ring-1 ring-black/5 flex-shrink-0">
               <Image
                 src={safeSrc('/Airbnb picture/icons_files/Icon.png')}
                 alt="Max Entertain logo"
                 fill
-                className="object-cover scale-110"
-                sizes="(max-width: 768px) 36px, 40px"
+                className="object-contain p-1"
+                sizes="(max-width: 768px) 44px, 48px"
                 quality={100}
                 priority
               />

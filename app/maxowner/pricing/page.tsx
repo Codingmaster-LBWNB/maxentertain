@@ -412,9 +412,9 @@ export default function PricingPage() {
     const gridDays = eachDayOfInterval({ start: calStart, end: calEnd })
 
     return (
-      <div className="border border-white/10 rounded-xl overflow-hidden">
-        {/* Header row */}
-        <div className="grid grid-cols-7 border-b border-white/10 bg-white/[0.03]">
+      <div className="border border-white/10 rounded-xl overflow-x-auto">
+        {/* Header row (min width keeps day boxes large enough to read on phones) */}
+        <div className="grid grid-cols-7 min-w-[760px] border-b border-white/10 bg-white/[0.03]">
           {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
             <div key={d} className="text-center text-xs font-semibold tracking-wide text-gray-500 py-3">
               {d}
@@ -423,7 +423,7 @@ export default function PricingPage() {
         </div>
 
         {/* Day cells */}
-        <div className="grid grid-cols-7 touch-none select-none">
+        <div className="grid grid-cols-7 min-w-[760px] select-none md:touch-none">
           {gridDays.map((day) => {
             const dateStr = auStr(day)
             const inMonth = day >= mStart && day <= mEnd
