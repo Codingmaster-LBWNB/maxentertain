@@ -176,11 +176,12 @@ export default function PricingPage() {
     [tiers, overrideMap, manualBlockMap, minNightsMap]
   )
 
-  const endPointerDrag = useCallback(() => {
+  const endPointerDrag = useCallback((commit: boolean) => {
     const { start, last, crossedCell, startStr } = dragRef.current
     dragRef.current = { start: null, startStr: null, last: null, ptrId: null, crossedCell: false }
     setDragPreview(null)
-    if (!start || !startStr || !last) return
+    // commit === false means the gesture was a scroll (pointercancel) — never select.
+    if (!commit || !start || !startStr || !last) return
 
     if (crossedCell) {
       const range = dateRangeInclusive(start, last).filter((d) => d >= todayStr)
@@ -196,14 +197,17 @@ export default function PricingPage() {
   }, [todayStr])
 
   useEffect(() => {
-    const stop = () => {
-      if (dragRef.current.start) endPointerDrag()
+    const commit = () => {
+      if (dragRef.current.start) endPointerDrag(true)
     }
-    window.addEventListener('pointerup', stop)
-    window.addEventListener('pointercancel', stop)
+    const cancel = () => {
+      if (dragRef.current.start) endPointerDrag(false)
+    }
+    window.addEventListener('pointerup', commit)
+    window.addEventListener('pointercancel', cancel)
     return () => {
-      window.removeEventListener('pointerup', stop)
-      window.removeEventListener('pointercancel', stop)
+      window.removeEventListener('pointerup', commit)
+      window.removeEventListener('pointercancel', cancel)
     }
   }, [endPointerDrag])
 
@@ -213,7 +217,6 @@ export default function PricingPage() {
     const isPast = dateStr < todayStr
     const isOtaBooked = otaBlocked.has(dateStr)
     if (isPast || !inMonth || isOtaBooked) return
-    e.preventDefault()
     dragRef.current = {
       start: day,
       startStr: dateStr,
@@ -221,10 +224,16 @@ export default function PricingPage() {
       ptrId: e.pointerId,
       crossedCell: false,
     }
-    try {
-      ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
-    } catch {
-      /* ignore */
+    // Only hijack the pointer for mouse drag-select. On touch we leave the
+    // browser free to scroll; a real scroll fires pointercancel (→ no select),
+    // while a tap fires pointerup (→ toggles the day).
+    if (e.pointerType === 'mouse') {
+      e.preventDefault()
+      try {
+        ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+      } catch {
+        /* ignore */
+      }
     }
   }
 
@@ -251,7 +260,7 @@ export default function PricingPage() {
     } catch {
       /* ignore */
     }
-    endPointerDrag()
+    endPointerDrag(true)
   }
 
   const saveModal = async () => {
@@ -367,6 +376,19 @@ export default function PricingPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ date }),
     })
+    load()
+  }
+
+  const deleteOverrideDates = async (dates: string[]) => {
+    await Promise.all(
+      dates.map((date) =>
+        fetch('/api/maxowner/pricing-overrides', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date }),
+        })
+      )
+    )
     load()
   }
 
@@ -563,6 +585,35 @@ export default function PricingPage() {
     )
   }
 
+  // Group active overrides into consecutive date ranges (same price/note/min-nights).
+  const nextDayStr = (d: string) => {
+    const [y, m, dd] = d.split('-').map(Number)
+    const dt = new Date(y!, m! - 1, dd! + 1)
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`
+  }
+  const fmtDay = (d: string) => {
+    const [y, m, dd] = d.split('-').map(Number)
+    return format(new Date(y!, m! - 1, dd!), 'd MMM yyyy')
+  }
+  type OverrideGroup = { start: string; end: string; dates: string[]; price: number; note?: string; minNights?: number }
+  const overrideGroups: OverrideGroup[] = []
+  for (const o of [...overrides].sort((a, b) => a.date.localeCompare(b.date))) {
+    const mn = minNightsMap[o.date]
+    const last = overrideGroups[overrideGroups.length - 1]
+    if (
+      last &&
+      nextDayStr(last.end) === o.date &&
+      last.price === o.price &&
+      (last.note ?? '') === (o.note ?? '') &&
+      last.minNights === mn
+    ) {
+      last.end = o.date
+      last.dates.push(o.date)
+    } else {
+      overrideGroups.push({ start: o.date, end: o.date, dates: [o.date], price: o.price, note: o.note, minNights: mn })
+    }
+  }
+
   return (
     <div className="p-4 md:p-8 text-white">
       <h1 className="text-2xl font-serif text-luxury-gold mb-1">Pricing</h1>
@@ -752,19 +803,24 @@ export default function PricingPage() {
         <div className="bg-[#1a1a18] rounded-xl border border-white/10 p-6 mb-8">
           <h2 className="text-base font-semibold mb-4 text-gray-200">Active date overrides</h2>
           <div className="space-y-2">
-            {overrides.map((o) => (
-              <div key={o.date} className="flex items-center justify-between text-sm">
-                <div>
-                  <span className="text-luxury-gold font-medium">{o.date}</span>
-                  <span className="text-gray-400 ml-3">${o.price.toLocaleString()}/night</span>
-                  {minNightsMap[o.date] && (
-                    <span className="text-sky-400/80 ml-2 text-xs">{minNightsMap[o.date]}n min</span>
+            {overrideGroups.map((g) => (
+              <div key={g.start} className="flex items-center justify-between gap-3 text-sm">
+                <div className="min-w-0">
+                  <span className="text-luxury-gold font-medium">
+                    {g.start === g.end ? fmtDay(g.start) : `${fmtDay(g.start)} → ${fmtDay(g.end)}`}
+                  </span>
+                  {g.dates.length > 1 && (
+                    <span className="text-gray-600 ml-2 text-xs">({g.dates.length} nights)</span>
                   )}
-                  {o.note && <span className="text-gray-500 ml-2 text-xs">— {o.note}</span>}
+                  <span className="text-gray-400 ml-3">${g.price.toLocaleString()}/night</span>
+                  {g.minNights && (
+                    <span className="text-sky-400/80 ml-2 text-xs">{g.minNights}n min</span>
+                  )}
+                  {g.note && <span className="text-gray-500 ml-2 text-xs">— {g.note}</span>}
                 </div>
                 <button
-                  onClick={() => deleteOverride(o.date)}
-                  className="text-gray-600 hover:text-red-400 text-xs px-2 transition-colors"
+                  onClick={() => deleteOverrideDates(g.dates)}
+                  className="text-gray-600 hover:text-red-400 text-xs px-2 transition-colors flex-shrink-0"
                 >
                   Remove
                 </button>
