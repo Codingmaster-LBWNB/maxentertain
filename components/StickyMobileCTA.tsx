@@ -24,13 +24,15 @@ export default function StickyMobileCTA() {
 
   return (
     <>
-      {/* Spacer at the end of the page so the fixed bar never covers content */}
-      <div aria-hidden className="h-20 md:hidden" />
+      {/* Spacer at the end of the page so the fixed bar never covers content
+          (auto-grows for the device home-indicator safe area). */}
+      <div aria-hidden className="md:hidden" style={{ height: 'calc(5rem + env(safe-area-inset-bottom))' }} />
 
       <div
-        className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0f0f0d]/95 px-4 py-3 shadow-2xl backdrop-blur transition-all duration-300 md:hidden ${
+        className={`fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-[#0f0f0d]/95 px-4 pt-3 shadow-2xl backdrop-blur transition-all duration-300 md:hidden ${
           visible ? 'translate-y-0 opacity-100' : 'pointer-events-none translate-y-full opacity-0'
         }`}
+        style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}
       >
         <Link
           href="/#calendar"

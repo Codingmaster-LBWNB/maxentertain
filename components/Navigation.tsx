@@ -36,6 +36,7 @@ export default function Navigation() {
           ? 'bg-[#0f0f0e]/96 md:bg-white/96 md:dark:bg-[#0f0f0e]/96 backdrop-blur-md shadow-sm border-b border-white/10 md:border-gray-100 md:dark:border-white/8'
           : 'bg-transparent backdrop-blur-sm'
       }`}
+      style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <div className="container-custom px-4 md:px-8 lg:px-16">
         <div className="flex items-center justify-between min-h-20 py-3 md:py-0 gap-4">

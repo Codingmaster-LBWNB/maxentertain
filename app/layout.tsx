@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Josefin_Sans, Playfair_Display } from 'next/font/google'
 import Script from 'next/script'
 import './globals.css'
@@ -24,6 +24,14 @@ const playfair = Playfair_Display({
 const SEO_TITLE = 'Mornington Peninsula Beachfront Retreat | MAX Entertain'
 const SEO_DESCRIPTION =
   'Award-winning beachfront retreat on the Mornington Peninsula. 6 bedrooms, heated pool & spa, home theatre, 10 m from beach. Book direct & save.'
+
+// viewportFit: 'cover' exposes the device safe-area insets (notch, home bar)
+// so we can pad content away from system UI on mobile.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
