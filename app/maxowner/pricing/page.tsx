@@ -615,7 +615,7 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="p-4 md:p-8 text-white">
+    <div className="p-4 md:p-8 pb-20 md:pb-28 text-white">
       <h1 className="text-2xl font-serif text-luxury-gold mb-1">Pricing</h1>
       <p className="text-gray-400 text-sm mb-8 max-w-xl">
         Drag across nights or click individual dates to build a selection (like Airbnb). Then use{' '}

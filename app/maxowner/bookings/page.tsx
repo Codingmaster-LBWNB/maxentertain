@@ -94,7 +94,7 @@ export default function OwnerBookingsPage() {
   }
 
   return (
-    <div className="p-8 text-white">
+    <div className="p-4 md:p-8 pb-20 md:pb-28 text-white">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="mb-1 text-2xl font-serif text-luxury-gold">Bookings</h1>

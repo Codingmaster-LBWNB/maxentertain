@@ -126,7 +126,7 @@ export default function Hero() {
 
       {/* Hero Content — left aligned, editorial */}
       <div className="absolute inset-0 z-10 flex items-start sm:items-center pt-[calc(5.5rem+env(safe-area-inset-top))] sm:pt-20">
-        <div className="container-custom px-6 md:px-8 lg:px-16 pb-8 sm:pb-0">
+        <div className="container-custom px-6 md:px-8 lg:px-16 pb-16 sm:pb-0">
           <div className="max-w-2xl xl:max-w-3xl">
 
             {/* Location tag */}

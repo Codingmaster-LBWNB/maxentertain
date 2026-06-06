@@ -79,7 +79,7 @@ export default function GuestsPage() {
   }
 
   return (
-    <div className="p-8 text-white">
+    <div className="p-4 md:p-8 pb-20 md:pb-28 text-white">
       <div className="mb-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
