@@ -20,13 +20,16 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  const navLinks: Array<{ label: string; desktopHref: string; mobileHref: string }> = [
-    { label: 'Photos', desktopHref: '#gallery', mobileHref: '/photos' },
-    { label: 'Property', desktopHref: '#details', mobileHref: '#details' },
-    { label: 'Amenities', desktopHref: '#amenities', mobileHref: '#amenities' },
-    { label: 'Reviews', desktopHref: '#testimonials', mobileHref: '#testimonials' },
-    { label: 'Nearby', desktopHref: '#local-area', mobileHref: '#local-area' },
-    { label: 'Availability', desktopHref: '#calendar', mobileHref: '#calendar' },
+  // `visibility` controls how early each link drops out as the viewport narrows,
+  // so the right-side buttons are never pushed off-screen. Priority order:
+  // Photos/Availability always show, Reviews from lg, Nearby from xl, the rest from 2xl.
+  const navLinks: Array<{ label: string; desktopHref: string; mobileHref: string; visibility: string }> = [
+    { label: 'Photos', desktopHref: '#gallery', mobileHref: '/photos', visibility: 'inline' },
+    { label: 'Property', desktopHref: '#details', mobileHref: '#details', visibility: 'hidden 2xl:inline' },
+    { label: 'Amenities', desktopHref: '#amenities', mobileHref: '#amenities', visibility: 'hidden 2xl:inline' },
+    { label: 'Reviews', desktopHref: '#testimonials', mobileHref: '#testimonials', visibility: 'hidden lg:inline' },
+    { label: 'Nearby', desktopHref: '#local-area', mobileHref: '#local-area', visibility: 'hidden xl:inline' },
+    { label: 'Availability', desktopHref: '#calendar', mobileHref: '#calendar', visibility: 'inline' },
   ]
 
   return (
@@ -41,50 +44,62 @@ export default function Navigation() {
       <div className="container-custom px-4 md:px-8 lg:px-16">
         <div className="flex items-center justify-between min-h-20 py-3 md:py-0 gap-4">
 
-          {/* Logo */}
+          {/* Mobile logo (left) */}
           <Link
             href="/"
-            className={`flex items-center gap-2 md:gap-3 font-serif font-bold transition-colors flex-shrink min-w-0 text-white drop-shadow-lg ${
-              isScrolled ? 'md:text-luxury-dark md:dark:text-white md:drop-shadow-none' : 'md:text-white'
-            }`}
+            className="flex md:hidden items-center flex-shrink-0"
+            aria-label="Max Entertain home"
           >
-            <span className="relative h-11 w-11 md:h-12 md:w-12 overflow-hidden rounded-full bg-white ring-1 ring-black/5 flex-shrink-0">
+            <span className="relative h-11 w-11 overflow-hidden rounded-xl ring-1 ring-white/15 flex-shrink-0">
               <Image
                 src={safeSrc('/Airbnb picture/icons_files/Icon.png')}
                 alt="Max Entertain logo"
                 fill
-                className="object-contain p-1"
-                sizes="(max-width: 768px) 44px, 48px"
+                className="object-cover"
+                sizes="44px"
                 quality={100}
                 priority
               />
             </span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-3 lg:gap-5 flex-shrink-0">
-            {navLinks.map((link) => {
-              const isLessImportant =
-                link.label === 'Property' ||
-                link.label === 'Amenities' ||
-                link.label === 'Nearby'
-              return (
-                <a
-                  key={link.label}
-                  href={link.desktopHref}
-                  className={`relative transition-colors font-sans text-sm font-semibold tracking-[0.1em] uppercase pb-0.5
-                    after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-luxury-gold after:transition-all after:duration-300 hover:after:w-full
-                    ${isLessImportant ? 'hidden 2xl:inline' : 'inline'}
-                    ${isScrolled ? 'text-gray-700 dark:text-gray-300 hover:text-luxury-dark dark:hover:text-white' : 'text-white/90 hover:text-white'}
-                  `}
-                >
-                  {link.label}
-                </a>
-              )
-            })}
+          {/* Desktop Navigation links (left) */}
+          <div className="hidden md:flex items-center gap-3 lg:gap-5 min-w-0">
+            {navLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.desktopHref}
+                className={`relative transition-colors font-sans text-sm font-semibold tracking-[0.1em] uppercase pb-0.5
+                  after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-luxury-gold after:transition-all after:duration-300 hover:after:w-full
+                  ${link.visibility}
+                  ${isScrolled ? 'text-gray-700 dark:text-gray-300 hover:text-luxury-dark dark:hover:text-white' : 'text-white/90 hover:text-white'}
+                `}
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
 
-            {/* Share button */}
-            <div className="xl:hidden">
+          {/* Desktop actions + logo (right) */}
+          <div className="hidden md:flex items-center gap-3 lg:gap-4 flex-shrink-0">
+
+            {/* Logo next to the buttons */}
+            <Link href="/" className="flex items-center flex-shrink-0" aria-label="Max Entertain home">
+              <span className="relative h-11 w-11 md:h-12 md:w-12 overflow-hidden rounded-xl ring-1 ring-white/15 flex-shrink-0">
+                <Image
+                  src={safeSrc('/Airbnb picture/icons_files/Icon.png')}
+                  alt="Max Entertain logo"
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                  quality={100}
+                  priority
+                />
+              </span>
+            </Link>
+
+            {/* Share button (icon-only from lg, full label from xl) */}
+            <div className="hidden lg:block xl:hidden">
               <ShareButton
                 iconOnly
                 label="Share"
