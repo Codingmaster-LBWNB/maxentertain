@@ -84,6 +84,9 @@ export default function Hero() {
     { icon: 'bed', label: `${propertyConfig.bedrooms} Bedrooms` },
     { icon: 'bathtub', label: `${propertyConfig.bathrooms} Bathrooms` },
     { icon: 'group', label: `${propertyConfig.maxGuests}+ Guests` },
+    { icon: 'pool', label: 'Heated Pool & Spa' },
+    { icon: 'beach_access', label: '10m to Beach' },
+    { icon: 'theaters', label: 'Home Theatre' },
   ]
 
   return (
@@ -176,7 +179,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: 'easeOut', delay: 0.9 }}
-              className="flex flex-wrap gap-2 sm:gap-3 mb-4 sm:mb-8 lg:mb-5"
+              className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-4 sm:mb-8 lg:mb-5"
             >
               {stats.map((stat) => (
                 <div
@@ -219,7 +222,7 @@ export default function Hero() {
                     <div className="flex-1 h-px bg-white/20" />
                   </div>
 
-                  <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                  <div className="flex gap-2 flex-wrap sm:flex-nowrap justify-center sm:justify-start">
                     {propertyConfig.booking?.airbnb && (
                       <a
                         href={propertyConfig.booking.airbnb}
