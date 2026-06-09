@@ -92,7 +92,7 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className="font-sans antialiased pb-[60px] md:pb-0">
+      <body className="font-sans antialiased">
         <ThemeProvider>
           <div className="relative z-[1]">
             {children}
