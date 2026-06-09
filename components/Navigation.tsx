@@ -132,25 +132,28 @@ export default function Navigation() {
           </div>
 
           {/* Mobile actions */}
-          <div className="md:hidden flex items-center gap-2 flex-shrink-0">
-            <Link
-              href="/#calendar"
-              onClick={() => trackClick('Check Dates', { location: 'Mobile Nav' })}
-              className="inline-flex items-center gap-2 bg-luxury-gold text-white px-3 py-2 rounded-lg font-semibold text-sm shadow-lg hover:bg-opacity-90 transition-all"
-            >
-              <span className="material-icons" style={{ fontSize: '16px' }}>calendar_today</span>
-              Dates
-            </Link>
-
-            <ShareButton
-              iconOnly
-              label="Share"
-              className={`inline-flex items-center justify-center w-10 h-10 rounded-lg shadow-lg transition-all border ${
-                isScrolled
-                  ? 'bg-white text-luxury-dark border-gray-200 hover:border-luxury-gold/40 hover:text-luxury-gold'
-                  : 'bg-white/10 text-white border-white/20 hover:bg-white/15'
-              }`}
-            />
+          <div className="md:hidden flex items-center gap-1 flex-shrink-0">
+            {/* Quick nav: Photos / Reviews / Vacancies */}
+            {([
+              { href: '/photos', icon: 'photo_library', label: 'Photos' },
+              { href: '#testimonials', icon: 'star', label: 'Reviews' },
+              { href: '#calendar', icon: 'event_available', label: 'Vacancies' },
+            ] as const).map(({ href, icon, label }) => (
+              <a
+                key={label}
+                href={href}
+                aria-label={label}
+                title={label}
+                className={`flex flex-col items-center justify-center gap-px w-10 h-10 rounded-lg transition-all active:bg-white/10 ${
+                  isScrolled ? 'text-gray-600 hover:text-luxury-dark' : 'text-white/75 hover:text-white'
+                }`}
+              >
+                <span className="material-icons" style={{ fontSize: '18px' }}>{icon}</span>
+                <span className="font-sans font-bold leading-none" style={{ fontSize: '8px', letterSpacing: '0.08em' }}>
+                  {label}
+                </span>
+              </a>
+            ))}
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

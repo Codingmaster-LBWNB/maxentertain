@@ -485,8 +485,7 @@ export default function GuestChatWidget() {
 
   return (
     <>
-      {/* Raised on mobile so the launcher floats above the sticky Check Dates CTA bar */}
-      <div className="fixed bottom-24 right-5 md:bottom-5 z-[90] flex flex-col items-end gap-3">
+      <div className="fixed bottom-[72px] right-4 md:bottom-5 md:right-5 z-[90] flex flex-col items-end gap-3">
         {/* Panel */}
         {open && (
           <div

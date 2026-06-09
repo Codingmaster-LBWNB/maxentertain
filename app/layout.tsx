@@ -4,9 +4,9 @@ import Script from 'next/script'
 import './globals.css'
 import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
+import MobileBookingBar from '@/components/MobileBookingBar'
 import ThemeProvider from '@/components/ThemeProvider'
 import { Analytics } from '@vercel/analytics/react'
-import StickyMobileCTA from '@/components/StickyMobileCTA'
 
 const josefin = Josefin_Sans({
   subsets: ['latin'],
@@ -92,12 +92,11 @@ export default function RootLayout({
           `}
         </Script>
       </head>
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased pb-[60px] md:pb-0">
         <ThemeProvider>
           <div className="relative z-[1]">
             {children}
-
-            <StickyMobileCTA />
+            <MobileBookingBar />
           </div>
         </ThemeProvider>
         <Analytics />

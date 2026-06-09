@@ -126,7 +126,7 @@ export default function Hero() {
 
       {/* Hero Content — left aligned, editorial */}
       <div className="absolute inset-0 z-10 flex items-start sm:items-center pt-[calc(5.5rem+env(safe-area-inset-top))] sm:pt-20">
-        <div className="container-custom px-6 md:px-8 lg:px-16 pb-16 sm:pb-0">
+        <div className="container-custom px-6 md:px-8 lg:px-16 pb-28 sm:pb-0">
           <div className="max-w-2xl xl:max-w-3xl">
 
             {/* Location tag */}
@@ -208,28 +208,33 @@ export default function Hero() {
                 </Link>
               </div>
 
-              {/* Other platforms */}
+              {/* Platform links with brand colours */}
               {(propertyConfig.booking?.airbnb || propertyConfig.booking?.bookingCom || propertyConfig.booking?.vrbo) && (
-                <div>
-                  <p className="text-white/55 text-xs font-sans font-semibold tracking-[0.18em] uppercase mb-2">
-                    Or find us on
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 flex-wrap">
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 h-px bg-white/20" />
+                    <span className="text-white/50 text-xs font-sans font-semibold tracking-[0.18em] uppercase">
+                      Or book via
+                    </span>
+                    <div className="flex-1 h-px bg-white/20" />
+                  </div>
+
+                  <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                     {propertyConfig.booking?.airbnb && (
                       <a
                         href={propertyConfig.booking.airbnb}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackClick('Airbnb', { location: 'Hero' })}
-                        className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
-                        style={{ borderRadius: '2px' }}
+                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-sm font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
+                        style={{ background: '#FF5A5F', borderRadius: '6px' }}
                       >
                         <Image
                           src={safeSrc('/Airbnb picture/icons_files/airbnb_icon.jpg')}
                           alt="Airbnb"
-                          width={16}
-                          height={16}
-                          className="w-4 h-4 object-contain rounded-sm"
+                          width={18}
+                          height={18}
+                          className="w-[18px] h-[18px] object-contain rounded-sm flex-shrink-0"
                         />
                         Airbnb
                       </a>
@@ -240,15 +245,15 @@ export default function Hero() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackClick('Booking.com', { location: 'Hero' })}
-                        className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
-                        style={{ borderRadius: '2px' }}
+                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-sm font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
+                        style={{ background: '#003580', borderRadius: '6px' }}
                       >
                         <Image
                           src={safeSrc('/Airbnb picture/icons_files/booking_icon.jpeg')}
                           alt="Booking.com"
-                          width={16}
-                          height={16}
-                          className="w-4 h-4 object-contain bg-white rounded-sm p-0.5"
+                          width={18}
+                          height={18}
+                          className="w-[18px] h-[18px] object-contain bg-white rounded-sm p-0.5 flex-shrink-0"
                         />
                         Booking.com
                       </a>
@@ -259,15 +264,15 @@ export default function Hero() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackClick('VRBO', { location: 'Hero' })}
-                        className="inline-flex items-center gap-2 justify-center px-6 py-3.5 border border-white/35 text-white text-sm font-sans font-semibold tracking-wider uppercase backdrop-blur-sm bg-white/15 hover:bg-white/25 transition-all duration-300"
-                        style={{ borderRadius: '2px' }}
+                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-sm font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
+                        style={{ background: '#0B5FB0', borderRadius: '6px' }}
                       >
                         <Image
                           src={safeSrc('/Airbnb picture/icons_files/vrbo.png')}
                           alt="VRBO"
-                          width={16}
-                          height={16}
-                          className="w-4 h-4 object-contain"
+                          width={18}
+                          height={18}
+                          className="w-[18px] h-[18px] object-contain flex-shrink-0"
                         />
                         VRBO
                       </a>
