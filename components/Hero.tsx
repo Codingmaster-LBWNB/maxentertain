@@ -226,7 +226,7 @@ export default function Hero() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackClick('Airbnb', { location: 'Hero' })}
-                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-sm font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
+                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-base font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
                         style={{ background: '#FF5A5F', borderRadius: '6px' }}
                       >
                         <Image
@@ -245,7 +245,7 @@ export default function Hero() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackClick('Booking.com', { location: 'Hero' })}
-                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-sm font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
+                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-base font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
                         style={{ background: '#003580', borderRadius: '6px' }}
                       >
                         <Image
@@ -264,7 +264,7 @@ export default function Hero() {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={() => trackClick('VRBO', { location: 'Hero' })}
-                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-sm font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
+                        className="flex-1 inline-flex items-center gap-2 justify-center px-4 py-3 text-white text-base font-sans font-bold tracking-wide shadow-lg hover:opacity-90 active:opacity-75 transition-all duration-200"
                         style={{ background: '#0B5FB0', borderRadius: '6px' }}
                       >
                         <Image

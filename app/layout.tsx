@@ -96,9 +96,9 @@ export default function RootLayout({
         <ThemeProvider>
           <div className="relative z-[1]">
             {children}
-            <MobileBookingBar />
           </div>
         </ThemeProvider>
+        <MobileBookingBar />
         <Analytics />
       </body>
     </html>
