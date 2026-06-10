@@ -46,7 +46,8 @@
       "Bash(curl -s http://localhost:3001/api/maxowner/pricing-tiers)",
       "Bash(node *)",
       "Bash(curl *)",
-      "Bash(openssl rand *)"
+      "Bash(openssl rand *)",
+      "Bash(npx next *)"
     ]
   }
 }

@@ -90,7 +90,7 @@ export default function Hero() {
   ]
 
   return (
-    <section ref={sectionRef} className="relative h-screen w-full overflow-hidden">
+    <section ref={sectionRef} className="relative min-h-screen w-full overflow-hidden flex items-start sm:items-center">
       {/* Background layers */}
       <div className="absolute inset-0">
         <Image
@@ -128,8 +128,8 @@ export default function Hero() {
       </div>
 
       {/* Hero Content — left aligned, editorial */}
-      <div className="absolute inset-0 z-10 flex items-start sm:items-center pt-[calc(5.5rem+env(safe-area-inset-top))] sm:pt-20">
-        <div className="container-custom px-6 md:px-8 lg:px-16 pb-28 sm:pb-0">
+      <div className="relative z-10 w-full pt-[calc(5.5rem+env(safe-area-inset-top))] sm:pt-24">
+        <div className="container-custom px-6 md:px-8 lg:px-16 pb-28 sm:pb-20">
           <div className="max-w-2xl xl:max-w-3xl">
 
             {/* Location tag */}
