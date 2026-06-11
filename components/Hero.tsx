@@ -13,7 +13,9 @@ export default function Hero() {
   const safeSrc = (src: string) => (src.startsWith('data:') ? src : encodeURI(src))
 
   const heroImage = safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/exterior2.jpg')
-  const landingVideoSrc = encodeURI('/Airbnb picture/videos/landing_video.mp4')
+  // 1080p H.264 web encode (the 4K HEVC original doesn't decode in many
+  // Chrome/Android browsers and is 91 MB vs 7.6 MB)
+  const landingVideoSrc = encodeURI('/Airbnb picture/videos/landing_video_web.mp4')
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const [landingOpacity, setLandingOpacity] = useState(0)
@@ -89,8 +91,15 @@ export default function Hero() {
     { icon: 'theaters', label: 'Home Theatre' },
   ]
 
+  // min-height (not fixed height) so short screens — iPhone SE, landscape
+  // phones — grow the section instead of clipping the content. 100svh
+  // avoids the iOS address-bar jump; older browsers fall back to the class.
   return (
-    <section ref={sectionRef} className="relative min-h-screen w-full overflow-hidden flex items-start sm:items-center">
+    <section
+      ref={sectionRef}
+      className="relative min-h-screen w-full overflow-hidden flex items-start sm:items-center"
+      style={{ minHeight: '100svh' }}
+    >
       {/* Background layers */}
       <div className="absolute inset-0">
         <Image
@@ -127,7 +136,8 @@ export default function Hero() {
         <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/40 to-transparent" />
       </div>
 
-      {/* Hero Content — left aligned, editorial */}
+      {/* Hero Content — left aligned, editorial; in normal flow so it can
+          never be clipped on short viewports */}
       <div className="relative z-10 w-full pt-[calc(5.5rem+env(safe-area-inset-top))] sm:pt-24">
         <div className="container-custom px-6 md:px-8 lg:px-16 pb-28 sm:pb-20">
           <div className="max-w-2xl xl:max-w-3xl">
@@ -150,7 +160,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.9, ease: 'easeOut', delay: 0.4 }}
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-4 lg:mb-3 drop-shadow-2xl"
+              className="text-3xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-4 lg:mb-3 drop-shadow-2xl"
             >
               MAX Entertain Beachside Retreat — Mornington Peninsula
             </motion.h1>
@@ -203,12 +213,16 @@ export default function Hero() {
               {/* Direct booking */}
               <div>
                 <p className="text-luxury-gold text-xs font-sans font-semibold tracking-[0.18em] uppercase mb-2">
-                  Best rate · Book direct &amp; save
+                  Best rate · Book direct &amp; save up to 10%
                 </p>
                 <Link href="/#calendar" onClick={() => trackClick('Check Dates', { location: 'Hero' })} className="btn-primary inline-flex items-center gap-2 justify-center">
                   <span className="material-icons" style={{ fontSize: '14px' }}>calendar_today</span>
                   Check Dates &amp; Book Direct
                 </Link>
+                {/* Price anchor: qualified guests click, others don't waste a tap */}
+                <p className="text-white/60 text-xs font-sans mt-2">
+                  From AUD $1,800 / night · Sleeps {propertyConfig.maxGuests}+ · Full refund 14+ days before check-in
+                </p>
               </div>
 
               {/* Platform links with brand colours */}

@@ -6,6 +6,7 @@ import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
 import MobileBookingBar from '@/components/MobileBookingBar'
 import ThemeProvider from '@/components/ThemeProvider'
+import JsonLd from '@/components/JsonLd'
 import { Analytics } from '@vercel/analytics/react'
 
 const josefin = Josefin_Sans({
@@ -31,6 +32,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  themeColor: '#0f0f0d',
 }
 
 export const metadata: Metadata = {
@@ -87,6 +89,8 @@ export default function RootLayout({
         />
         <link rel="icon" href={iconHref} type="image/png" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
         <Script
           async
@@ -103,6 +107,20 @@ export default function RootLayout({
         </Script>
       </head>
       <body className="font-sans antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[200] focus:px-4 focus:py-2 focus:bg-luxury-gold focus:text-black focus:rounded-lg focus:font-semibold"
+        >
+          Skip to main content
+        </a>
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: propertyConfig.name,
+            url: getSiteUrl(),
+          }}
+        />
         <ThemeProvider>
           <div className="relative z-[1]">
             {children}

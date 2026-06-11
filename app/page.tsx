@@ -13,7 +13,7 @@ import StarBackground from '@/components/StarBackground'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
 import AvailabilityInquirySync from '@/components/AvailabilityInquirySync'
-import GuestChatWidget from '@/components/GuestChatWidget'
+import GuestChatWidget from '@/components/LazyGuestChatWidget'
 import { propertyConfig } from '@/config/property'
 import { getSiteUrl } from '@/lib/site'
 import { faqs } from '@/lib/faqs'
@@ -105,23 +105,28 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen">
+    <main id="main-content" className="min-h-screen">
       <JsonLd data={jsonLd} />
       <JsonLd data={faqJsonLd} />
       <Navigation />
       <Hero />
-      {/* Star-background wrapper: all sections inside will float above the star canvas */}
+      {/* Star-background wrapper: all sections inside will float above the star canvas.
+          Section order follows the guest decision journey:
+          trust numbers -> photos (the product) -> reviews (social proof while
+          desire is hot) -> capacity/details/amenities (rational checks) ->
+          booking calendar (the action once convinced) -> segment paths ->
+          local area -> FAQ (objection handling next to the footer) */}
       <div className="star-wrapper">
         <StarBackground density="light" />
         <StatsCards />
-        <SegmentCTACards />
         <ImageGallery />
+        <Testimonials />
         <SleepArrangements />
         <PropertyDetails />
         <Amenities />
-        <Testimonials />
-        <LocalArea />
         <AvailabilityInquirySync />
+        <SegmentCTACards />
+        <LocalArea />
         <FAQ />
       </div>
       <Footer />

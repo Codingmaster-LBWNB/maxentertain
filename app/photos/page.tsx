@@ -20,7 +20,7 @@ export default function PhotosPage() {
   const totalPhotos = propertyConfig.images.length
 
   return (
-    <main className="min-h-screen star-wrapper">
+    <main id="main-content" className="min-h-screen star-wrapper">
       <StarBackground density="light" />
 
       {/* Page header */}

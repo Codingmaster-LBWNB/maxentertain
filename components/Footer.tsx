@@ -120,6 +120,14 @@ export default function Footer() {
         <div className="border-t border-gray-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-gray-400 text-sm font-sans tracking-wide">
             &copy; {new Date().getFullYear()} {propertyConfig.name}. All rights reserved.
+            {' · '}
+            <Link href="/privacy-policy" className="hover:text-white transition-colors underline underline-offset-4">
+              Privacy
+            </Link>
+            {' · '}
+            <Link href="/terms" className="hover:text-white transition-colors underline underline-offset-4">
+              Booking Terms
+            </Link>
           </p>
           <Link
             href="/#calendar"
