@@ -88,6 +88,25 @@ ${rules}
 
 ${nearby}
 
+## Guest Suitability
+
+- Multi-generational family holidays (the core guest base — grandparents, parents, and kids under one roof)
+- Golf groups (Moonah Links, The Dunes, St Andrews Beach within ~10–15 min)
+- Corporate retreats and team offsites
+- Milestone birthdays, anniversaries, and family reunions
+- NOT accepted: parties, events with non-registered guests, schoolies / under-18 group bookings
+
+## Site Pages
+
+- Family accommodation: ${siteUrl}/family-holidays-mornington-peninsula
+- Golf group accommodation: ${siteUrl}/golf-accommodation-mornington-peninsula
+- Corporate retreats: ${siteUrl}/corporate-retreat-mornington-peninsula
+- Milestone celebrations: ${siteUrl}/milestone-birthday-accommodation
+- Tootgarook holiday house: ${siteUrl}/tootgarook-holiday-house
+- Mornington Peninsula travel guides: ${siteUrl}/guide
+- Photo gallery: ${siteUrl}/photos
+- Availability & direct booking: ${siteUrl}/inquiry
+
 ## Booking
 
 ${bookingLinks}

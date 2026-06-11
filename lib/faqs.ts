@@ -41,4 +41,8 @@ export const faqs = [
     q: 'Are parties or events allowed?',
     a: 'No — the property strictly does not accept parties. Outdoor areas including the pool, spa, decking, and balconies must be quiet between 11 PM and 7 AM. Noise monitoring is active. Schoolies bookings are not accepted.',
   },
+  {
+    q: 'Do you accept group bookings such as golf trips or corporate retreats?',
+    a: `Yes — all adult and family groups of up to ${propertyConfig.maxGuests}+ guests are welcome, including golf groups, corporate retreats, family reunions, and milestone celebrations. The only bookings not accepted are parties and schoolies/under-18 groups.`,
+  },
 ]

@@ -90,7 +90,7 @@ export const propertyConfig: PropertyConfig = {
   location: "1975 Point Nepean Road, Tootgarook, Victoria 3941, Australia",
   bedrooms: 6,
   bathrooms: 7,
-  maxGuests: 16,
+  maxGuests: 20,
   description: "Brand new family-owned beachfront retreat featuring 6 bedrooms, 5 ensuites, 2 half bathrooms, a solar-heated pool & jacuzzi, home theatre, BBQ — and just 10 metres from the beach!",
   longDescription: `🏡 About This Space:
 
