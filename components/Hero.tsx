@@ -91,10 +91,10 @@ export default function Hero() {
     { icon: 'theaters', label: 'Home Theatre' },
   ]
 
+  // min-height (not fixed height) so short screens — iPhone SE, landscape
+  // phones — grow the section instead of clipping the content. 100svh
+  // avoids the iOS address-bar jump; older browsers fall back to the class.
   return (
-    {/* min-height (not fixed height) so short screens — iPhone SE, landscape
-        phones — grow the section instead of clipping the content. 100svh
-        avoids the iOS address-bar jump; older browsers fall back to the class. */}
     <section
       ref={sectionRef}
       className="relative min-h-screen w-full overflow-hidden flex flex-col"
