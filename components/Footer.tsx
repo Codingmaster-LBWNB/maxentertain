@@ -43,6 +43,11 @@ export default function Footer() {
                 { label: 'Nearby Attractions', href: '#local-area' },
                 { label: 'Check Availability', href: '#calendar' },
                 { label: 'FAQ', href: '#faq' },
+                { label: 'Family Holidays', href: '/family-holidays-mornington-peninsula' },
+                { label: 'Golf Group Stays', href: '/golf-accommodation-mornington-peninsula' },
+                { label: 'Corporate Retreats', href: '/corporate-retreat-mornington-peninsula' },
+                { label: 'Milestone Celebrations', href: '/milestone-birthday-accommodation' },
+                { label: 'Peninsula Guides', href: '/guide' },
               ].map((item) => (
                 <li key={item.label}>
                   <Link

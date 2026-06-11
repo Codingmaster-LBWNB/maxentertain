@@ -41,4 +41,12 @@ export const faqs = [
     q: 'Are parties or events allowed?',
     a: 'No — the property strictly does not accept parties. Outdoor areas including the pool, spa, decking, and balconies must be quiet between 11 PM and 7 AM. Noise monitoring is active. Schoolies bookings are not accepted.',
   },
+  {
+    q: 'Do you accept group bookings such as golf trips or corporate retreats?',
+    a: `Yes — all adult and family groups of up to ${propertyConfig.maxGuests}+ guests are welcome, including golf groups, corporate retreats, family reunions, and milestone celebrations. The only bookings not accepted are parties and schoolies/under-18 groups.`,
+  },
+  {
+    q: 'What occasions is the house ideal for?',
+    a: `With ${propertyConfig.bedrooms} bedrooms sleeping 18–${propertyConfig.maxGuests}+ guests, the house suits almost any large-group stay: multi-generational family holidays, Christmas and school-holiday getaways, family reunions, milestone birthdays (40th, 50th, 60th, 70th and beyond), anniversary celebrations, wedding guest accommodation, golf weekends near Moonah Links and The Dunes, and corporate retreats or team offsites 90 minutes from Melbourne.`,
+  },
 ]

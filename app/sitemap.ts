@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { getSiteUrl } from '@/lib/site'
+import { guides } from '@/lib/guides'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = getSiteUrl()
@@ -40,6 +41,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'monthly' as const,
       priority: 0.85,
+    })),
+    {
+      url: `${baseUrl}/guide`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    ...guides.map((g) => ({
+      url: `${baseUrl}/guide/${g.slug}`,
+      lastModified: new Date(g.datePublished),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
     })),
   ]
 }
