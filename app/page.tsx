@@ -110,18 +110,23 @@ export default function Home() {
       <JsonLd data={faqJsonLd} />
       <Navigation />
       <Hero />
-      {/* Star-background wrapper: all sections inside will float above the star canvas */}
+      {/* Star-background wrapper: all sections inside will float above the star canvas.
+          Section order follows the guest decision journey:
+          trust numbers -> photos (the product) -> reviews (social proof while
+          desire is hot) -> capacity/details/amenities (rational checks) ->
+          booking calendar (the action once convinced) -> segment paths ->
+          local area -> FAQ (objection handling next to the footer) */}
       <div className="star-wrapper">
         <StarBackground density="light" />
         <StatsCards />
-        <SegmentCTACards />
         <ImageGallery />
+        <Testimonials />
         <SleepArrangements />
         <PropertyDetails />
         <Amenities />
-        <Testimonials />
-        <LocalArea />
         <AvailabilityInquirySync />
+        <SegmentCTACards />
+        <LocalArea />
         <FAQ />
       </div>
       <Footer />
