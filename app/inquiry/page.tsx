@@ -57,7 +57,7 @@ export default function InquiryPage({
         <div className="absolute inset-0 bg-black/55" />
       </div>
 
-      <main className="relative min-h-screen">
+      <main id="main-content" className="relative min-h-screen">
         <div className="section-padding">
           <div className="container-custom">
             <Link

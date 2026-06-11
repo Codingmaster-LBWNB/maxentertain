@@ -17,7 +17,7 @@ export default function SegmentLandingPage({ data }: { data: SegmentData }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#0f0f0d] text-white">
+    <main id="main-content" className="min-h-screen bg-[#0f0f0d] text-white">
       <JsonLd data={faqJsonLd} />
       <section className="section-padding">
         <div className="container-custom max-w-5xl">

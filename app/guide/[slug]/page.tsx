@@ -66,7 +66,7 @@ export default function GuidePage({ params }: { params: { slug: string } }) {
   }
 
   return (
-    <main className="min-h-screen bg-[#0f0f0d]">
+    <main id="main-content" className="min-h-screen bg-[#0f0f0d]">
       <JsonLd data={articleJsonLd} />
       <JsonLd data={breadcrumbJsonLd} />
       <Navigation />
