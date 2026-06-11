@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { motion } from 'framer-motion'
 import { propertyConfig } from '@/config/property'
 import { useSectionTime } from '@/hooks/useSectionTime'
 
@@ -25,13 +26,24 @@ export default function LocalArea() {
   return (
     <section ref={sectionRef} id="local-area" className="section-padding bg-[#fafaf8] star-section-alt scroll-mt-24 md:scroll-mt-28 local-area-section">
       <div className="container-custom">
-        <div className="text-center mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
           <span className="section-label">Explore</span>
           <h2 className="heading-primary">{propertyConfig.localArea.title}</h2>
           <p className="text-luxury max-w-2xl mx-auto">
             {propertyConfig.localArea.description}
           </p>
-        </div>
+          <div className="flex items-center justify-center gap-3 mt-5">
+            <div className="h-px w-12 bg-luxury-gold/50" />
+            <div className="w-1.5 h-1.5 bg-luxury-gold rotate-45" />
+            <div className="h-px w-12 bg-luxury-gold/50" />
+          </div>
+        </motion.div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {attractions.map((attraction, index) => {
@@ -44,8 +56,12 @@ export default function LocalArea() {
                 : attraction.distance
 
             return (
-              <div
+              <motion.div
                 key={index}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: Math.min(index * 0.07, 0.35) }}
                 className="group overflow-hidden rounded-2xl bg-white dark:bg-[#1d1d1b] border border-gray-200/80 dark:border-white/10 hover:border-luxury-gold/50 dark:hover:border-luxury-gold/35 shadow-sm hover:shadow-[0_8px_32px_rgba(212,175,55,0.12)] dark:hover:shadow-[0_8px_32px_rgba(212,175,55,0.10)] transition-all duration-300 will-change-transform"
               >
                 {attraction.image ? (
@@ -90,7 +106,7 @@ export default function LocalArea() {
                     </span>
                   )}
                 </div>
-              </div>
+              </motion.div>
             )
           })}
         </div>
