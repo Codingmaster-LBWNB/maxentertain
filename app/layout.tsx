@@ -37,7 +37,17 @@ export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: SEO_TITLE,
   description: SEO_DESCRIPTION,
-  keywords: 'Mornington Peninsula beachfront retreat, luxury vacation rental, family holiday house, heated pool spa, Tootgarook accommodation',
+  keywords:
+    'Mornington Peninsula beachfront retreat, luxury vacation rental, family holiday house, heated pool spa, Tootgarook accommodation, ' +
+    'large group accommodation Mornington Peninsula, accommodation for 18 people, accommodation for 20 people, house that sleeps 20, ' +
+    '6 bedroom holiday house Victoria, big holiday house near Melbourne, whole house rental large group, ' +
+    'multi-generational family holiday, three generation family accommodation, extended family beach house, family reunion accommodation Victoria, ' +
+    'Christmas holiday house Mornington Peninsula, school holidays beach house, milestone birthday accommodation, 50th birthday weekend house, ' +
+    'wedding guest accommodation Mornington Peninsula, corporate retreat near Melbourne, team offsite accommodation Victoria, ' +
+    'golf group accommodation Mornington Peninsula, Moonah Links accommodation, The Dunes Rye accommodation, ' +
+    'holiday house with heated pool and spa, house with home theatre, house with games room, pet friendly large holiday house, ' +
+    'Rye holiday house, Rosebud accommodation, Capel Sound holiday rental, near Peninsula Hot Springs accommodation, ' +
+    'beach house Port Phillip Bay, luxury accommodation southern Mornington Peninsula',
   authors: [{ name: propertyConfig.name }],
   alternates: {
     canonical: '/',

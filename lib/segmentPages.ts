@@ -20,7 +20,7 @@ export const segmentPages: Record<SegmentPageSlug, {
     metaTitle: 'Mornington Peninsula Family Beach House | MAX Entertain',
     description: 'A 6-bedroom Tootgarook beachside retreat built for grandparents, parents and kids, with a heated pool, spa, theatre, games and beach access.',
     reviewFilter: 'families',
-    bullets: ['Sleeps 16+ across 6 bedrooms', '5 ensuites plus powder rooms', 'Pool, spa, cinema, arcade games and mini golf', '10 metres to the beach across Point Nepean Road'],
+    bullets: ['Sleeps 18–20+ across 6 bedrooms', '5 ensuites plus powder rooms', 'Pool, spa, cinema, arcade games and mini golf', '10 metres to the beach across Point Nepean Road'],
     faq: [
       { q: 'Is it good for multi-generational families?', a: 'Yes. The house is designed for grandparents, parents and kids to stay together with separate bedrooms, multiple bathrooms and entertainment spaces.' },
       { q: 'Are there kid-friendly amenities?', a: 'Yes. Guests have access to the pool, spa, trampoline, mini golf, theatre room, Nintendo Switch, arcade games and table games.' },
@@ -32,7 +32,7 @@ export const segmentPages: Record<SegmentPageSlug, {
     metaTitle: 'Mornington Peninsula Golf Accommodation | MAX Entertain',
     description: 'A private 6-bedroom base for golf groups visiting Moonah Links, The Dunes, The National and other Peninsula courses.',
     reviewFilter: 'golf',
-    bullets: ['Ideal for 8-12 adults', 'Large kitchen, BBQ and shared living spaces', 'Close to Moonah Links, The Dunes and The National', 'Private gated parking for multiple cars'],
+    bullets: ['Ideal for 8–20 adults', 'Large kitchen, BBQ and shared living spaces', 'Close to Moonah Links, The Dunes and The National', 'Private gated parking for multiple cars'],
     faq: [
       { q: 'Which golf courses are nearby?', a: 'Moonah Links, The Dunes and The National are all within easy driving distance from Tootgarook.' },
       { q: 'Can adult golf groups book direct?', a: 'Yes, provided house rules are followed. Parties and Schoolies bookings are not accepted.' },
