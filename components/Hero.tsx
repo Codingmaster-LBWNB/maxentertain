@@ -13,7 +13,9 @@ export default function Hero() {
   const safeSrc = (src: string) => (src.startsWith('data:') ? src : encodeURI(src))
 
   const heroImage = safeSrc('/Airbnb picture/1975 Point Nepean Road- HD/exterior2.jpg')
-  const landingVideoSrc = encodeURI('/Airbnb picture/videos/landing_video.mp4')
+  // 1080p H.264 web encode (the 4K HEVC original doesn't decode in many
+  // Chrome/Android browsers and is 91 MB vs 7.6 MB)
+  const landingVideoSrc = encodeURI('/Airbnb picture/videos/landing_video_web.mp4')
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const [landingOpacity, setLandingOpacity] = useState(0)

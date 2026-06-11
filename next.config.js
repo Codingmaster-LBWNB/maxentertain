@@ -21,6 +21,13 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // Property photos and videos never change in place — cache hard.
+        source: '/:all*(jpg|jpeg|png|webp|avif|mp4|JPG|JPEG)',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
         source: '/:path*',
         headers: [
           // SAMEORIGIN (not DENY) so Vercel preview/feedback tooling keeps working
