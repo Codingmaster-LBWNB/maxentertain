@@ -54,6 +54,18 @@ const TIER_DOT_COLOR: Record<PricingTier, string> = {
   STANDARD:       'bg-gray-500',
 }
 
+const LEVY_RATE = 0.075
+const STRIPE_RATE_DOMESTIC = 0.017
+const STRIPE_FIXED_DOMESTIC = 0.30
+
+function netAfterLevy(price: number) {
+  return Math.round(price * (1 - LEVY_RATE))
+}
+function netAfterLevyAndStripe(price: number) {
+  const afterLevy = price * (1 - LEVY_RATE)
+  return Math.round(afterLevy * (1 - STRIPE_RATE_DOMESTIC) - STRIPE_FIXED_DOMESTIC)
+}
+
 export default function PricingPage() {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [overrides, setOverrides] = useState<Override[]>([])
@@ -570,8 +582,14 @@ export default function PricingPage() {
                       <span className={`w-1.5 h-1.5 rounded-full ${TIER_DOT_COLOR[tier]}`} />
                       {TIER_LABELS[tier]}
                     </div>
-                    <div className="text-gray-400">Base: ${basePrice.toLocaleString()}/night</div>
+                    <div className="text-gray-400">Gross: ${basePrice.toLocaleString()}/night</div>
                     {override && <div className="text-luxury-gold mt-0.5">Override: ${override.price.toLocaleString()}/night</div>}
+                    <div className="text-emerald-400 mt-1">
+                      Net (after levy): ~${netAfterLevy(displayPrice).toLocaleString()}
+                    </div>
+                    <div className="text-emerald-300/80">
+                      Net (levy + Stripe): ~${netAfterLevyAndStripe(displayPrice).toLocaleString()}
+                    </div>
                     {minNightsMap[dateStr] && <div className="text-sky-400 mt-0.5">Min stay: {minNightsMap[dateStr]} nights</div>}
                     {manualHere && <div className="text-orange-400 mt-0.5">Blocked: {manualBlockMap[dateStr] || 'Manual block'}</div>}
                     {otaHere && <div className="text-red-400 mt-0.5">Booked via OTA</div>}
@@ -759,6 +777,24 @@ export default function PricingPage() {
                     />
                     <span className="text-gray-600 text-xs whitespace-nowrap">/night</span>
                   </div>
+
+                  {/* Take-home breakdown */}
+                  {Number(draft) > 0 && (
+                    <div className="rounded-md bg-emerald-950/40 border border-emerald-800/30 px-3 py-2 space-y-1 text-xs">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">After levy (7.5%)</span>
+                        <span className="text-emerald-400 font-semibold font-mono">
+                          ~${netAfterLevy(Number(draft)).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-500">After levy + Stripe</span>
+                        <span className="text-emerald-300 font-semibold font-mono">
+                          ~${netAfterLevyAndStripe(Number(draft)).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {row.isCustom && (
                     <p className="text-gray-600 text-xs -mt-1">
