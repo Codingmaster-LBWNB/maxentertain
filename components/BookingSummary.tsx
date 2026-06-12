@@ -46,9 +46,19 @@ export default function BookingSummary({
           <span className="text-luxury-gold">${pricing.totalAud.toLocaleString()}</span>
         </div>
         {showLevy ? (
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Includes tracked Victorian short-stay levy estimate: ${pricing.shortStayLevyAud.toLocaleString()}.
-          </p>
+          <div className="mt-3 space-y-1.5">
+            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+              <span>Victorian short-stay levy (7.5%)</span>
+              <span>Included · ${pricing.shortStayLevyAud.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
+              <span>Payment processing</span>
+              <span>Included</span>
+            </div>
+            <p className="text-xs text-gray-400 dark:text-gray-500 pt-1">
+              No platform fees. All costs included in the price above.
+            </p>
+          </div>
         ) : (
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             All fees included. No hidden platform service fee.
