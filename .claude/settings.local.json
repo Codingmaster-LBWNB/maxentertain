@@ -47,7 +47,11 @@
       "Bash(node *)",
       "Bash(curl *)",
       "Bash(openssl rand *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(npx vercel *)",
+      "Bash(npx eslint *)",
+      "Bash(jobs -l)",
+      "Bash(echo \"dev server starting, pid $!\")"
     ]
   }
 }
