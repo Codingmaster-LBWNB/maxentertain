@@ -83,8 +83,9 @@ export default function SegmentCTACards() {
           </Link>
           <Link
             href="/#reviews"
-            className="inline-flex items-center justify-center rounded-sm border border-white/20 px-6 py-3 text-sm font-semibold uppercase tracking-widest text-white transition-colors hover:border-luxury-gold hover:text-luxury-gold"
+            className="btn-secondary inline-flex items-center justify-center gap-2"
           >
+            <span className="material-icons" style={{ fontSize: '14px' }}>star</span>
             Read guest reviews
           </Link>
         </div>

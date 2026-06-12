@@ -194,8 +194,7 @@ export default function Hero() {
               {stats.map((stat) => (
                 <div
                   key={stat.label}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white/15 backdrop-blur-sm border border-white/25 text-white text-sm font-sans font-semibold tracking-wider uppercase"
-                  style={{ borderRadius: '2px' }}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/12 backdrop-blur-md border border-white/20 text-white text-sm font-sans font-semibold tracking-wider uppercase rounded-full hover:bg-white/20 hover:border-luxury-gold/50 transition-all duration-300"
                 >
                   <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>{stat.icon}</span>
                   {stat.label}
