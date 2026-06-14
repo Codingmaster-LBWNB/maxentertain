@@ -222,20 +222,20 @@ export default function Calendar({
             <div className="flex items-center justify-between mb-6">
               <button
                 onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="p-2 hover:bg-luxury-light rounded-lg transition-colors"
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-luxury-gold/10 text-luxury-gold border border-luxury-gold/40 shadow-sm hover:bg-luxury-gold hover:text-white hover:border-luxury-gold transition-colors"
                 aria-label="Previous month"
               >
-                ←
+                <span className="material-icons" style={{ fontSize: '26px' }}>chevron_left</span>
               </button>
               <h3 className="text-2xl font-serif font-semibold text-luxury-dark">
                 {format(currentMonth, 'MMMM yyyy')}
               </h3>
               <button
                 onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="p-2 hover:bg-luxury-light rounded-lg transition-colors"
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-luxury-gold/10 text-luxury-gold border border-luxury-gold/40 shadow-sm hover:bg-luxury-gold hover:text-white hover:border-luxury-gold transition-colors"
                 aria-label="Next month"
               >
-                →
+                <span className="material-icons" style={{ fontSize: '26px' }}>chevron_right</span>
               </button>
             </div>
 
