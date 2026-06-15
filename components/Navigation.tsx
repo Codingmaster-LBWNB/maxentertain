@@ -145,11 +145,11 @@ export default function Navigation() {
                 aria-label={label}
                 title={label}
                 className={`flex flex-col items-center justify-center gap-0.5 w-11 h-10 rounded-lg transition-all active:bg-white/10 ${
-                  isScrolled ? 'text-gray-600 hover:text-luxury-dark' : 'text-white/75 hover:text-white'
+                  isScrolled ? 'text-gray-700 hover:text-luxury-dark' : 'text-white hover:text-luxury-gold'
                 }`}
               >
-                <span className="material-icons" style={{ fontSize: '19px' }}>{icon}</span>
-                <span className="font-sans font-bold leading-none" style={{ fontSize: '9px', letterSpacing: '0.06em' }}>
+                <span className="material-icons" style={{ fontSize: '21px' }}>{icon}</span>
+                <span className="font-sans font-bold leading-none" style={{ fontSize: '10.5px', letterSpacing: '0.04em' }}>
                   {label}
                 </span>
               </a>
