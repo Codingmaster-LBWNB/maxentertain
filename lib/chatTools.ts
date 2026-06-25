@@ -52,11 +52,11 @@ export const chatToolDeclarations = [
     name: 'check_availability',
     description:
       "Check whether the property is available for a specific date range. Call this whenever the guest asks if dates are free, or mentions/implies specific dates. Dates must be resolved to absolute YYYY-MM-DD (today's date is provided in the system context).",
-    parameters: {
-      type: 'OBJECT',
+    input_schema: {
+      type: 'object',
       properties: {
-        checkIn: { type: 'STRING', description: 'Check-in date, YYYY-MM-DD' },
-        checkOut: { type: 'STRING', description: 'Check-out date, YYYY-MM-DD' },
+        checkIn: { type: 'string', description: 'Check-in date, YYYY-MM-DD' },
+        checkOut: { type: 'string', description: 'Check-out date, YYYY-MM-DD' },
       },
       required: ['checkIn', 'checkOut'],
     },
@@ -65,11 +65,11 @@ export const chatToolDeclarations = [
     name: 'get_price_quote',
     description:
       'Get the exact total price for a date range, including the per-night breakdown and the estimated saving vs booking through an OTA. Call this when the guest asks about price/cost, or after confirming availability when guiding them toward booking.',
-    parameters: {
-      type: 'OBJECT',
+    input_schema: {
+      type: 'object',
       properties: {
-        checkIn: { type: 'STRING', description: 'Check-in date, YYYY-MM-DD' },
-        checkOut: { type: 'STRING', description: 'Check-out date, YYYY-MM-DD' },
+        checkIn: { type: 'string', description: 'Check-in date, YYYY-MM-DD' },
+        checkOut: { type: 'string', description: 'Check-out date, YYYY-MM-DD' },
       },
       required: ['checkIn', 'checkOut'],
     },
@@ -78,11 +78,11 @@ export const chatToolDeclarations = [
     name: 'capture_booking_lead',
     description:
       'Call this when the guest is ready to book, asks to be contacted, or wants a human to follow up about a booking. After calling, ask the guest for their name and email so the owner can follow up.',
-    parameters: {
-      type: 'OBJECT',
+    input_schema: {
+      type: 'object',
       properties: {
-        checkIn: { type: 'STRING', description: 'Check-in date if known, YYYY-MM-DD' },
-        checkOut: { type: 'STRING', description: 'Check-out date if known, YYYY-MM-DD' },
+        checkIn: { type: 'string', description: 'Check-in date if known, YYYY-MM-DD' },
+        checkOut: { type: 'string', description: 'Check-out date if known, YYYY-MM-DD' },
       },
       required: [],
     },
@@ -91,10 +91,10 @@ export const chatToolDeclarations = [
     name: 'escalate_to_owner',
     description:
       "Call this when the guest asks a property-specific question that you cannot answer from the provided context (do NOT guess). After calling, apologise briefly and offer to have the owner email them back, then ask for their email.",
-    parameters: {
-      type: 'OBJECT',
+    input_schema: {
+      type: 'object',
       properties: {
-        question: { type: 'STRING', description: 'The exact question the guest asked that you could not answer.' },
+        question: { type: 'string', description: 'The exact question the guest asked that you could not answer.' },
       },
       required: ['question'],
     },

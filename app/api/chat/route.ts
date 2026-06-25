@@ -13,7 +13,7 @@ const MIN_CHARS_PER_MESSAGE = 2
 const MAX_CHARS_PER_MESSAGE = 2000
 const MAX_TOTAL_CHARS = 12000
 const MAX_BODY_BYTES = 50_000
-const GEMINI_TIMEOUT_MS = 12000
+const CLAUDE_TIMEOUT_MS = 30000
 const MAX_TOOL_ITERATIONS = 3
 
 type Bucket = { count: number; resetAtMs: number }
@@ -155,7 +155,7 @@ function validateMessages(input: unknown): ClientMessage[] {
   return msgs
 }
 
-function buildSystemInstruction() {
+function buildSystemPrompt() {
   const today = new Date().toLocaleDateString('en-AU', {
     weekday: 'long',
     day: 'numeric',
@@ -190,40 +190,45 @@ function buildSystemInstruction() {
   ].join('\n')
 }
 
-function toGeminiContents(messages: ClientMessage[]) {
+function toClaudeMessages(messages: ClientMessage[]) {
   return messages.map((m) => ({
-    role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }],
+    role: m.role,
+    content: m.content,
   }))
 }
 
-function geminiEndpoint(method: 'generateContent') {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) throw Object.assign(new Error('GEMINI_API_KEY not configured'), { status: 503 })
-  const model = process.env.GEMINI_MODEL ?? 'gemini-2.0-flash'
-  return `https://generativelanguage.googleapis.com/v1beta/models/${model}:${method}?key=${encodeURIComponent(apiKey)}`
+function getClaudeApiKey(): string {
+  const key = process.env.ANTHROPIC_API_KEY
+  if (!key) throw Object.assign(new Error('ANTHROPIC_API_KEY not configured'), { status: 503 })
+  return key
 }
 
-async function callGemini(contents: any[]): Promise<any> {
+async function callClaude(messages: any[]): Promise<any> {
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS)
+  const timer = setTimeout(() => controller.abort(), CLAUDE_TIMEOUT_MS)
+  const model = process.env.CLAUDE_MODEL ?? 'claude-haiku-4-5-20251001'
   try {
-    const res = await fetch(geminiEndpoint('generateContent'), {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': getClaudeApiKey(),
+        'anthropic-version': '2023-06-01',
+      },
       body: JSON.stringify({
-        system_instruction: { parts: [{ text: buildSystemInstruction() }] },
-        contents,
-        tools: [{ functionDeclarations: chatToolDeclarations }],
-        toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
-        generationConfig: { temperature: 0.3, maxOutputTokens: 1200 },
+        model,
+        system: buildSystemPrompt(),
+        messages,
+        tools: chatToolDeclarations,
+        max_tokens: 1200,
+        temperature: 0.3,
       }),
       signal: controller.signal,
     })
     if (!res.ok) {
       const body = await res.text().catch(() => '')
       throw Object.assign(
-        new Error(`Gemini error ${res.status}: ${body.slice(0, 200)}`),
+        new Error(`Claude error ${res.status}: ${body.slice(0, 200)}`),
         { status: 503 }
       )
     }
@@ -241,49 +246,61 @@ type AgentOutcome = {
   escalatedQuestions: string[]
 }
 
-function extractParts(resp: any): any[] {
-  return resp?.candidates?.[0]?.content?.parts ?? []
+function extractContentBlocks(resp: any): any[] {
+  return resp?.content ?? []
 }
 
 /** Run the tool-resolution loop and return the final text plus collected side-data. */
 async function runAgent(messages: ClientMessage[]): Promise<AgentOutcome> {
-  const contents: any[] = toGeminiContents(messages)
+  const claudeMessages: any[] = toClaudeMessages(messages)
   const actions: any[] = []
   const intents = new Set<string>()
   const escalatedQuestions: string[] = []
   const lastUserText = messages[messages.length - 1]?.content ?? ''
 
   for (let iter = 0; iter < MAX_TOOL_ITERATIONS; iter++) {
-    const resp = await callGemini(contents)
-    const parts = extractParts(resp)
-    const functionCalls = parts.filter((p: any) => p.functionCall)
+    const resp = await callClaude(claudeMessages)
+    const blocks = extractContentBlocks(resp)
+    const toolUseBlocks = blocks.filter((b: any) => b.type === 'tool_use')
 
-    if (functionCalls.length === 0) {
-      const text = parts.map((p: any) => p.text ?? '').join('').trim()
+    if (resp.stop_reason !== 'tool_use' || toolUseBlocks.length === 0) {
+      const text = blocks
+        .filter((b: any) => b.type === 'text')
+        .map((b: any) => b.text ?? '')
+        .join('')
+        .trim()
       return finalize(text, actions, intents, escalatedQuestions, lastUserText)
     }
 
-    // Echo the model's function-call turn back into the conversation.
-    contents.push({ role: 'model', parts })
+    // Echo the model's turn (including tool_use blocks) back into the conversation.
+    claudeMessages.push({ role: 'assistant', content: blocks })
 
-    // Execute each requested tool and append the responses.
-    const responseParts: any[] = []
-    for (const part of functionCalls) {
-      const name = part.functionCall.name as string
-      const args = part.functionCall.args ?? {}
+    // Execute each requested tool and append a tool_result turn.
+    const resultContent: any[] = []
+    for (const block of toolUseBlocks) {
+      const name = block.name as string
+      const args = block.input ?? {}
       const result: ToolResult = await executeChatTool(name, args)
       if (result.intent) intents.add(result.intent)
       if (result.escalateQuestion) escalatedQuestions.push(result.escalateQuestion)
       if (result.bookCta) actions.push({ type: 'book_cta', ...result.bookCta })
       if (result.collectContact) actions.push({ type: 'collect_contact', ...result.collectContact })
-      responseParts.push({ functionResponse: { name, response: result.response } })
+      resultContent.push({
+        type: 'tool_result',
+        tool_use_id: block.id,
+        content: JSON.stringify(result.response),
+      })
     }
-    contents.push({ role: 'user', parts: responseParts })
+    claudeMessages.push({ role: 'user', content: resultContent })
   }
 
   // Tool budget exhausted — ask once more for a plain text answer.
-  const resp = await callGemini(contents)
-  const text = extractParts(resp).map((p: any) => p.text ?? '').join('').trim()
+  const resp = await callClaude(claudeMessages)
+  const text = extractContentBlocks(resp)
+    .filter((b: any) => b.type === 'text')
+    .map((b: any) => b.text ?? '')
+    .join('')
+    .trim()
   return finalize(text, actions, intents, escalatedQuestions, lastUserText)
 }
 
@@ -314,7 +331,6 @@ function buildSuggestions(_intents: Set<string>, lastUserText: string): string[]
     const overlap = words.filter((w) => askedWords.has(w)).length
     return overlap >= 2
   }
-  // Shuffle a copy (Fisher–Yates) so suggestions vary every turn.
   const pool = [...GENERAL_SUGGESTIONS]
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
@@ -323,7 +339,6 @@ function buildSuggestions(_intents: Set<string>, lastUserText: string): string[]
   return pool.filter((s) => !isTooSimilar(s)).slice(0, 3)
 }
 
-// Safety net: strip any machine artifacts the model might still emit.
 function stripArtifacts(text: string): string {
   return text
     .replace(/<<META>>[\s\S]*?(<<END>>|$)/g, '')
@@ -406,14 +421,12 @@ function sse(data: unknown) {
 
 function streamOutcome(outcome: AgentOutcome): ReadableStream {
   const encoder = new TextEncoder()
-  // Chunk the buffered answer into small word groups for a live typing feel.
   const tokens = outcome.text.split(/(\s+)/).filter((t) => t.length > 0)
   return new ReadableStream({
     async start(controller) {
       let buf = ''
       for (let i = 0; i < tokens.length; i++) {
         buf += tokens[i]
-        // Flush every ~3 tokens.
         if (i % 3 === 2 || i === tokens.length - 1) {
           controller.enqueue(encoder.encode(sse({ type: 'text', delta: buf })))
           buf = ''
