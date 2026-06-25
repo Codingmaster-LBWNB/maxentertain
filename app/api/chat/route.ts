@@ -200,7 +200,7 @@ function toGeminiContents(messages: ClientMessage[]) {
 function geminiEndpoint(method: 'generateContent') {
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) throw Object.assign(new Error('GEMINI_API_KEY not configured'), { status: 503 })
-  const model = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash-lite'
+  const model = process.env.GEMINI_MODEL ?? 'gemini-2.0-flash'
   return `https://generativelanguage.googleapis.com/v1beta/models/${model}:${method}?key=${encodeURIComponent(apiKey)}`
 }
 
@@ -220,7 +220,13 @@ async function callGemini(contents: any[]): Promise<any> {
       }),
       signal: controller.signal,
     })
-    if (!res.ok) throw new Error(`Gemini responded with ${res.status}`)
+    if (!res.ok) {
+      const body = await res.text().catch(() => '')
+      throw Object.assign(
+        new Error(`Gemini error ${res.status}: ${body.slice(0, 200)}`),
+        { status: 503 }
+      )
+    }
     return await res.json()
   } finally {
     clearTimeout(timer)
