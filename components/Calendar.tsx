@@ -50,10 +50,23 @@ export default function Calendar({
   const availability = useAvailability({ enabled: blockedDatesProp === undefined })
   const pricing = usePricingOverrides()
 
-  const nowAU = toZonedTime(new Date(), TZ)
-  const [currentMonth, setCurrentMonth] = useState(nowAU)
+  const [mounted, setMounted] = useState(false)
+  const [currentMonth, setCurrentMonth] = useState<Date | null>(null)
+  const [todayStr, setTodayStr] = useState('')
   const [checkIn, setCheckIn] = useState<Date | null>(null)
   const [checkOut, setCheckOut] = useState<Date | null>(null)
+
+  useEffect(() => {
+    // The homepage is statically generated, so any date computed during the
+    // server build is frozen at build time — that's why past days were still
+    // shown as "available". React also never reconciles className mismatches
+    // during hydration, so we compute "today" on the client after mount and
+    // render a neutral skeleton until then.
+    const now = new Date()
+    setCurrentMonth(toZonedTime(now, TZ))
+    setTodayStr(formatInTimeZone(now, TZ, 'yyyy-MM-dd'))
+    setMounted(true)
+  }, [])
 
   const blockedDates = blockedDatesProp ?? availability.blockedDates
   const isLoading = isLoadingProp ?? availability.isLoading
@@ -64,20 +77,23 @@ export default function Calendar({
   const tierPrices = pricingReady ? pricing.tierPrices : NIGHTLY_RATES
   const minNightsMap = pricingReady ? pricing.minNightsMap : {}
 
-  const monthStart = startOfMonth(currentMonth)
-  const monthEnd = endOfMonth(currentMonth)
-  const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 })
-  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 })
-  const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
+  const monthStart = currentMonth ? startOfMonth(currentMonth) : null
+  const monthEnd = currentMonth ? endOfMonth(currentMonth) : null
+  const calendarDays =
+    monthStart && monthEnd
+      ? eachDayOfInterval({
+          start: startOfWeek(monthStart, { weekStartsOn: 1 }),
+          end: endOfWeek(monthEnd, { weekStartsOn: 1 }),
+        })
+      : []
 
   // Date string helpers (all in AU timezone)
   const auStr = (date: Date) => formatInTimeZone(date, TZ, 'yyyy-MM-dd')
-  const todayStr = () => formatInTimeZone(new Date(), TZ, 'yyyy-MM-dd')
 
   const isBlocked = (date: Date) => blockedDates.includes(auStr(date))
-  const isPast = (date: Date) => auStr(date) < todayStr()
+  const isPast = (date: Date) => !!todayStr && auStr(date) < todayStr
   const isAvailable = (date: Date) => !isPast(date) && !isBlocked(date)
-  const isToday = (date: Date) => auStr(date) === todayStr()
+  const isToday = (date: Date) => auStr(date) === todayStr
   const isCheckIn = (date: Date) => !!checkIn && auStr(date) === auStr(checkIn)
   const isCheckOut = (date: Date) => !!checkOut && auStr(date) === auStr(checkOut)
   const isInRange = (date: Date) => {
@@ -221,18 +237,20 @@ export default function Calendar({
             {/* Calendar Header */}
             <div className="flex items-center justify-between mb-6">
               <button
-                onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-luxury-gold/10 text-luxury-gold border border-luxury-gold/40 shadow-sm hover:bg-luxury-gold hover:text-white hover:border-luxury-gold transition-colors"
+                onClick={() => setCurrentMonth((m) => (m ? subMonths(m, 1) : m))}
+                disabled={!mounted}
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-luxury-gold/10 text-luxury-gold border border-luxury-gold/40 shadow-sm hover:bg-luxury-gold hover:text-white hover:border-luxury-gold transition-colors disabled:opacity-40"
                 aria-label="Previous month"
               >
                 <span className="material-icons" style={{ fontSize: '26px' }}>chevron_left</span>
               </button>
               <h3 className="text-2xl font-serif font-semibold text-luxury-dark">
-                {format(currentMonth, 'MMMM yyyy')}
+                {currentMonth ? format(currentMonth, 'MMMM yyyy') : ' '}
               </h3>
               <button
-                onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-                className="flex items-center justify-center w-11 h-11 rounded-full bg-luxury-gold/10 text-luxury-gold border border-luxury-gold/40 shadow-sm hover:bg-luxury-gold hover:text-white hover:border-luxury-gold transition-colors"
+                onClick={() => setCurrentMonth((m) => (m ? addMonths(m, 1) : m))}
+                disabled={!mounted}
+                className="flex items-center justify-center w-11 h-11 rounded-full bg-luxury-gold/10 text-luxury-gold border border-luxury-gold/40 shadow-sm hover:bg-luxury-gold hover:text-white hover:border-luxury-gold transition-colors disabled:opacity-40"
                 aria-label="Next month"
               >
                 <span className="material-icons" style={{ fontSize: '26px' }}>chevron_right</span>
@@ -250,7 +268,11 @@ export default function Calendar({
 
             {/* Calendar Grid */}
             <div className="grid grid-cols-7 gap-1">
-              {calendarDays.map((day) => {
+              {!mounted
+                ? Array.from({ length: 42 }).map((_, i) => (
+                    <div key={i} className="aspect-square rounded-lg bg-gray-50 animate-pulse" />
+                  ))
+                : calendarDays.map((day) => {
                 const blocked = isBlocked(day)
                 const available = isAvailable(day)
                 const past = isPast(day)
@@ -258,7 +280,7 @@ export default function Calendar({
                 const ci = isCheckIn(day)
                 const co = isCheckOut(day)
                 const inRange = isInRange(day)
-                const isCurrentMonth = day >= monthStart && day <= monthEnd
+                const isCurrentMonth = !!monthStart && !!monthEnd && day >= monthStart && day <= monthEnd
 
                 let cellClass = 'aspect-square flex items-center justify-center text-base font-medium transition-all select-none '
 
