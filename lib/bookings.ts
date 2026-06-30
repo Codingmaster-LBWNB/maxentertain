@@ -611,11 +611,13 @@ export async function markCommsEventFailed(bookingId: string, event: string, err
 
 export async function markPreStaySent(bookingId: string, daysBeforeCheckIn: number) {
   const db = await getDb()
+  const now = new Date()
   await db.collection('bookings').updateOne(
     { _id: bookingId as any } as any,
     {
       $addToSet: { 'comms.preStaySent': daysBeforeCheckIn },
-      $set: { updatedAt: new Date() },
+      // Record the exact send instant so the admin comms timeline is precise.
+      $set: { [`comms.preStaySentAt.${daysBeforeCheckIn}`]: now, updatedAt: now },
     }
   )
 }
