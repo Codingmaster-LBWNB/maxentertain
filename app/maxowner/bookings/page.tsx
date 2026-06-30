@@ -35,6 +35,43 @@ type BookingEvent = {
   createdAt: string
 }
 
+type CommsItem = {
+  key: string
+  label: string
+  audience: 'guest'
+  description: string
+  status: 'sent' | 'scheduled' | 'missed' | 'skipped' | 'awaiting_payment'
+  sentAt?: string
+  scheduledAt?: string
+  note?: string
+}
+
+const COMMS_STATUS_STYLE: Record<CommsItem['status'], string> = {
+  sent: 'bg-green-500/15 text-green-300 border-green-500/30',
+  scheduled: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+  missed: 'bg-red-500/15 text-red-300 border-red-500/30',
+  skipped: 'bg-gray-500/15 text-gray-400 border-gray-500/30',
+  awaiting_payment: 'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
+}
+
+const COMMS_STATUS_LABEL: Record<CommsItem['status'], string> = {
+  sent: 'Sent',
+  scheduled: 'Scheduled',
+  missed: 'Missed',
+  skipped: 'Not applicable',
+  awaiting_payment: 'Awaiting payment',
+}
+
+// Exact instant in the owner's timezone, to the second.
+function fmtMelbourne(iso?: string) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleString('en-AU', {
+    timeZone: 'Australia/Melbourne',
+    dateStyle: 'medium',
+    timeStyle: 'medium',
+  })
+}
+
 export default function OwnerBookingsPage() {
   const [bookings, setBookings] = useState<BookingRecord[]>([])
   const [status, setStatus] = useState<'all' | BookingStatus>('all')
@@ -47,6 +84,8 @@ export default function OwnerBookingsPage() {
   const [openBookingId, setOpenBookingId] = useState<string | null>(null)
   const [openArrivalId, setOpenArrivalId] = useState<string | null>(null)
   const [arrivalDraft, setArrivalDraft] = useState<Record<string, { details: string; passcode: string }>>({})
+  const [commsByBooking, setCommsByBooking] = useState<Record<string, CommsItem[]>>({})
+  const [openCommsId, setOpenCommsId] = useState<string | null>(null)
   const [health, setHealth] = useState<Record<string, boolean> | null>(null)
   const [directBookingIcalUrl, setDirectBookingIcalUrl] = useState<string | null>(null)
 
@@ -110,6 +149,14 @@ export default function OwnerBookingsPage() {
       'Arrival details saved.'
     )
     setOpenArrivalId(null)
+  }
+
+  const loadComms = async (bookingId: string) => {
+    setOpenCommsId((current) => (current === bookingId ? null : bookingId))
+    if (commsByBooking[bookingId]) return
+    const res = await fetch(`/api/maxowner/bookings/${bookingId}/comms`)
+    const data = await res.json().catch(() => ({}))
+    setCommsByBooking((prev) => ({ ...prev, [bookingId]: data.timeline ?? [] }))
   }
 
   const loadEvents = async (bookingId: string) => {
@@ -253,6 +300,12 @@ export default function OwnerBookingsPage() {
                     </button>
                   ) : null}
                   <button
+                    onClick={() => loadComms(booking._id)}
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-gray-300 hover:border-luxury-gold hover:text-luxury-gold"
+                  >
+                    {openCommsId === booking._id ? 'Hide messages' : 'Guest messages'}
+                  </button>
+                  <button
                     onClick={() => loadEvents(booking._id)}
                     className="rounded-lg border border-white/10 px-3 py-2 text-xs text-gray-300 hover:border-luxury-gold hover:text-luxury-gold"
                   >
@@ -260,6 +313,40 @@ export default function OwnerBookingsPage() {
                   </button>
                 </div>
               </div>
+              {openCommsId === booking._id ? (
+                <div className="mt-5 border-t border-white/10 pt-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Guest message timeline</p>
+                  <p className="mb-3 text-xs text-gray-500">
+                    Every email the guest receives. All times shown in Melbourne time, to the second. Scheduled sends fire from the daily comms run (Melbourne morning, ≈9am AEDT / 8am AEST).
+                  </p>
+                  <div className="space-y-2">
+                    {(commsByBooking[booking._id] ?? []).map((item) => (
+                      <div key={item.key} className="rounded-lg bg-black/20 px-4 py-3 text-sm">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-semibold text-gray-200">{item.label}</span>
+                          <span className={`rounded-full border px-2 py-0.5 text-xs ${COMMS_STATUS_STYLE[item.status]}`}>
+                            {COMMS_STATUS_LABEL[item.status]}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500">{item.description}</p>
+                        <div className="mt-2 grid gap-1 text-xs text-gray-400 md:grid-cols-2">
+                          {item.status === 'sent' ? (
+                            <p><span className="text-gray-500">Sent:</span> {fmtMelbourne(item.sentAt)}</p>
+                          ) : item.status === 'scheduled' ? (
+                            <p><span className="text-gray-500">Will send:</span> {fmtMelbourne(item.scheduledAt)}</p>
+                          ) : item.scheduledAt ? (
+                            <p><span className="text-gray-500">Was due:</span> {fmtMelbourne(item.scheduledAt)}</p>
+                          ) : null}
+                        </div>
+                        {item.note ? <p className="mt-1 text-xs text-gray-500 italic">{item.note}</p> : null}
+                      </div>
+                    ))}
+                    {(commsByBooking[booking._id] ?? []).length === 0 ? (
+                      <p className="text-sm text-gray-500">Loading…</p>
+                    ) : null}
+                  </div>
+                </div>
+              ) : null}
               {openArrivalId === booking._id ? (
                 <div className="mt-5 border-t border-white/10 pt-4">
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Arrival &amp; check-in details</p>

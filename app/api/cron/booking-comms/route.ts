@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { differenceInCalendarDays, parseISO } from 'date-fns'
+import { formatInTimeZone } from 'date-fns-tz'
 import { getDb } from '@/lib/mongodb'
 import type { BookingRecord, GuestRecord } from '@/types/booking'
 import { markCheckoutCompletedSent, markPreStaySent } from '@/lib/bookings'
@@ -8,6 +9,7 @@ import { sendCheckoutFollowupEmail, sendPreStayEmail, sendReturningGuestOfferEma
 export const runtime = 'nodejs'
 
 const PRE_STAY_DAYS = [14, 7, 3, 1]
+const TZ = 'Australia/Melbourne'
 
 function getReturningGuestCampaign(now: Date) {
   const year = now.getFullYear()
@@ -38,6 +40,10 @@ export async function GET(req: NextRequest) {
 
   const db = await getDb()
   const now = new Date()
+  // Anchor all day-offset maths to the current calendar day in Melbourne, so
+  // "N days before check-in" and "checkout day" follow Melbourne dates rather
+  // than the server's UTC day.
+  const today = parseISO(formatInTimeZone(now, TZ, 'yyyy-MM-dd'))
   const bookings = await db
     .collection<BookingRecord>('bookings')
     .find({ status: 'confirmed' })
@@ -50,7 +56,7 @@ export async function GET(req: NextRequest) {
 
   for (const booking of bookings) {
     try {
-      const daysUntilCheckIn = differenceInCalendarDays(parseISO(booking.checkIn), now)
+      const daysUntilCheckIn = differenceInCalendarDays(parseISO(booking.checkIn), today)
       const sentPreStay = booking.comms?.preStaySent ?? []
 
       if (PRE_STAY_DAYS.includes(daysUntilCheckIn) && !sentPreStay.includes(daysUntilCheckIn)) {
@@ -59,7 +65,7 @@ export async function GET(req: NextRequest) {
         preStayEvents += 1
       }
 
-      const daysSinceCheckout = differenceInCalendarDays(now, parseISO(booking.checkOut))
+      const daysSinceCheckout = differenceInCalendarDays(today, parseISO(booking.checkOut))
       if (daysSinceCheckout >= 0 && !booking.comms?.checkoutCompletedSent) {
         await sendCheckoutFollowupEmail(booking)
         await markCheckoutCompletedSent(booking._id)

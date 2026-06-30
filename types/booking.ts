@@ -59,6 +59,8 @@ export interface BookingComms {
   commsEventsSent?: string[]
   lastEmailError?: string
   preStaySent?: number[]
+  /** Exact send time per pre-stay offset, keyed by the day count (e.g. "3"). */
+  preStaySentAt?: Record<string, Date>
   checkoutCompletedSent?: boolean
   reviewRequestedAt?: Date
   reviewSource?: 'google' | 'direct'
