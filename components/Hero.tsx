@@ -147,10 +147,10 @@ export default function Hero() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.7, ease: 'easeOut', delay: 0.2 }}
-              className="flex items-center gap-3 mb-8"
+              className="flex items-center gap-3 mb-5 sm:mb-8"
             >
               <div className="h-px w-10 bg-luxury-gold" />
-              <span className="text-luxury-gold text-sm font-sans font-semibold tracking-[0.22em] uppercase">
+              <span className="text-luxury-gold text-xs sm:text-sm font-sans font-semibold tracking-[0.22em] uppercase">
                 Mornington Peninsula, Victoria
               </span>
             </motion.div>
@@ -162,7 +162,7 @@ export default function Hero() {
               transition={{ duration: 0.9, ease: 'easeOut', delay: 0.4 }}
               className="text-3xl sm:text-5xl md:text-6xl lg:text-6xl xl:text-7xl font-serif font-bold text-white leading-[0.95] tracking-tight mb-4 lg:mb-3 drop-shadow-2xl"
             >
-              MAX Entertain Beachside Retreat — Mornington Peninsula
+              MAX Entertain Beachside Retreat<span className="hidden sm:inline"> — Mornington Peninsula</span>
             </motion.h1>
 
             {/* Gold rule */}
@@ -179,7 +179,7 @@ export default function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: 'easeOut', delay: 0.75 }}
-              className="text-lg sm:text-xl md:text-2xl text-white/90 mb-4 sm:mb-6 lg:mb-4 leading-relaxed font-normal max-w-xl"
+              className="text-base sm:text-xl md:text-2xl text-white/90 mb-5 sm:mb-6 lg:mb-4 leading-relaxed font-normal max-w-xl line-clamp-3 sm:line-clamp-none"
             >
               {propertyConfig.description}
             </motion.p>
@@ -189,12 +189,12 @@ export default function Hero() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: 'easeOut', delay: 0.9 }}
-              className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-4 sm:mb-8 lg:mb-5"
+              className="flex flex-wrap justify-start gap-2 sm:gap-3 mb-6 sm:mb-8 lg:mb-5"
             >
-              {stats.map((stat) => (
+              {stats.map((stat, i) => (
                 <div
                   key={stat.label}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/12 backdrop-blur-md border border-white/20 text-white text-sm font-sans font-semibold tracking-wider uppercase rounded-full hover:bg-white/20 hover:border-luxury-gold/50 transition-all duration-300"
+                  className={`${i >= 3 ? 'hidden sm:flex' : 'flex'} items-center gap-2 px-3.5 sm:px-4 py-2 bg-white/12 backdrop-blur-md border border-white/20 text-white text-xs sm:text-sm font-sans font-semibold tracking-wider uppercase rounded-full hover:bg-white/20 hover:border-luxury-gold/50 transition-all duration-300`}
                 >
                   <span className="material-icons text-luxury-gold" style={{ fontSize: '16px' }}>{stat.icon}</span>
                   {stat.label}
@@ -224,9 +224,10 @@ export default function Hero() {
                 </p>
               </div>
 
-              {/* Platform links with brand colours */}
+              {/* Platform links with brand colours — hidden on mobile to keep the
+                  hero clean and lead with the direct-booking CTA; shown from sm up */}
               {(propertyConfig.booking?.airbnb || propertyConfig.booking?.bookingCom || propertyConfig.booking?.vrbo) && (
-                <div className="flex flex-col gap-2">
+                <div className="hidden sm:flex flex-col gap-2">
                   <div className="flex items-center gap-3">
                     <div className="flex-1 h-px bg-white/20" />
                     <span className="text-white/50 text-xs font-sans font-semibold tracking-[0.18em] uppercase">
