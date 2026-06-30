@@ -74,7 +74,7 @@ export default function GuestsPage() {
       body: JSON.stringify({ action: 'backfill_from_bookings' }),
     })
     const data = await res.json().catch(() => ({}))
-    setMessage(res.ok ? `Backfilled ${data.backfilled ?? 0} confirmed bookings into the guest CRM.` : data.error ?? 'Backfill failed.')
+    setMessage(res.ok ? `Backfilled ${data.guests ?? 0} guests from ${data.bookings ?? 0} confirmed bookings.` : data.error ?? 'Backfill failed.')
     if (res.ok) load()
   }
 

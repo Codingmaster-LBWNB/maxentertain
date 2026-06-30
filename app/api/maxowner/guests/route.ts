@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { sendReturningGuestOfferEmail } from '@/lib/email'
-import { upsertGuestFromBooking } from '@/lib/bookings'
 import type { BookingGroupType, BookingRecord, GuestRecord } from '@/types/booking'
 
 const VALID_TAGS: BookingGroupType[] = ['family', 'corporate', 'golf', 'milestone', 'other']
@@ -46,12 +45,92 @@ export async function PATCH(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const { email, action } = await req.json()
   if (action === 'backfill_from_bookings') {
-    const db = await getDb()
-    const bookings = await db.collection<BookingRecord>('bookings').find({ status: { $in: ['confirmed', 'completed'] } }).toArray()
-    for (const booking of bookings) {
-      await upsertGuestFromBooking(booking)
+    try {
+      const db = await getDb()
+      const bookings = await db
+        .collection<BookingRecord>('bookings')
+        .find({ status: { $in: ['confirmed', 'completed'] } })
+        .toArray()
+
+      // Aggregate per guest first so the backfill is idempotent: we $set the
+      // totals from the full history rather than $inc per booking, so running
+      // it more than once cannot double-count bookings or spend.
+      type Agg = {
+        propertyId: string
+        name: string
+        email: string
+        phone: string
+        totalBookings: number
+        totalSpendAud: number
+        tags: Set<BookingGroupType>
+        lastBookingId: string
+        lastCheckIn: string
+        lastCheckOut: string
+      }
+      const byEmail = new Map<string, Agg>()
+      for (const b of bookings) {
+        const key = b.guest.email.toLowerCase()
+        const cur = byEmail.get(key)
+        if (!cur) {
+          byEmail.set(key, {
+            propertyId: b.propertyId,
+            name: b.guest.name,
+            email: key,
+            phone: b.guest.phone,
+            totalBookings: 1,
+            totalSpendAud: b.pricing.totalAud,
+            tags: new Set([b.guest.groupType]),
+            lastBookingId: b._id,
+            lastCheckIn: b.checkIn,
+            lastCheckOut: b.checkOut,
+          })
+        } else {
+          cur.totalBookings += 1
+          cur.totalSpendAud += b.pricing.totalAud
+          cur.tags.add(b.guest.groupType)
+          // checkOut is an ISO date string, so lexical compare = chronological.
+          if (b.checkOut >= cur.lastCheckOut) {
+            cur.name = b.guest.name
+            cur.phone = b.guest.phone
+            cur.lastBookingId = b._id
+            cur.lastCheckIn = b.checkIn
+            cur.lastCheckOut = b.checkOut
+          }
+        }
+      }
+
+      const now = new Date()
+      let guestsWritten = 0
+      for (const g of byEmail.values()) {
+        await db.collection('guests').updateOne(
+          { _id: g.email as any } as any,
+          {
+            $set: {
+              propertyId: g.propertyId,
+              name: g.name,
+              email: g.email,
+              phone: g.phone,
+              totalBookings: g.totalBookings,
+              totalSpendAud: g.totalSpendAud,
+              tags: Array.from(g.tags),
+              lastBookingId: g.lastBookingId,
+              lastCheckIn: g.lastCheckIn,
+              lastCheckOut: g.lastCheckOut,
+              lastStayedAt: new Date(`${g.lastCheckOut}T00:00:00.000Z`),
+              updatedAt: now,
+            },
+            $setOnInsert: { offerCampaignsSent: [], createdAt: now },
+          },
+          { upsert: true }
+        )
+        guestsWritten += 1
+      }
+
+      return NextResponse.json({ ok: true, guests: guestsWritten, bookings: bookings.length })
+    } catch (error) {
+      const messageText = error instanceof Error ? error.message : 'Backfill failed'
+      return NextResponse.json({ error: messageText }, { status: 500 })
     }
-    return NextResponse.json({ ok: true, backfilled: bookings.length })
   }
 
   if (!email || action !== 'send_returning_offer') {
