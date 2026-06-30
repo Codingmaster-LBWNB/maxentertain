@@ -4,6 +4,13 @@ import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
 import { getDb } from '@/lib/mongodb'
 import { getActiveBookingLockDates } from '@/lib/bookings'
 
+// Must run per-request: this route reads live booking/manual-block state from
+// MongoDB. Without this, Next.js statically caches the GET response at build
+// time, so new direct bookings never block their dates until a redeploy. The
+// iCal fetches below keep their own `revalidate: 3600` caching regardless.
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 // Helper function to parse a single iCal feed
 async function parseICalFeed(icalUrl: string, australianTimezone: string): Promise<{ blockedDates: string[], eventCount: number, success: boolean }> {
   const blockedDates: string[] = []

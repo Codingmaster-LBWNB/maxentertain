@@ -47,6 +47,14 @@ export interface BookingPayment {
   paidAt?: Date
 }
 
+export interface BookingArrival {
+  /** Free-text arrival/check-in instructions: directions, parking, WiFi, etc. */
+  details?: string
+  /** Door/lockbox access code. Owner-only + guest pre-stay email; never public. */
+  passcode?: string
+  updatedAt?: Date
+}
+
 export interface BookingComms {
   commsEventsSent?: string[]
   lastEmailError?: string
@@ -81,6 +89,7 @@ export interface BookingRecord {
   createdAt: Date
   updatedAt: Date
   comms?: BookingComms
+  arrival?: BookingArrival
 }
 
 export interface PublicBookingSummary {
