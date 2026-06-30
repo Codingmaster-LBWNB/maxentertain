@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from 'react'
+import { createPortal } from 'react-dom'
 import Image from 'next/image'
 import { propertyConfig } from '@/config/property'
 
@@ -55,7 +56,33 @@ export default function PhotosGallery() {
   }, [sections])
 
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
+  const [activeSection, setActiveSection] = useState<string>(sections[0]?.id ?? '')
   const totalImages = flat.length
+
+  // Scroll-spy: highlight the section currently in view so the compact nav
+  // (dropdown on mobile, tabs on desktop) always reflects where you are.
+  useEffect(() => {
+    const els = sections
+      .map((s) => document.getElementById(`section-${s.id}`))
+      .filter((el): el is HTMLElement => el !== null)
+    if (els.length === 0) return
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
+        const id = visible[0]?.target.id
+        if (id) setActiveSection(id.replace('section-', ''))
+      },
+      { rootMargin: '-120px 0px -65% 0px', threshold: 0 }
+    )
+    els.forEach((el) => observer.observe(el))
+    return () => observer.disconnect()
+  }, [sections])
+
+  const jumpToSection = (id: string) => {
+    document.getElementById(`section-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
   const touchStartXRef = useRef<number | null>(null)
   const touchStartYRef = useRef<number | null>(null)
   const lockedScrollYRef = useRef<number>(0)
@@ -105,19 +132,53 @@ export default function PhotosGallery() {
 
   return (
     <>
-      {/* Section jump nav */}
-      <div className="sticky top-0 z-20 -mx-4 md:-mx-8 lg:-mx-16 px-4 md:px-8 lg:px-16 py-0 border-b"
-        style={{ backgroundColor: '#0c0c0b', borderColor: 'rgba(255,255,255,0.06)' }}>
-        <div className="flex gap-0 overflow-x-auto no-scrollbar">
-          {sections.map((s) => (
-            <a
-              key={s.id}
-              href={`#section-${s.id}`}
-              className="shrink-0 px-4 py-4 font-sans text-xs md:text-sm font-semibold tracking-[0.16em] uppercase text-white/70 hover:text-white transition-colors border-b-2 border-transparent hover:border-luxury-gold/50 whitespace-nowrap"
-            >
-              {s.title}
-            </a>
-          ))}
+      {/* Section jump nav — sticky below the page header */}
+      <div className="sticky top-14 z-20 -mx-4 md:-mx-8 lg:-mx-16 px-4 md:px-8 lg:px-16 border-b"
+        style={{ backgroundColor: 'rgba(12,12,11,0.95)', borderColor: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(8px)' }}>
+
+        {/* Mobile: compact dropdown (replaces the long horizontal scroll bar) */}
+        <div className="md:hidden relative py-2.5">
+          <select
+            value={activeSection}
+            onChange={(e) => jumpToSection(e.target.value)}
+            aria-label="Jump to a photo section"
+            className="w-full appearance-none rounded-md border px-4 py-2.5 pr-10 font-sans text-sm font-semibold tracking-[0.12em] uppercase text-white focus:outline-none focus:border-luxury-gold/60"
+            style={{ backgroundColor: '#0c0c0b', borderColor: 'rgba(255,255,255,0.15)' }}
+          >
+            {sections.map((s, i) => {
+              const count = flat.filter((p) => p.sectionId === s.id).length
+              if (count === 0) return null
+              return (
+                <option key={s.id} value={s.id}>
+                  {String(i + 1).padStart(2, '0')} · {s.title} ({count})
+                </option>
+              )
+            })}
+          </select>
+          <span className="material-icons absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-luxury-gold" style={{ fontSize: '22px' }}>
+            expand_more
+          </span>
+        </div>
+
+        {/* Desktop: tabs with active highlight */}
+        <div className="hidden md:flex gap-0 overflow-x-auto no-scrollbar">
+          {sections.map((s) => {
+            const isActive = s.id === activeSection
+            return (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => jumpToSection(s.id)}
+                className={`shrink-0 px-4 py-4 font-sans text-sm font-semibold tracking-[0.16em] uppercase transition-colors border-b-2 whitespace-nowrap ${
+                  isActive
+                    ? 'text-white border-luxury-gold'
+                    : 'text-white/60 hover:text-white border-transparent hover:border-luxury-gold/40'
+                }`}
+              >
+                {s.title}
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -130,7 +191,7 @@ export default function PhotosGallery() {
           const useFeatured = items.length >= 3
 
           return (
-            <section key={section.id} id={`section-${section.id}`} className="scroll-mt-20">
+            <section key={section.id} id={`section-${section.id}`} className="scroll-mt-32">
 
               {/* Section header */}
               <div className="flex items-center gap-5 mb-6">
@@ -303,11 +364,13 @@ export default function PhotosGallery() {
         })}
       </div>
 
-      {/* ── LIGHTBOX ── */}
-      {activeIndex !== null && (
+      {/* ── LIGHTBOX ── rendered via portal to <body> so it sits above the
+          global fixed booking bar instead of being trapped in a lower stacking
+          context. */}
+      {activeIndex !== null && typeof document !== 'undefined' && createPortal(
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center"
-          style={{ backgroundColor: 'rgba(8,8,7,0.97)' }}
+          style={{ backgroundColor: 'rgba(8,8,7,0.97)', touchAction: 'pan-x' }}
           role="dialog"
           aria-modal="true"
           onClick={close}
@@ -341,10 +404,30 @@ export default function PhotosGallery() {
               <span className="text-white/30 text-sm">/ {String(totalImages).padStart(2, '0')}</span>
             </div>
 
-            {/* Section label */}
-            <div className="hidden md:block text-xs font-sans font-semibold tracking-[0.2em] uppercase"
-              style={{ color: 'rgba(212,175,55,0.85)' }}>
-              {flat[activeIndex]?.sectionTitle}
+            {/* Center: mobile prev/next arrows + desktop section label */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); prev() }}
+                className="md:hidden flex w-11 h-11 border items-center justify-center text-white/80 hover:text-white active:bg-white/10 transition-colors"
+                style={{ borderColor: 'rgba(255,255,255,0.18)' }}
+                aria-label="Previous photo"
+              >
+                <span className="material-icons" style={{ fontSize: '24px' }}>chevron_left</span>
+              </button>
+              <span className="hidden md:block text-xs font-sans font-semibold tracking-[0.2em] uppercase"
+                style={{ color: 'rgba(212,175,55,0.85)' }}>
+                {flat[activeIndex]?.sectionTitle}
+              </span>
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); next() }}
+                className="md:hidden flex w-11 h-11 border items-center justify-center text-white/80 hover:text-white active:bg-white/10 transition-colors"
+                style={{ borderColor: 'rgba(255,255,255,0.18)' }}
+                aria-label="Next photo"
+              >
+                <span className="material-icons" style={{ fontSize: '24px' }}>chevron_right</span>
+              </button>
             </div>
 
             {/* Close */}
@@ -404,24 +487,9 @@ export default function PhotosGallery() {
           {/* Bottom bar */}
           <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-5 py-4 z-10"
             style={{ background: 'linear-gradient(to top, rgba(8,8,7,0.8), transparent)' }}>
-            {/* Mobile nav buttons */}
-            <div className="md:hidden flex items-center gap-3">
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); prev() }}
-                className="px-4 py-2.5 border text-white/80 text-sm font-sans font-semibold tracking-wider uppercase hover:text-white transition-colors"
-                style={{ borderColor: 'rgba(255,255,255,0.15)' }}
-              >
-                Prev
-              </button>
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); next() }}
-                className="px-4 py-2.5 border text-white/80 text-sm font-sans font-semibold tracking-wider uppercase hover:text-white transition-colors"
-                style={{ borderColor: 'rgba(255,255,255,0.15)' }}
-              >
-                Next
-              </button>
+            {/* Mobile counter */}
+            <div className="md:hidden text-white/60 text-sm font-sans tracking-wider uppercase">
+              {activeIndex + 1} of {totalImages}
             </div>
 
             {/* Dot progress indicators */}
@@ -454,7 +522,8 @@ export default function PhotosGallery() {
               {propertyConfig.name}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
