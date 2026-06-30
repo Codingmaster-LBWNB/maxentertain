@@ -252,6 +252,34 @@ export async function sendPreStayEmail(booking: BookingRecord, daysBeforeCheckIn
   const guestName = escapeHtml(booking.guest.name)
   const dateRange = escapeHtml(dateRangeLine(booking))
 
+  // Arrival details + access code go out from the 3-day reminder onward (this
+  // also covers last-minute bookings, where the 3-day email never fires and the
+  // 1-day reminder is the first one the guest receives). Only included if the
+  // owner has filled them in for this booking via the dashboard.
+  const includeArrival = daysBeforeCheckIn <= 3
+  const arrivalDetails = booking.arrival?.details?.trim()
+  const arrivalPasscode = booking.arrival?.passcode?.trim()
+  const showArrival = includeArrival && (arrivalDetails || arrivalPasscode)
+
+  const detailsHtml = arrivalDetails
+    ? `<p>${escapeHtml(arrivalDetails).replace(/\n/g, '<br>')}</p>`
+    : ''
+  const passcodeHtml = arrivalPasscode
+    ? `<p><strong>Access code:</strong> ${escapeHtml(arrivalPasscode)}</p>`
+    : ''
+  const arrivalHtml = showArrival
+    ? `<h3>Arrival &amp; check-in details</h3>${detailsHtml}${passcodeHtml}`
+    : ''
+
+  const arrivalText = showArrival
+    ? [
+        '',
+        'Arrival & check-in details:',
+        arrivalDetails ?? '',
+        arrivalPasscode ? `Access code: ${arrivalPasscode}` : '',
+      ].filter(Boolean).join('\n')
+    : ''
+
   return sendEmail({
     to: booking.guest.email,
     subject,
@@ -262,6 +290,7 @@ export async function sendPreStayEmail(booking: BookingRecord, daysBeforeCheckIn
       <p><strong>Dates:</strong> ${dateRange}</p>
       <p><strong>Check-in:</strong> ${escapeHtml(propertyConfig.policies.checkIn)}</p>
       <p><strong>Check-out:</strong> ${escapeHtml(propertyConfig.policies.checkOut)}</p>
+      ${arrivalHtml}
       <p>If your plans changed, please let us know as soon as possible.</p>
     `,
     text: [
@@ -269,7 +298,8 @@ export async function sendPreStayEmail(booking: BookingRecord, daysBeforeCheckIn
       `Dates: ${dateRangeLine(booking)}`,
       `Check-in: ${propertyConfig.policies.checkIn}`,
       `Check-out: ${propertyConfig.policies.checkOut}`,
-    ].join('\n'),
+      arrivalText,
+    ].filter(Boolean).join('\n'),
   })
 }
 

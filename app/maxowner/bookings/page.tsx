@@ -45,6 +45,8 @@ export default function OwnerBookingsPage() {
   const [message, setMessage] = useState('')
   const [eventsByBooking, setEventsByBooking] = useState<Record<string, BookingEvent[]>>({})
   const [openBookingId, setOpenBookingId] = useState<string | null>(null)
+  const [openArrivalId, setOpenArrivalId] = useState<string | null>(null)
+  const [arrivalDraft, setArrivalDraft] = useState<Record<string, { details: string; passcode: string }>>({})
   const [health, setHealth] = useState<Record<string, boolean> | null>(null)
   const [directBookingIcalUrl, setDirectBookingIcalUrl] = useState<string | null>(null)
 
@@ -83,6 +85,31 @@ export default function OwnerBookingsPage() {
     const data = await res.json().catch(() => ({}))
     setMessage(res.ok ? okMessage : data.error ?? 'Action failed.')
     if (res.ok) load()
+  }
+
+  const toggleArrival = (booking: BookingRecord) => {
+    setOpenArrivalId((current) => (current === booking._id ? null : booking._id))
+    setArrivalDraft((prev) =>
+      prev[booking._id]
+        ? prev
+        : {
+            ...prev,
+            [booking._id]: {
+              details: booking.arrival?.details ?? '',
+              passcode: booking.arrival?.passcode ?? '',
+            },
+          }
+    )
+  }
+
+  const saveArrival = async (bookingId: string) => {
+    const draft = arrivalDraft[bookingId] ?? { details: '', passcode: '' }
+    await runAction(
+      bookingId,
+      { action: 'set_arrival', details: draft.details, passcode: draft.passcode },
+      'Arrival details saved.'
+    )
+    setOpenArrivalId(null)
   }
 
   const loadEvents = async (bookingId: string) => {
@@ -192,6 +219,14 @@ export default function OwnerBookingsPage() {
                       Resend confirmation
                     </button>
                   ) : null}
+                  {booking.status === 'confirmed' ? (
+                    <button
+                      onClick={() => toggleArrival(booking)}
+                      className="rounded-lg border border-white/10 px-3 py-2 text-xs text-gray-300 hover:border-luxury-gold hover:text-luxury-gold"
+                    >
+                      {openArrivalId === booking._id ? 'Close arrival info' : booking.arrival?.details || booking.arrival?.passcode ? 'Edit arrival info' : 'Add arrival info'}
+                    </button>
+                  ) : null}
                   {booking.status === 'pending_payment' ? (
                     <button
                       onClick={() => runAction(booking._id, { action: 'expire_hold' }, 'Pending hold expired.')}
@@ -225,6 +260,54 @@ export default function OwnerBookingsPage() {
                   </button>
                 </div>
               </div>
+              {openArrivalId === booking._id ? (
+                <div className="mt-5 border-t border-white/10 pt-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Arrival &amp; check-in details</p>
+                  <p className="mb-3 text-xs text-gray-500">
+                    Sent to the guest in the 3-day pre-stay email (and the 1-day reminder for last-minute bookings). Stored privately — never shown publicly.
+                  </p>
+                  <label className="mb-1 block text-xs font-semibold text-gray-400">Arrival instructions (directions, parking, WiFi, etc.)</label>
+                  <textarea
+                    value={arrivalDraft[booking._id]?.details ?? ''}
+                    onChange={(e) =>
+                      setArrivalDraft((prev) => ({
+                        ...prev,
+                        [booking._id]: { details: e.target.value, passcode: prev[booking._id]?.passcode ?? '' },
+                      }))
+                    }
+                    rows={5}
+                    placeholder={'e.g. The property is at 1975 Point Nepean Road, Tootgarook.\nParking: driveway fits 3 cars.\nWiFi: MaxEntertain / password ...'}
+                    className="mb-3 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-gray-200 focus:border-luxury-gold focus:outline-none"
+                  />
+                  <label className="mb-1 block text-xs font-semibold text-gray-400">Door / lockbox access code</label>
+                  <input
+                    type="text"
+                    value={arrivalDraft[booking._id]?.passcode ?? ''}
+                    onChange={(e) =>
+                      setArrivalDraft((prev) => ({
+                        ...prev,
+                        [booking._id]: { details: prev[booking._id]?.details ?? '', passcode: e.target.value },
+                      }))
+                    }
+                    placeholder="e.g. 4827"
+                    className="mb-3 w-full max-w-xs rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-gray-200 focus:border-luxury-gold focus:outline-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => saveArrival(booking._id)}
+                      className="rounded-lg border border-luxury-gold/40 px-4 py-2 text-xs font-semibold text-luxury-gold hover:bg-luxury-gold/10"
+                    >
+                      Save arrival details
+                    </button>
+                    <button
+                      onClick={() => setOpenArrivalId(null)}
+                      className="rounded-lg border border-white/10 px-4 py-2 text-xs text-gray-400 hover:border-white/30 hover:text-gray-200"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : null}
               {openBookingId === booking._id ? (
                 <div className="mt-5 border-t border-white/10 pt-4">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500">Event timeline</p>

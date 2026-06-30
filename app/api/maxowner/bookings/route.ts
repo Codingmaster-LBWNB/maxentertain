@@ -84,6 +84,30 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
+  if (action === 'set_arrival') {
+    const details = typeof body.details === 'string' ? body.details.slice(0, 4000) : ''
+    const passcode = typeof body.passcode === 'string' ? body.passcode.slice(0, 100) : ''
+    await db.collection('bookings').updateOne(
+      { _id: bookingId },
+      {
+        $set: {
+          'arrival.details': details,
+          'arrival.passcode': passcode,
+          'arrival.updatedAt': new Date(),
+          updatedAt: new Date(),
+        },
+      }
+    )
+    await db.collection('booking_events').insertOne({
+      bookingId: booking._id,
+      event: 'booking.arrival_details_set',
+      // Never log the passcode value itself.
+      data: { hasDetails: Boolean(details), hasPasscode: Boolean(passcode) },
+      createdAt: new Date(),
+    })
+    return NextResponse.json({ ok: true })
+  }
+
   if (action === 'mark_manual_refund') {
     const { refundAmountAud = 0, reason = 'Owner marked manual refund' } = body
     if (!['confirmed', 'cancelled', 'refund_pending', 'cancelling', 'payment_orphaned'].includes(booking.status)) {
