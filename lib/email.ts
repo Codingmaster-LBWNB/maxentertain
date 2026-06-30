@@ -258,14 +258,18 @@ export async function sendPreStayEmail(booking: BookingRecord, daysBeforeCheckIn
   // owner has filled them in for this booking via the dashboard.
   const includeArrival = daysBeforeCheckIn <= 3
   const arrivalDetails = booking.arrival?.details?.trim()
-  const arrivalPasscode = booking.arrival?.passcode?.trim()
+  // The door code is a fixed property code stored server-side (DOOR_PASSCODE);
+  // a per-booking value overrides it only if one is ever set. Either way it goes
+  // out automatically from the 3-day reminder onward — no owner action needed.
+  const arrivalPasscode = booking.arrival?.passcode?.trim() || process.env.DOOR_PASSCODE?.trim()
   const showArrival = includeArrival && (arrivalDetails || arrivalPasscode)
 
   const detailsHtml = arrivalDetails
     ? `<p>${escapeHtml(arrivalDetails).replace(/\n/g, '<br>')}</p>`
     : ''
   const passcodeHtml = arrivalPasscode
-    ? `<p><strong>Access code:</strong> ${escapeHtml(arrivalPasscode)}</p>`
+    ? `<p><strong>Door access code:</strong> ${escapeHtml(arrivalPasscode)}</p>` +
+      `<p style="color:#888;font-size:13px">This code is active for your stay dates.</p>`
     : ''
   const arrivalHtml = showArrival
     ? `<h3>Arrival &amp; check-in details</h3>${detailsHtml}${passcodeHtml}`
@@ -276,7 +280,7 @@ export async function sendPreStayEmail(booking: BookingRecord, daysBeforeCheckIn
         '',
         'Arrival & check-in details:',
         arrivalDetails ?? '',
-        arrivalPasscode ? `Access code: ${arrivalPasscode}` : '',
+        arrivalPasscode ? `Door access code: ${arrivalPasscode} (active for your stay dates)` : '',
       ].filter(Boolean).join('\n')
     : ''
 

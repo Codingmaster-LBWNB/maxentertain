@@ -279,7 +279,10 @@ export default function OwnerBookingsPage() {
                     placeholder={'e.g. The property is at 1975 Point Nepean Road, Tootgarook.\nParking: driveway fits 3 cars.\nWiFi: MaxEntertain / password ...'}
                     className="mb-3 w-full rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-gray-200 focus:border-luxury-gold focus:outline-none"
                   />
-                  <label className="mb-1 block text-xs font-semibold text-gray-400">Door / lockbox access code</label>
+                  <label className="mb-1 block text-xs font-semibold text-gray-400">Door access code (override)</label>
+                  <p className="mb-1 text-xs text-gray-500">
+                    Leave blank to use the fixed property code (set via the DOOR_PASSCODE env var). Only fill this in to send a different code for this one booking.
+                  </p>
                   <input
                     type="text"
                     value={arrivalDraft[booking._id]?.passcode ?? ''}
@@ -289,7 +292,7 @@ export default function OwnerBookingsPage() {
                         [booking._id]: { details: prev[booking._id]?.details ?? '', passcode: e.target.value },
                       }))
                     }
-                    placeholder="e.g. 4827"
+                    placeholder="Default: fixed property code"
                     className="mb-3 w-full max-w-xs rounded-lg border border-white/10 bg-black/30 px-3 py-2 text-sm text-gray-200 focus:border-luxury-gold focus:outline-none"
                   />
                   <div className="flex gap-2">
