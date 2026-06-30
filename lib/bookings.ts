@@ -380,10 +380,11 @@ export async function upsertGuestFromBooking(booking: BookingRecord) {
         lastStayedAt: new Date(`${booking.checkOut}T00:00:00.000Z`),
         updatedAt: now,
       },
+      // NOTE: totalBookings/totalSpendAud must NOT also appear here — MongoDB
+      // rejects a field that is in both $setOnInsert and $inc ("would create a
+      // conflict"). $inc initialises a missing field from 0 on insert, so the
+      // counters are correct either way. _id comes from the query filter.
       $setOnInsert: {
-        _id: email,
-        totalBookings: 0,
-        totalSpendAud: 0,
         offerCampaignsSent: [],
         createdAt: now,
       },
