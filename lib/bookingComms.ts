@@ -5,14 +5,15 @@ import type { BookingRecord } from '@/types/booking'
  * receives across the booking lifecycle, with the exact instant each was sent
  * (when known) or is scheduled to send.
  *
- * Scheduling model (must match app/api/cron/booking-comms):
- * - The comms cron runs daily at 09:00 UTC ("0 9 * * *").
- * - A pre-stay reminder for offset N fires on the cron run N calendar days
- *   before check-in, i.e. (checkIn - N days) at 09:00:00 UTC.
- * - The post-stay follow-up fires on the first cron run on/after check-out,
- *   i.e. checkOut at 09:00:00 UTC.
+ * Scheduling model (must match app/api/cron/booking-comms + vercel.json):
+ * - The comms cron runs daily at 22:00 UTC ("0 22 * * *"), which is the next
+ *   morning in Melbourne (≈09:00 AEDT / 08:00 AEST).
+ * - Day offsets are computed against the current Melbourne date, so a pre-stay
+ *   reminder for offset N is delivered on the Melbourne morning of
+ *   (checkIn - N days), and the post-stay follow-up on the Melbourne morning
+ *   of the checkout day.
  * Vercel may execute a cron a little after the scheduled minute, so scheduled
- * times are the nominal 09:00:00 UTC trigger.
+ * times are the nominal trigger instant.
  */
 
 export type CommsStatus = 'sent' | 'scheduled' | 'missed' | 'skipped' | 'awaiting_payment'
@@ -38,12 +39,19 @@ const PRE_STAY: Array<{ days: number; label: string }> = [
 ]
 
 const DAY_MS = 86_400_000
+// The daily comms cron (vercel.json: "0 22 * * *").
+const CRON_UTC_HOUR = 22
 
-/** The nominal cron instant: 09:00:00 UTC on (dateStr - offsetDays). */
+/**
+ * The instant a message due on Melbourne date (dateStr - offsetDays) is sent.
+ * The cron runs at CRON_UTC_HOUR:00 UTC the evening before, which lands in the
+ * Melbourne morning of the due date — so the instant is CRON_UTC_HOUR:00 UTC on
+ * (dueDate - 1 day).
+ */
 function cronInstantUtc(dateStr: string, offsetDays: number): Date {
   const [y, m, d] = dateStr.split('-').map(Number)
-  const base = Date.UTC(y, (m ?? 1) - 1, d ?? 1, 9, 0, 0, 0)
-  return new Date(base - offsetDays * DAY_MS)
+  const dueMidnightUtc = Date.UTC(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0, 0)
+  return new Date(dueMidnightUtc - offsetDays * DAY_MS - DAY_MS + CRON_UTC_HOUR * 3600_000)
 }
 
 export function buildCommsTimeline(booking: BookingRecord, now: Date = new Date()): CommsTimelineItem[] {

@@ -317,7 +317,7 @@ export default function OwnerBookingsPage() {
                 <div className="mt-5 border-t border-white/10 pt-4">
                   <p className="mb-1 text-xs font-semibold uppercase tracking-wider text-gray-500">Guest message timeline</p>
                   <p className="mb-3 text-xs text-gray-500">
-                    Every email the guest receives. Times shown in Melbourne time, to the second. Scheduled sends fire from the daily 09:00 UTC comms cron.
+                    Every email the guest receives. All times shown in Melbourne time, to the second. Scheduled sends fire from the daily comms run (Melbourne morning, ≈9am AEDT / 8am AEST).
                   </p>
                   <div className="space-y-2">
                     {(commsByBooking[booking._id] ?? []).map((item) => (
