@@ -8,6 +8,7 @@ import MobileBookingBar from '@/components/MobileBookingBar'
 import ThemeProvider from '@/components/ThemeProvider'
 import JsonLd from '@/components/JsonLd'
 import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const josefin = Josefin_Sans({
   subsets: ['latin'],
@@ -128,6 +129,7 @@ export default function RootLayout({
         </ThemeProvider>
         <MobileBookingBar />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )
