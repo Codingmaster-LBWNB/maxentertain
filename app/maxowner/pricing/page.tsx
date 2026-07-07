@@ -52,6 +52,7 @@ const TIER_DOT_COLOR: Record<PricingTier, string> = {
   SCHOOL_HOLIDAY: 'bg-sky-400',
   WEEKEND:        'bg-amber-400',
   STANDARD:       'bg-gray-500',
+  WINTER_MIDWEEK: 'bg-teal-400',
 }
 
 const LEVY_RATE = 0.075
