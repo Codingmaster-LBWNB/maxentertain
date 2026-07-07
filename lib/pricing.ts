@@ -1,5 +1,5 @@
 // Pricing tiers for the property
-export type PricingTier = 'SUMMER_PEAK' | 'PUBLIC_HOLIDAY' | 'SCHOOL_HOLIDAY' | 'WEEKEND' | 'STANDARD'
+export type PricingTier = 'SUMMER_PEAK' | 'PUBLIC_HOLIDAY' | 'SCHOOL_HOLIDAY' | 'WEEKEND' | 'STANDARD' | 'WINTER_MIDWEEK'
 
 export const NIGHTLY_RATES: Record<PricingTier, number> = {
   SUMMER_PEAK:    3200,
@@ -7,6 +7,7 @@ export const NIGHTLY_RATES: Record<PricingTier, number> = {
   SCHOOL_HOLIDAY: 2500,
   WEEKEND:        2200,
   STANDARD:       1880,
+  WINTER_MIDWEEK: 1500,
 }
 
 export const TIER_LABELS: Record<PricingTier, string> = {
@@ -15,7 +16,11 @@ export const TIER_LABELS: Record<PricingTier, string> = {
   SCHOOL_HOLIDAY: 'School Holiday',
   WEEKEND:        'Weekend',
   STANDARD:       'Standard',
+  WINTER_MIDWEEK: 'Winter Midweek',
 }
+
+// Winter off-peak months (Jun–Aug) — the soft season on the Mornington Peninsula.
+const WINTER_MONTHS = new Set([6, 7, 8])
 
 // Victorian public holidays 2026–2028
 const PUBLIC_HOLIDAYS = new Set([
@@ -67,7 +72,7 @@ function formatDateStr(date: Date): string {
   return `${y}-${m}-${d}`
 }
 
-// Priority: SUMMER_PEAK > PUBLIC_HOLIDAY > SCHOOL_HOLIDAY > WEEKEND > STANDARD
+// Priority: SUMMER_PEAK > PUBLIC_HOLIDAY > SCHOOL_HOLIDAY > WEEKEND > WINTER_MIDWEEK > STANDARD
 export function getTierForDate(dateStr: string): PricingTier {
   if (isInPeriod(dateStr, SUMMER_PEAK_PERIODS)) return 'SUMMER_PEAK'
   if (PUBLIC_HOLIDAYS.has(dateStr)) return 'PUBLIC_HOLIDAY'
@@ -76,6 +81,10 @@ export function getTierForDate(dateStr: string): PricingTier {
   const [year, month, day] = dateStr.split('-').map(Number)
   const dow = new Date(year, month - 1, day).getDay() // 0=Sun, 6=Sat
   if (dow === 5 || dow === 6) return 'WEEKEND' // Friday night + Saturday night (you wake up on weekend)
+
+  // Off-peak winter midweek (Sun–Thu nights in Jun–Aug): a discounted rate to
+  // attract golf / corporate / off-peak groups into the soft season.
+  if (WINTER_MONTHS.has(month)) return 'WINTER_MIDWEEK'
 
   return 'STANDARD'
 }
@@ -141,6 +150,6 @@ export function groupNightsByTier(nights: NightBreakdown[]): { tier: PricingTier
     }
   }
   // Return in priority order
-  const order: PricingTier[] = ['SUMMER_PEAK', 'PUBLIC_HOLIDAY', 'SCHOOL_HOLIDAY', 'WEEKEND', 'STANDARD']
+  const order: PricingTier[] = ['SUMMER_PEAK', 'PUBLIC_HOLIDAY', 'SCHOOL_HOLIDAY', 'WEEKEND', 'WINTER_MIDWEEK', 'STANDARD']
   return order.filter(t => map.has(t)).map(t => ({ tier: t, ...map.get(t)! }))
 }
