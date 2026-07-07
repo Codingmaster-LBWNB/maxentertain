@@ -13,6 +13,7 @@ import type {
   PublicBookingSummary,
 } from '@/types/booking'
 import { getSiteUrl } from '@/lib/site'
+import { sendBookingRecoveryEmail } from '@/lib/email'
 
 export const PROPERTY_ID = 'maxentertain'
 export const PENDING_HOLD_MINUTES = 30
@@ -415,6 +416,24 @@ export async function expireBooking(bookingId: string, reason = 'expired') {
     }
   )
   await recordBookingEvent(db, bookingId, 'booking.pending_expired', { reason })
+
+  // Abandoned-checkout recovery: the guest reached the booking form (so we have
+  // their email) but never paid. Nudge them back with a prefilled resume link.
+  // Only for genuine abandonment/failure — not when the owner manually expires a
+  // hold — and only once per booking.
+  const RECOVERY_REASONS = new Set(['checkout_expired', 'stripe_checkout_expired', 'payment_failed'])
+  if (RECOVERY_REASONS.has(reason) && booking.guest?.email) {
+    try {
+      if (!(await hasCommsEvent(bookingId, 'booking.recovery.email'))) {
+        await sendBookingRecoveryEmail(booking)
+        await markCommsEventSent(bookingId, 'booking.recovery.email')
+        await recordBookingEvent(db, bookingId, 'booking.recovery_email_sent', { reason })
+      }
+    } catch (err) {
+      await markCommsEventFailed(bookingId, 'booking.recovery.email', err).catch(() => {})
+    }
+  }
+
   return getBookingById(bookingId)
 }
 

@@ -112,6 +112,42 @@ export async function sendBookingConfirmedEmail(booking: BookingRecord) {
   })
 }
 
+export async function sendBookingRecoveryEmail(booking: BookingRecord) {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL ?? process.env.SITE_URL ?? 'https://maxentertain.com'
+  const resumeUrl = `${baseUrl}/book?checkIn=${encodeURIComponent(booking.checkIn)}&checkOut=${encodeURIComponent(booking.checkOut)}`
+  const guestName = escapeHtml(booking.guest.name || 'there')
+  const dateRange = escapeHtml(dateRangeLine(booking))
+  const propertyName = escapeHtml(propertyConfig.name)
+  const resumeHref = escapeHtml(resumeUrl)
+
+  return sendEmail({
+    to: booking.guest.email,
+    subject: `Still keen? Finish your ${propertyConfig.name} booking`,
+    html: `
+      <h2>You were almost there</h2>
+      <p>Hi ${guestName},</p>
+      <p>It looks like your booking for ${propertyName} didn't get finished. The dates you chose may still be available — you can pick up right where you left off.</p>
+      <p><strong>Your dates:</strong> ${dateRange}</p>
+      <p><strong>Total:</strong> ${money(booking.pricing.totalAud)} — booked direct, all fees included, no platform service charge.</p>
+      <p style="margin:24px 0">
+        <a href="${resumeHref}" style="background:#D4AF37;color:#111;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600">Finish my booking</a>
+      </p>
+      <p style="color:#666;font-size:13px">Dates are held only while you're checking out, so they may book up — securing them now is the safest bet. Just reply to this email if you have any questions before booking.</p>
+    `,
+    text: [
+      `Hi ${booking.guest.name || 'there'},`,
+      `It looks like your booking for ${propertyConfig.name} didn't get finished.`,
+      `Your dates: ${dateRangeLine(booking)}`,
+      `Total: ${money(booking.pricing.totalAud)} (booked direct, all fees included).`,
+      '',
+      `Finish your booking: ${resumeUrl}`,
+      '',
+      'Dates may book up, so securing them now is the safest bet. Reply to this email with any questions.',
+    ].join('\n'),
+  })
+}
+
 export async function sendOwnerBookingAlert(booking: BookingRecord) {
   const guestName = escapeHtml(booking.guest.name)
   const guestEmail = escapeHtml(booking.guest.email)
