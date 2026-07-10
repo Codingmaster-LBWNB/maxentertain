@@ -8,6 +8,7 @@ import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
 import { useAvailability } from '@/hooks/useAvailability'
 import { blockedDates as defaultBlockedDates } from '@/config/property'
 import { getPriceSummary, groupNightsByTier, TIER_LABELS, NIGHTLY_RATES, PricingTier } from '@/lib/pricing'
+import { MIN_ADVANCE_DAYS, earliestCheckInStr } from '@/lib/booking-window'
 import { trackClick } from '@/lib/analytics'
 
 type PricingState =
@@ -53,6 +54,7 @@ export default function Calendar({
   const [mounted, setMounted] = useState(false)
   const [currentMonth, setCurrentMonth] = useState<Date | null>(null)
   const [todayStr, setTodayStr] = useState('')
+  const [earliest, setEarliest] = useState('')
   const [checkIn, setCheckIn] = useState<Date | null>(null)
   const [checkOut, setCheckOut] = useState<Date | null>(null)
 
@@ -65,6 +67,7 @@ export default function Calendar({
     const now = new Date()
     setCurrentMonth(toZonedTime(now, TZ))
     setTodayStr(formatInTimeZone(now, TZ, 'yyyy-MM-dd'))
+    setEarliest(earliestCheckInStr(now))
     setMounted(true)
   }, [])
 
@@ -92,7 +95,9 @@ export default function Calendar({
 
   const isBlocked = (date: Date) => blockedDates.includes(auStr(date))
   const isPast = (date: Date) => !!todayStr && auStr(date) < todayStr
-  const isAvailable = (date: Date) => !isPast(date) && !isBlocked(date)
+  // Within the advance-notice window (today .. earliest-1): not bookable.
+  const isTooSoon = (date: Date) => !!earliest && !isPast(date) && auStr(date) < earliest
+  const isAvailable = (date: Date) => !isPast(date) && !isTooSoon(date) && !isBlocked(date)
   const isToday = (date: Date) => auStr(date) === todayStr
   const isCheckIn = (date: Date) => !!checkIn && auStr(date) === auStr(checkIn)
   const isCheckOut = (date: Date) => !!checkOut && auStr(date) === auStr(checkOut)
@@ -276,6 +281,7 @@ export default function Calendar({
                 const blocked = isBlocked(day)
                 const available = isAvailable(day)
                 const past = isPast(day)
+                const tooSoon = isTooSoon(day)
                 const today = isToday(day)
                 const ci = isCheckIn(day)
                 const co = isCheckOut(day)
@@ -290,8 +296,8 @@ export default function Calendar({
                   cellClass += 'bg-luxury-gold text-white rounded-lg cursor-pointer '
                 } else if (inRange) {
                   cellClass += 'bg-luxury-gold/20 text-luxury-dark rounded-lg cursor-pointer '
-                } else if (past) {
-                  cellClass += 'bg-gray-100 text-gray-400 rounded-lg '
+                } else if (past || tooSoon) {
+                  cellClass += 'bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed '
                 } else if (blocked) {
                   cellClass += 'bg-red-100 text-red-600 rounded-lg line-through cursor-not-allowed '
                 } else if (available) {
@@ -307,7 +313,7 @@ export default function Calendar({
                     key={day.toString()}
                     className={cellClass}
                     onClick={() => handleDayClick(day)}
-                    title={blocked ? 'Booked' : past ? 'Past' : available ? 'Available' : ''}
+                    title={blocked ? 'Booked' : past ? 'Past' : tooSoon ? `${MIN_ADVANCE_DAYS} days notice required` : available ? 'Available' : ''}
                   >
                     {format(day, 'd')}
                   </div>
@@ -449,7 +455,8 @@ export default function Calendar({
               )}
               <p className="text-sm md:text-base text-gray-700 text-center mt-3 leading-relaxed">
                 Minimum stay starts at <span className="font-semibold">2 nights</span>. School &amp; public holidays typically require{' '}
-                <span className="font-semibold">3–5 nights</span> minimum.
+                <span className="font-semibold">3–5 nights</span> minimum. Bookings require at least{' '}
+                <span className="font-semibold">{MIN_ADVANCE_DAYS} days&rsquo; advance notice</span>.
               </p>
             </div>
           </div>

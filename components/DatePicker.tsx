@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addMonths, subMonths } from 'date-fns'
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz'
+import { earliestCheckInStr } from '@/lib/booking-window'
 
 const AU_TZ = 'Australia/Melbourne'
 
@@ -83,11 +84,15 @@ export default function DatePicker({
 
   const minStr = minDateStr || todayStrAU()
   const todayStr = todayStrAU()
+  // Advance-notice floor: no check-in (or check-out) sooner than today + N days.
+  const advanceFloor = earliestCheckInStr()
 
   const isDisabledDay = (d: Date) => {
     const dayStr = utcDateToDateStr(d)
     // Past (AU)
     if (dayStr < todayStr) return true
+    // Advance-notice minimum
+    if (dayStr < advanceFloor) return true
     // Min date
     if (minExclusive ? dayStr <= minStr : dayStr < minStr) return true
     // Blocked
@@ -192,7 +197,7 @@ export default function DatePicker({
           </div>
 
           <div className="mt-3 text-sm text-gray-600">
-            Unavailable and past dates are disabled.
+            Unavailable, past, and next-3-days dates are disabled (3 days&rsquo; notice required).
           </div>
         </div>
       )}
