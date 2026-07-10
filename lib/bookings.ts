@@ -14,6 +14,7 @@ import type {
 } from '@/types/booking'
 import { getSiteUrl } from '@/lib/site'
 import { sendBookingRecoveryEmail } from '@/lib/email'
+import { MIN_ADVANCE_DAYS, earliestCheckInStr } from '@/lib/booking-window'
 
 export const PROPERTY_ID = 'maxentertain'
 export const PENDING_HOLD_MINUTES = 30
@@ -226,6 +227,15 @@ export async function createPendingBooking(input: CreatePendingBookingInput) {
   await cleanupExpiredPendingBookings()
 
   const nightDates = getNightDates(input.checkIn, input.checkOut)
+
+  // Enforce the advance-notice window (no same-day / last-minute bookings).
+  const earliest = earliestCheckInStr()
+  if (input.checkIn < earliest) {
+    throw new BookingValidationError(
+      `Bookings require at least ${MIN_ADVANCE_DAYS} days' notice. The earliest available check-in is ${earliest}.`
+    )
+  }
+
   const quote = await getBookingQuote(input.checkIn, input.checkOut)
 
   if (!input.rulesAccepted) {
