@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import type { BookingGroupType, BookingPricing } from '@/types/booking'
+import { PET_FEE_AUD } from '@/lib/pricing'
 import BookingSummary from '@/components/BookingSummary'
 import CancellationPolicy from '@/components/CancellationPolicy'
 
@@ -30,6 +31,18 @@ export default function BookingForm({
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [withPet, setWithPet] = useState(false)
+
+  // The server computes the authoritative total; this mirrors the pet fee live
+  // in the summary + Pay button as the guest toggles it.
+  const displayPricing: BookingPricing = withPet
+    ? {
+        ...pricing,
+        petFeeAud: PET_FEE_AUD,
+        totalAud: pricing.totalAud + PET_FEE_AUD,
+        totalCents: (pricing.totalAud + PET_FEE_AUD) * 100,
+      }
+    : pricing
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -46,6 +59,7 @@ export default function BookingForm({
       guests: Number(form.get('guests') ?? 0),
       groupType: String(form.get('groupType') ?? 'other'),
       pets: String(form.get('pets') ?? ''),
+      withPet,
       message: String(form.get('message') ?? ''),
       rulesAccepted: form.get('rulesAccepted') === 'on',
     }
@@ -136,13 +150,28 @@ export default function BookingForm({
                 ))}
               </select>
             </label>
-            <label className="block md:col-span-2">
-              <span className={labelClass}>
-                <span className="material-icons text-[14px] text-luxury-gold">pets</span>
-                Pets
-              </span>
-              <input name="pets" placeholder="No pets / one small dog / etc." className={inputClass} />
-            </label>
+            <div className="md:col-span-2 rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-white/5">
+              <label className="flex cursor-pointer items-start gap-3 text-sm text-gray-700 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={withPet}
+                  onChange={(e) => setWithPet(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-luxury-gold"
+                />
+                <span className="flex flex-wrap items-center gap-1.5">
+                  <span className="material-icons text-[16px] text-luxury-gold">pets</span>
+                  I&rsquo;m travelling with a pet
+                  <span className="font-semibold text-luxury-dark dark:text-white">(+${PET_FEE_AUD} pet cleaning fee)</span>
+                </span>
+              </label>
+              {withPet ? (
+                <input
+                  name="pets"
+                  placeholder="Tell us about your pet — breed, size, etc."
+                  className={`${inputClass} mt-3`}
+                />
+              ) : null}
+            </div>
             <label className="block md:col-span-2">
               <span className={labelClass}>
                 <span className="material-icons text-[14px] text-luxury-gold">chat_bubble_outline</span>
@@ -188,7 +217,7 @@ export default function BookingForm({
             ) : (
               <>
                 <span className="material-icons text-[18px]">lock</span>
-                Pay ${pricing.totalAud.toLocaleString()} Securely
+                Pay ${displayPricing.totalAud.toLocaleString()} Securely
               </>
             )}
           </button>
@@ -212,7 +241,7 @@ export default function BookingForm({
       </div>
 
       <aside className="space-y-5 lg:col-span-5">
-        <BookingSummary pricing={pricing} checkIn={checkIn} checkOut={checkOut} showLevy />
+        <BookingSummary pricing={displayPricing} checkIn={checkIn} checkOut={checkOut} showLevy />
         <CancellationPolicy />
       </aside>
     </div>

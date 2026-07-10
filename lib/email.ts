@@ -88,6 +88,7 @@ export async function sendBookingConfirmedEmail(booking: BookingRecord) {
       <p>Thank you for booking ${propertyName}. Your stay is confirmed.</p>
       <p><strong>Dates:</strong> ${dateRange}</p>
       <p><strong>Total paid:</strong> ${money(booking.pricing.totalAud)}</p>
+      ${booking.pricing.petFeeAud > 0 ? `<p><strong>Includes pet cleaning fee:</strong> ${money(booking.pricing.petFeeAud)}</p>` : ''}
       <p><strong>Guests:</strong> ${booking.guest.guests}</p>
       <p><strong>Check-in:</strong> ${escapeHtml(propertyConfig.policies.checkIn)}</p>
       <p><strong>Check-out:</strong> ${escapeHtml(propertyConfig.policies.checkOut)}</p>
@@ -100,6 +101,7 @@ export async function sendBookingConfirmedEmail(booking: BookingRecord) {
       'Your booking is confirmed.',
       `Dates: ${dateRangeLine(booking)}`,
       `Total paid: ${money(booking.pricing.totalAud)}`,
+      booking.pricing.petFeeAud > 0 ? `Includes pet cleaning fee: ${money(booking.pricing.petFeeAud)}` : '',
       `Guests: ${booking.guest.guests}`,
       `Check-in: ${propertyConfig.policies.checkIn}`,
       `Check-out: ${propertyConfig.policies.checkOut}`,
@@ -153,7 +155,10 @@ export async function sendOwnerBookingAlert(booking: BookingRecord) {
   const guestEmail = escapeHtml(booking.guest.email)
   const guestPhone = escapeHtml(booking.guest.phone)
   const groupType = escapeHtml(booking.guest.groupType)
-  const pets = escapeHtml(booking.guest.pets || 'None declared')
+  const petsDetail = booking.guest.pets ? ` — ${escapeHtml(booking.guest.pets)}` : ''
+  const petLine = booking.guest.withPet
+    ? `Yes (+${money(booking.pricing.petFeeAud)} pet fee)${petsDetail}`
+    : `No${petsDetail}`
   const guestMessage = escapeHtml(booking.guest.message)
   const dateRange = escapeHtml(dateRangeLine(booking))
   const invoiceUrl = escapeHtml(booking.payment.stripeInvoiceUrl)
@@ -166,7 +171,7 @@ export async function sendOwnerBookingAlert(booking: BookingRecord) {
       <h2>New direct booking confirmed</h2>
       <p><strong>Guest:</strong> ${guestName} (${guestEmail}, ${guestPhone})</p>
       <p><strong>Group type:</strong> ${groupType}</p>
-      <p><strong>Pets:</strong> ${pets}</p>
+      <p><strong>Travelling with pet:</strong> ${petLine}</p>
       <p><strong>Guests:</strong> ${booking.guest.guests}</p>
       <p><strong>Dates:</strong> ${dateRange}</p>
       <p><strong>Total:</strong> ${money(booking.pricing.totalAud)}</p>
@@ -186,7 +191,7 @@ export async function sendOwnerBookingAlert(booking: BookingRecord) {
       'New direct booking confirmed',
       `Guest: ${booking.guest.name} (${booking.guest.email}, ${booking.guest.phone})`,
       `Group type: ${booking.guest.groupType}`,
-      `Pets: ${booking.guest.pets || 'None declared'}`,
+      `Travelling with pet: ${petLine}`,
       `Guests: ${booking.guest.guests}`,
       `Dates: ${dateRangeLine(booking)}`,
       `Total: ${money(booking.pricing.totalAud)}`,

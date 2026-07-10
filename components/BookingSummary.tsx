@@ -38,6 +38,18 @@ export default function BookingSummary({
             </span>
           </div>
         ))}
+
+        {pricing.petFeeAud > 0 ? (
+          <div className="flex items-start justify-between gap-4 text-base">
+            <div>
+              <p className="font-semibold text-luxury-dark dark:text-white">Pet cleaning fee</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">Travelling with a pet</p>
+            </div>
+            <span className="font-semibold text-luxury-dark dark:text-white">
+              ${pricing.petFeeAud.toLocaleString()}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-6 border-t border-gray-200 pt-4 dark:border-white/10">

@@ -235,12 +235,21 @@ export default function OwnerBookingsPage() {
                     <span className="rounded-full border border-luxury-gold/30 bg-luxury-gold/10 px-2 py-0.5 text-xs text-luxury-gold">
                       {booking.guest.groupType}
                     </span>
+                    {booking.guest.withPet ? (
+                      <span className="inline-flex items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-xs text-amber-300">
+                        <span className="material-icons" style={{ fontSize: '12px' }}>pets</span>
+                        Travelling with pet
+                      </span>
+                    ) : null}
                   </div>
                   <div className="grid gap-1 text-sm text-gray-400 md:grid-cols-2">
                     <p>{booking.guest.email}</p>
                     <p>{booking.guest.phone}</p>
                     <p>{booking.checkIn} to {booking.checkOut} ({booking.nights} nights)</p>
-                    <p>${booking.pricing.totalAud.toLocaleString()} total</p>
+                    <p>
+                      ${booking.pricing.totalAud.toLocaleString()} total
+                      {booking.pricing.petFeeAud ? ` (incl. $${booking.pricing.petFeeAud} pet fee)` : ''}
+                    </p>
                     <p>Payment intent: {booking.payment.stripePaymentIntentId ?? '—'}</p>
                     <p>Refund ID: {booking.refundStripeId ?? '—'}</p>
                   </div>
