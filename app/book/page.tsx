@@ -64,6 +64,7 @@ export default async function BookPage({
                 accommodationAud: quote.accommodationAud,
                 shortStayLevyRate: quote.shortStayLevyRate,
                 shortStayLevyAud: quote.shortStayLevyAud,
+                petFeeAud: quote.petFeeAud,
                 totalAud: quote.totalAud,
                 totalCents: quote.totalCents,
                 nights: quote.nights,

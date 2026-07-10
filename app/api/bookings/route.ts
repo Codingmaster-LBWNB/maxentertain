@@ -73,13 +73,25 @@ export async function POST(req: NextRequest) {
           quantity: 1,
           price_data: {
             currency: 'aud',
-            unit_amount: booking.pricing.totalCents,
+            unit_amount: booking.pricing.accommodationAud * 100,
             product_data: {
               name: 'MAX Entertain direct booking',
               description: `${booking.checkIn} to ${booking.checkOut} (${booking.nights} nights)`,
             },
           },
         },
+        ...(booking.pricing.petFeeAud > 0
+          ? [
+              {
+                quantity: 1,
+                price_data: {
+                  currency: 'aud' as const,
+                  unit_amount: booking.pricing.petFeeAud * 100,
+                  product_data: { name: 'Pet cleaning fee' },
+                },
+              },
+            ]
+          : []),
       ],
       success_url: `${siteUrl}/booking-confirmation?bookingId=${booking._id}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/booking-cancelled?bookingId=${booking._id}`,

@@ -25,6 +25,8 @@ export interface BookingGuest {
   guests: number
   groupType: BookingGroupType
   pets: string
+  /** Guest is travelling with a pet — triggers the pet cleaning fee. */
+  withPet: boolean
   message: string
 }
 
@@ -32,6 +34,8 @@ export interface BookingPricing {
   accommodationAud: number
   shortStayLevyRate: number
   shortStayLevyAud: number
+  /** Flat pet cleaning fee added to the total when the guest travels with a pet. */
+  petFeeAud: number
   totalAud: number
   totalCents: number
   nights: NightBreakdown[]

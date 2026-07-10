@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto'
 import type { Db, MongoServerError } from 'mongodb'
 import { getDb } from '@/lib/mongodb'
-import { getPriceSummary, NIGHTLY_RATES, PricingTier } from '@/lib/pricing'
+import { getPriceSummary, NIGHTLY_RATES, PET_FEE_AUD, PricingTier } from '@/lib/pricing'
 import type {
   BookingGroupType,
   BookingGuest,
@@ -95,6 +95,7 @@ export function normaliseGuest(input: Record<string, unknown>): BookingGuest {
     guests,
     groupType: normaliseGroupType(String(input.groupType ?? 'other')),
     pets: String(input.pets ?? '').trim(),
+    withPet: input.withPet === true,
     message: String(input.message ?? '').trim(),
   }
 
@@ -166,6 +167,7 @@ export async function getBookingQuote(checkIn: string, checkOut: string): Promis
     accommodationAud: totalAud,
     shortStayLevyRate: SHORT_STAY_LEVY_RATE,
     shortStayLevyAud,
+    petFeeAud: 0,
     totalAud,
     totalCents: totalAud * 100,
     nights: summary.nights,
@@ -252,6 +254,10 @@ export async function createPendingBooking(input: CreatePendingBookingInput) {
     throw new DatesUnavailableError()
   }
 
+  // Flat pet cleaning fee on top of the accommodation total when travelling with a pet.
+  const petFeeAud = input.guest.withPet ? PET_FEE_AUD : 0
+  const totalAud = quote.totalAud + petFeeAud
+
   const booking: BookingRecord = {
     _id: bookingId,
     propertyId: PROPERTY_ID,
@@ -264,8 +270,9 @@ export async function createPendingBooking(input: CreatePendingBookingInput) {
       accommodationAud: quote.accommodationAud,
       shortStayLevyRate: quote.shortStayLevyRate,
       shortStayLevyAud: quote.shortStayLevyAud,
-      totalAud: quote.totalAud,
-      totalCents: quote.totalCents,
+      petFeeAud,
+      totalAud,
+      totalCents: totalAud * 100,
       nights: quote.nights,
     },
     payment: {},
