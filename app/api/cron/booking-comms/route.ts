@@ -4,6 +4,7 @@ import { formatInTimeZone } from 'date-fns-tz'
 import { getDb } from '@/lib/mongodb'
 import type { BookingRecord, GuestRecord } from '@/types/booking'
 import { markCheckoutCompletedSent, markPreStaySent } from '@/lib/bookings'
+import { canPlaceBond, placeBondHold, releaseBond } from '@/lib/bonds'
 import { sendCheckoutFollowupEmail, sendPreStayEmail, sendReturningGuestOfferEmail } from '@/lib/email'
 
 export const runtime = 'nodejs'
@@ -44,14 +45,17 @@ export async function GET(req: NextRequest) {
   // "N days before check-in" and "checkout day" follow Melbourne dates rather
   // than the server's UTC day.
   const today = parseISO(formatInTimeZone(now, TZ, 'yyyy-MM-dd'))
+  // Include 'completed' so the security-deposit release can run after checkout
+  // (the checkout follow-up flips a booking from confirmed → completed).
   const bookings = await db
     .collection<BookingRecord>('bookings')
-    .find({ status: 'confirmed' })
+    .find({ status: { $in: ['confirmed', 'completed'] } })
     .toArray()
 
   let preStayEvents = 0
   let checkoutEvents = 0
   let returningOfferEvents = 0
+  let bondEvents = 0
   let failedEvents = 0
 
   for (const booking of bookings) {
@@ -70,6 +74,16 @@ export async function GET(req: NextRequest) {
         await sendCheckoutFollowupEmail(booking)
         await markCheckoutCompletedSent(booking._id)
         checkoutEvents += 1
+      }
+
+      // Security deposit: place the hold ~1 day before check-in, release ~1 day
+      // after checkout. Placement only runs when a card was saved at checkout.
+      if (daysUntilCheckIn <= 1 && daysUntilCheckIn >= 0 && canPlaceBond(booking)) {
+        await placeBondHold(booking)
+        bondEvents += 1
+      } else if (daysSinceCheckout >= 1 && booking.bond?.status === 'authorized') {
+        await releaseBond(booking)
+        bondEvents += 1
       }
     } catch (error) {
       failedEvents += 1
@@ -103,5 +117,5 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, preStayEvents, checkoutEvents, returningOfferEvents, failedEvents })
+  return NextResponse.json({ ok: true, preStayEvents, checkoutEvents, returningOfferEvents, bondEvents, failedEvents })
 }

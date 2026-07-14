@@ -48,7 +48,24 @@ export interface BookingPayment {
   stripeInvoiceId?: string
   stripeInvoiceUrl?: string
   stripeReceiptUrl?: string
+  /** Saved for placing the security-deposit hold off-session before check-in. */
+  stripeCustomerId?: string
+  stripePaymentMethodId?: string
   paidAt?: Date
+}
+
+export type BondStatus = 'none' | 'authorized' | 'released' | 'captured' | 'failed'
+
+export interface BookingBond {
+  status: BondStatus
+  amountAud: number
+  /** The manual-capture PaymentIntent holding the deposit. */
+  paymentIntentId?: string
+  authorizedAt?: Date
+  releasedAt?: Date
+  capturedAt?: Date
+  capturedAmountAud?: number
+  lastError?: string
 }
 
 export interface BookingArrival {
@@ -104,6 +121,7 @@ export interface BookingRecord {
   comms?: BookingComms
   arrival?: BookingArrival
   agreement?: BookingAgreement
+  bond?: BookingBond
 }
 
 export interface PublicBookingSummary {

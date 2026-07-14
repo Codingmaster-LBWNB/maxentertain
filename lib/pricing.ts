@@ -1,6 +1,10 @@
 // Flat pet cleaning fee (AUD) added to a booking when the guest travels with a pet.
 export const PET_FEE_AUD = 100
 
+// Refundable security deposit (AUD) held before check-in and auto-released after
+// checkout unless a damage claim is captured.
+export const BOND_AMOUNT_AUD = 300
+
 // Pricing tiers for the property
 export type PricingTier = 'SUMMER_PEAK' | 'PUBLIC_HOLIDAY' | 'SCHOOL_HOLIDAY' | 'WEEKEND' | 'STANDARD' | 'WINTER_MIDWEEK'
 

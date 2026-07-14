@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { expireBooking } from '@/lib/bookings'
+import { captureBond, releaseBond } from '@/lib/bonds'
 import { sendBookingConfirmedEmail, sendOwnerBookingAlert } from '@/lib/email'
 import type { BookingRecord, BookingStatus } from '@/types/booking'
 
@@ -133,6 +134,27 @@ export async function POST(req: NextRequest) {
       data: { refundAmountAud: Number(refundAmountAud), reason: String(reason) },
       createdAt: new Date(),
     })
+    return NextResponse.json({ ok: true })
+  }
+
+  if (action === 'release_bond') {
+    if (booking.bond?.status !== 'authorized') {
+      return NextResponse.json({ error: 'No active security hold to release' }, { status: 400 })
+    }
+    await releaseBond(booking)
+    return NextResponse.json({ ok: true })
+  }
+
+  if (action === 'capture_bond') {
+    if (booking.bond?.status !== 'authorized') {
+      return NextResponse.json({ error: 'No active security hold to capture' }, { status: 400 })
+    }
+    const amountAud = typeof body.amountAud === 'number' ? body.amountAud : undefined
+    try {
+      await captureBond(booking, amountAud)
+    } catch (err) {
+      return NextResponse.json({ error: err instanceof Error ? err.message : 'Capture failed' }, { status: 400 })
+    }
     return NextResponse.json({ ok: true })
   }
 

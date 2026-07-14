@@ -25,6 +25,7 @@ async function buildPaymentDetails(session: Stripe.Checkout.Session) {
 
   let chargeId: string | undefined
   let receiptUrl: string | undefined
+  let paymentMethodId: string | undefined
 
   if (paymentIntentId) {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId, {
@@ -35,7 +36,13 @@ async function buildPaymentDetails(session: Stripe.Checkout.Session) {
       chargeId = latestCharge.id
       receiptUrl = latestCharge.receipt_url ?? undefined
     }
+    paymentMethodId =
+      typeof paymentIntent.payment_method === 'string'
+        ? paymentIntent.payment_method
+        : paymentIntent.payment_method?.id
   }
+
+  const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id
 
   const invoiceId = typeof session.invoice === 'string' ? session.invoice : session.invoice?.id
   let invoiceUrl: string | undefined
@@ -51,6 +58,8 @@ async function buildPaymentDetails(session: Stripe.Checkout.Session) {
     stripeInvoiceId: invoiceId,
     stripeInvoiceUrl: invoiceUrl,
     stripeReceiptUrl: receiptUrl,
+    stripeCustomerId: customerId,
+    stripePaymentMethodId: paymentMethodId,
     paidAt: new Date(),
   }
 }

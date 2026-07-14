@@ -3,7 +3,7 @@
 import { FormEvent, useState } from 'react'
 import Link from 'next/link'
 import type { BookingGroupType, BookingPricing } from '@/types/booking'
-import { PET_FEE_AUD } from '@/lib/pricing'
+import { PET_FEE_AUD, BOND_AMOUNT_AUD } from '@/lib/pricing'
 import { MAX_OCCUPANCY } from '@/lib/booking-window'
 import BookingSummary from '@/components/BookingSummary'
 import CancellationPolicy from '@/components/CancellationPolicy'
@@ -199,6 +199,7 @@ export default function BookingForm({
               <li className="flex gap-2"><span className="text-luxury-gold">•</span><span><strong>Strictly no parties or events.</strong> The Mornington Peninsula Shire Short Stay Code of Conduct applies and noise is monitored.</span></li>
               <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>Outdoor areas (pool, spa, decks, balconies) are closed <strong>11 pm–7 am</strong>.</span></li>
               <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>This is <strong>not a Schoolies</strong> booking. No smoking indoors. Pets only by prior disclosure.</span></li>
+              <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>A <strong>refundable ${BOND_AMOUNT_AUD} security hold</strong> is placed before check-in and <strong>automatically released after checkout</strong> — you&rsquo;re only charged if damage is claimed.</span></li>
               <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>Guests are responsible for any damage or excessive cleaning beyond fair wear and tear.</span></li>
               <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>The <Link href="/terms" target="_blank" className="text-luxury-gold underline underline-offset-2">full terms</Link> and the cancellation policy shown on this page apply.</span></li>
             </ul>
@@ -253,6 +254,17 @@ export default function BookingForm({
 
       <aside className="space-y-5 lg:col-span-5">
         <BookingSummary pricing={displayPricing} checkIn={checkIn} checkOut={checkOut} showLevy />
+        <div className="rounded-2xl border border-luxury-gold/20 bg-white/[0.97] p-5 text-sm text-gray-700 shadow-xl dark:bg-[#1a1a1a]/[0.97] dark:text-gray-300">
+          <div className="mb-1.5 flex items-center gap-2 font-semibold text-luxury-dark dark:text-white">
+            <span className="material-icons text-luxury-gold text-[18px]">verified_user</span>
+            ${BOND_AMOUNT_AUD} refundable security hold
+          </div>
+          <p className="leading-relaxed">
+            A ${BOND_AMOUNT_AUD} hold is placed on your card a day or two before check-in and{' '}
+            <strong>released automatically after checkout</strong>. It is not a charge — you&rsquo;re only
+            charged if damage is claimed. Bank release times vary.
+          </p>
+        </div>
         <CancellationPolicy />
       </aside>
     </div>
