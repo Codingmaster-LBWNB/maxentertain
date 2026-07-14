@@ -1,8 +1,10 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
+import Link from 'next/link'
 import type { BookingGroupType, BookingPricing } from '@/types/booking'
 import { PET_FEE_AUD } from '@/lib/pricing'
+import { MAX_OCCUPANCY } from '@/lib/booking-window'
 import BookingSummary from '@/components/BookingSummary'
 import CancellationPolicy from '@/components/CancellationPolicy'
 
@@ -135,9 +137,9 @@ export default function BookingForm({
             <label className="block">
               <span className={labelClass}>
                 <span className="material-icons text-[14px] text-luxury-gold">group</span>
-                Guests
+                Guests (max {MAX_OCCUPANCY})
               </span>
-              <input name="guests" type="number" min={1} max={30} required className={inputClass} />
+              <input name="guests" type="number" min={1} max={MAX_OCCUPANCY} required className={inputClass} />
             </label>
             <label className="block md:col-span-2">
               <span className={labelClass}>
@@ -187,13 +189,22 @@ export default function BookingForm({
             </label>
           </div>
 
-          {/* House rules */}
+          {/* Terms & House Rules */}
           <div className="mt-6 rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-white/10 dark:bg-white/5">
-            <label className="flex cursor-pointer items-start gap-3 text-sm text-gray-600 dark:text-gray-300">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              Terms &amp; House Rules
+            </p>
+            <ul className="mb-3 space-y-1.5 text-sm text-gray-600 dark:text-gray-300">
+              <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>Maximum <strong>{MAX_OCCUPANCY} people</strong> on the property at any time — adults and children combined.</span></li>
+              <li className="flex gap-2"><span className="text-luxury-gold">•</span><span><strong>Strictly no parties or events.</strong> The Mornington Peninsula Shire Short Stay Code of Conduct applies and noise is monitored.</span></li>
+              <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>Outdoor areas (pool, spa, decks, balconies) are closed <strong>11 pm–7 am</strong>.</span></li>
+              <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>This is <strong>not a Schoolies</strong> booking. No smoking indoors. Pets only by prior disclosure.</span></li>
+              <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>Guests are responsible for any damage or excessive cleaning beyond fair wear and tear.</span></li>
+              <li className="flex gap-2"><span className="text-luxury-gold">•</span><span>The <Link href="/terms" target="_blank" className="text-luxury-gold underline underline-offset-2">full terms</Link> and the cancellation policy shown on this page apply.</span></li>
+            </ul>
+            <label className="flex cursor-pointer items-start gap-3 text-sm font-medium text-gray-700 dark:text-gray-200">
               <input name="rulesAccepted" type="checkbox" required className="mt-0.5 h-4 w-4 shrink-0 accent-luxury-gold" />
-              <span>
-                I confirm this is not a Schoolies booking, parties are not permitted, outdoor areas close between 11 pm–7 am, and I accept the cancellation policy.
-              </span>
+              <span>I have read and accept the Terms &amp; House Rules above.</span>
             </label>
           </div>
 

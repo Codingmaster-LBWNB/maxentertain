@@ -14,7 +14,7 @@ import type {
 } from '@/types/booking'
 import { getSiteUrl } from '@/lib/site'
 import { sendBookingRecoveryEmail } from '@/lib/email'
-import { MIN_ADVANCE_DAYS, earliestCheckInStr } from '@/lib/booking-window'
+import { MIN_ADVANCE_DAYS, MAX_OCCUPANCY, earliestCheckInStr } from '@/lib/booking-window'
 
 export const PROPERTY_ID = 'maxentertain'
 export const PENDING_HOLD_MINUTES = 30
@@ -40,11 +40,16 @@ interface PricingSettings {
   minNightsMap: Record<string, number>
 }
 
+/** Bump when the Terms & House Rules text changes, so each booking records which version was accepted. */
+export const AGREEMENT_VERSION = '2026-07'
+
 export interface CreatePendingBookingInput {
   checkIn: string
   checkOut: string
   guest: BookingGuest
   rulesAccepted: boolean
+  /** Client IP captured at acceptance time (evidence of consent). */
+  agreementIp?: string
 }
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/
@@ -84,8 +89,8 @@ function normaliseGroupType(value: string): BookingGroupType {
 
 export function normaliseGuest(input: Record<string, unknown>): BookingGuest {
   const guests = Number(input.guests)
-  if (!Number.isInteger(guests) || guests < 1 || guests > 30) {
-    throw new BookingValidationError('Guest count must be between 1 and 30')
+  if (!Number.isInteger(guests) || guests < 1 || guests > MAX_OCCUPANCY) {
+    throw new BookingValidationError(`Guest count must be between 1 and ${MAX_OCCUPANCY} (adults and children).`)
   }
 
   const guest: BookingGuest = {
@@ -278,6 +283,7 @@ export async function createPendingBooking(input: CreatePendingBookingInput) {
     payment: {},
     source: 'direct',
     rulesAccepted: input.rulesAccepted,
+    agreement: { version: AGREEMENT_VERSION, acceptedAt: now, ip: input.agreementIp },
     cancellationToken,
     expiresAt,
     createdAt: now,

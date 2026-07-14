@@ -252,6 +252,12 @@ export default function OwnerBookingsPage() {
                     </p>
                     <p>Payment intent: {booking.payment.stripePaymentIntentId ?? '—'}</p>
                     <p>Refund ID: {booking.refundStripeId ?? '—'}</p>
+                    <p>
+                      Terms accepted:{' '}
+                      {booking.agreement
+                        ? `${new Date(booking.agreement.acceptedAt).toLocaleDateString()} · v${booking.agreement.version}`
+                        : '—'}
+                    </p>
                   </div>
                   {booking.refundAmountAud ? (
                     <p className="mt-2 text-sm text-purple-300">Refunded: ${booking.refundAmountAud.toLocaleString()}</p>

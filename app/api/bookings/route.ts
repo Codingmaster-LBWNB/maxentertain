@@ -48,7 +48,8 @@ export async function POST(req: NextRequest) {
       throw new DatesUnavailableError()
     }
 
-    const booking = await createPendingBooking({ checkIn, checkOut, guest, rulesAccepted })
+    const agreementIp = (req.headers.get('x-forwarded-for') ?? '').split(',')[0]?.trim() || undefined
+    const booking = await createPendingBooking({ checkIn, checkOut, guest, rulesAccepted, agreementIp })
     const siteUrl = getSiteUrl()
 
     const session = await stripe.checkout.sessions.create({
