@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-const LAST_UPDATED = '11 June 2026'
+const LAST_UPDATED = '10 July 2026'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -78,10 +78,11 @@ export default function TermsPage() {
               ))}
             </ul>
             <p>
-              The property strictly does not accept parties, events with non-registered guests, or
-              schoolies/under-18 group bookings. Noise monitoring devices (which do not record
-              audio) are active at the property, consistent with the Mornington Peninsula Shire
-              Short Stay Accommodation Code of Conduct.
+              A maximum of <strong>25 people</strong> (adults and children combined) may be on the
+              property at any time. The property strictly does not accept parties, events with
+              non-registered guests, or schoolies/under-18 group bookings. Noise monitoring devices
+              (which do not record audio) are active at the property, consistent with the Mornington
+              Peninsula Shire Short Stay Accommodation Code of Conduct.
             </p>
           </Section>
 

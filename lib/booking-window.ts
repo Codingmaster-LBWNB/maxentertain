@@ -12,6 +12,9 @@ const TZ = 'Australia/Melbourne'
  */
 export const MIN_ADVANCE_DAYS = 3
 
+/** Hard cap on total people staying (adults + children). */
+export const MAX_OCCUPANCY = 25
+
 /** Earliest check-in date a guest may select or book, as YYYY-MM-DD (Melbourne). */
 export function earliestCheckInStr(now: Date = new Date()): string {
   const todayStr = formatInTimeZone(now, TZ, 'yyyy-MM-dd')

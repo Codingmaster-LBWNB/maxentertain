@@ -59,6 +59,13 @@ export interface BookingArrival {
   updatedAt?: Date
 }
 
+export interface BookingAgreement {
+  /** Which version of the terms the guest accepted (for evidence of consent). */
+  version: string
+  acceptedAt: Date
+  ip?: string
+}
+
 export interface BookingComms {
   commsEventsSent?: string[]
   lastEmailError?: string
@@ -96,6 +103,7 @@ export interface BookingRecord {
   updatedAt: Date
   comms?: BookingComms
   arrival?: BookingArrival
+  agreement?: BookingAgreement
 }
 
 export interface PublicBookingSummary {
