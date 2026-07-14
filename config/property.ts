@@ -705,6 +705,44 @@ This helps keep the home safe, quiet and comfortable for families and neighbours
         image: nearby("the dunes.webp"),
         drive: { distanceKm: 4.6, durationMin: 7 },
       },
+      // Drive times below are approximate from Tootgarook. Photos to be added to
+      // `/public/Airbnb picture/nearby photos/` and referenced via image: nearby("...").
+      {
+        name: "Arthurs Seat Eagle",
+        type: "attraction",
+        url: "https://aseagle.com.au/",
+        drive: { distanceKm: 19.2, durationMin: 22 },
+      },
+      {
+        name: "Enchanted Adventure",
+        type: "activity",
+        url: "https://enchantedadventure.com.au/",
+        drive: { distanceKm: 19.5, durationMin: 23 },
+      },
+      {
+        name: "Moonlit Sanctuary Wildlife Park",
+        type: "attraction",
+        url: "https://moonlitsanctuary.com.au/",
+        drive: { distanceKm: 41.5, durationMin: 40 },
+      },
+      {
+        name: "Point Nepean National Park",
+        type: "attraction",
+        url: "https://www.parks.vic.gov.au/places-to-see/parks/point-nepean-national-park",
+        drive: { distanceKm: 17.0, durationMin: 21 },
+      },
+      {
+        name: "Cape Schanck Lighthouse",
+        type: "attraction",
+        url: "https://www.parks.vic.gov.au/places-to-see/points-of-interest/cape-schanck-lightstation",
+        drive: { distanceKm: 20.8, durationMin: 24 },
+      },
+      {
+        name: "Sorrento",
+        type: "attraction",
+        url: "https://www.visitmorningtonpeninsula.org/Destinations/Sorrento",
+        drive: { distanceKm: 10.4, durationMin: 13 },
+      },
     ],
   },
   contact: {
