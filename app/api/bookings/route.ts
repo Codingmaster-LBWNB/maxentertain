@@ -55,6 +55,9 @@ export async function POST(req: NextRequest) {
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_email: booking.guest.email,
+      // Create a Customer and save the card so the refundable security deposit
+      // can be held off-session shortly before check-in.
+      customer_creation: 'always',
       expires_at: Math.floor(Date.now() / 1000) + PENDING_HOLD_MINUTES * 60,
       invoice_creation: { enabled: true },
       metadata: {
@@ -64,6 +67,9 @@ export async function POST(req: NextRequest) {
         checkOut: booking.checkOut,
       },
       payment_intent_data: {
+        // Save the card so the refundable security deposit can be held
+        // off-session shortly before check-in.
+        setup_future_usage: 'off_session',
         metadata: {
           bookingId: booking._id,
           propertyId: booking.propertyId,

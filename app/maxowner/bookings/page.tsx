@@ -62,6 +62,15 @@ const COMMS_STATUS_LABEL: Record<CommsItem['status'], string> = {
   awaiting_payment: 'Awaiting payment',
 }
 
+function bondLabel(b?: BookingRecord['bond']) {
+  if (!b || b.status === 'none') return '—'
+  if (b.status === 'authorized') return `held $${b.amountAud} (refundable)`
+  if (b.status === 'released') return 'released'
+  if (b.status === 'captured') return `charged $${b.capturedAmountAud ?? b.amountAud}`
+  if (b.status === 'failed') return `hold failed${b.lastError ? ` — ${b.lastError}` : ''}`
+  return '—'
+}
+
 // Exact instant in the owner's timezone, to the second.
 function fmtMelbourne(iso?: string) {
   if (!iso) return '—'
@@ -258,6 +267,7 @@ export default function OwnerBookingsPage() {
                         ? `${new Date(booking.agreement.acceptedAt).toLocaleDateString()} · v${booking.agreement.version}`
                         : '—'}
                     </p>
+                    <p>Security bond: {bondLabel(booking.bond)}</p>
                   </div>
                   {booking.refundAmountAud ? (
                     <p className="mt-2 text-sm text-purple-300">Refunded: ${booking.refundAmountAud.toLocaleString()}</p>
@@ -296,6 +306,27 @@ export default function OwnerBookingsPage() {
                     >
                       Expire hold
                     </button>
+                  ) : null}
+                  {booking.bond?.status === 'authorized' ? (
+                    <>
+                      <button
+                        onClick={() => runAction(booking._id, { action: 'release_bond' }, 'Security hold released.')}
+                        className="rounded-lg border border-green-500/40 px-3 py-2 text-xs font-semibold text-green-300 hover:bg-green-500/10"
+                      >
+                        Release hold
+                      </button>
+                      <button
+                        onClick={() => {
+                          const amount = window.prompt(`Damage charge to take from the $${booking.bond?.amountAud ?? 300} bond (AUD)`, String(booking.bond?.amountAud ?? 300))
+                          if (amount !== null) {
+                            runAction(booking._id, { action: 'capture_bond', amountAud: Number(amount) }, 'Bond captured for damage.')
+                          }
+                        }}
+                        className="rounded-lg border border-red-500/40 px-3 py-2 text-xs font-semibold text-red-300 hover:bg-red-500/10"
+                      >
+                        Claim damage
+                      </button>
+                    </>
                   ) : null}
                   {['confirmed', 'cancelled', 'payment_orphaned'].includes(booking.status) ? (
                     <button

@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { propertyConfig } from '@/config/property'
+import { BOND_AMOUNT_AUD } from '@/lib/pricing'
 import type { BookingRecord, GuestRecord } from '@/types/booking'
 
 const PRE_STAY_SUBJECTS: Record<number, string> = {
@@ -146,6 +147,74 @@ export async function sendBookingRecoveryEmail(booking: BookingRecord) {
       `Finish your booking: ${resumeUrl}`,
       '',
       'Dates may book up, so securing them now is the safest bet. Reply to this email with any questions.',
+    ].join('\n'),
+  })
+}
+
+export async function sendBondHoldEmail(booking: BookingRecord) {
+  const guestName = escapeHtml(booking.guest.name || 'there')
+  const amount = money(booking.bond?.amountAud ?? BOND_AMOUNT_AUD)
+  const propertyName = escapeHtml(propertyConfig.name)
+
+  return sendEmail({
+    to: booking.guest.email,
+    subject: `Refundable ${amount} security hold for your ${propertyConfig.name} stay`,
+    html: `
+      <h2>Your refundable security hold</h2>
+      <p>Hi ${guestName},</p>
+      <p>Ahead of your stay at ${propertyName}, we&rsquo;ve placed a <strong>refundable ${amount} security hold</strong> on the card you booked with.</p>
+      <p><strong>This is not a charge.</strong> The amount is simply reserved on your card and is <strong>automatically released after checkout</strong> — you are only ever charged if a damage claim is made.</p>
+      <p>Depending on your bank, a released hold can take a few business days to clear from your statement.</p>
+      <p>Any questions, just reply to this email.</p>
+    `,
+    text: [
+      `Hi ${booking.guest.name || 'there'},`,
+      `Ahead of your stay at ${propertyConfig.name}, we've placed a refundable ${amount} security hold on your card.`,
+      'This is NOT a charge — the amount is reserved and automatically released after checkout. You are only charged if a damage claim is made.',
+      'A released hold can take a few business days to clear, depending on your bank.',
+    ].join('\n'),
+  })
+}
+
+export async function sendBondReleasedEmail(booking: BookingRecord) {
+  const guestName = escapeHtml(booking.guest.name || 'there')
+  const amount = money(booking.bond?.amountAud ?? BOND_AMOUNT_AUD)
+
+  return sendEmail({
+    to: booking.guest.email,
+    subject: `Your ${amount} security hold has been released`,
+    html: `
+      <h2>Security hold released</h2>
+      <p>Hi ${guestName},</p>
+      <p>Thanks for staying with us. Your <strong>${amount} security hold has been released in full</strong> — no charge was made.</p>
+      <p>It may take a few business days to disappear from your statement, depending on your bank.</p>
+    `,
+    text: [
+      `Hi ${booking.guest.name || 'there'},`,
+      `Your ${amount} security hold has been released in full — no charge was made.`,
+      'It may take a few business days to clear, depending on your bank.',
+    ].join('\n'),
+  })
+}
+
+export async function sendBondCapturedEmail(booking: BookingRecord, amountAud: number) {
+  const guestName = escapeHtml(booking.guest.name || 'there')
+  const amount = money(amountAud)
+  const propertyName = escapeHtml(propertyConfig.name)
+
+  return sendEmail({
+    to: booking.guest.email,
+    subject: `Security deposit charge for your ${propertyConfig.name} stay`,
+    html: `
+      <h2>Security deposit charge</h2>
+      <p>Hi ${guestName},</p>
+      <p>Following your stay at ${propertyName}, a charge of <strong>${amount}</strong> has been made against your security deposit.</p>
+      <p>If you have any questions, please reply to this email and we&rsquo;ll be glad to share the details.</p>
+    `,
+    text: [
+      `Hi ${booking.guest.name || 'there'},`,
+      `Following your stay at ${propertyConfig.name}, a charge of ${amount} has been made against your security deposit.`,
+      'Reply to this email with any questions and we will share the details.',
     ].join('\n'),
   })
 }
