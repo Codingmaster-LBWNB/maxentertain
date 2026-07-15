@@ -1,4 +1,5 @@
 import { propertyConfig } from '@/config/property'
+import { PET_FEE_AUD } from '@/lib/pricing'
 
 export const faqs = [
   {
@@ -19,7 +20,7 @@ export const faqs = [
   },
   {
     q: 'Are pets allowed?',
-    a: `Yes, pets are welcome. Please disclose your pet at the time of booking and follow the house pet guidelines. ${propertyConfig.policies.houseRules.find((r) => /pet/i.test(r)) ?? ''}`,
+    a: `Yes, pets are welcome. An extra pet cleaning fee of $${PET_FEE_AUD} AUD applies. Please disclose your pet at the time of booking and follow the house pet guidelines.`,
   },
   {
     q: 'What entertainment is available for kids?',

@@ -59,6 +59,7 @@ const amenityIcons: Record<string, string> = {
   'Gas Log Fireplace': 'local_fire_department',
   'Sea View': 'beach_access',
   'Beach Access': 'beach_access',
+  'Pet Friendly': 'pets',
 }
 
 const getIcon = (amenity: string): string => {

@@ -207,7 +207,7 @@ This helps keep the home safe, quiet and comfortable for families and neighbours
     "Foosball Table",
     "Sea View",
     "Beach Access (10m walk)",
-    "Pet Friendly (Pets Welcome)",
+    "Pet Friendly (Pets Welcome — $100 AUD cleaning fee)",
   ],
   policies: {
     checkIn: "3:00 PM",
@@ -219,7 +219,7 @@ This helps keep the home safe, quiet and comfortable for families and neighbours
       "Outdoor areas including swimming pools, spas, outdoor decking and balconies are not to be used between 11:00 PM to 7:00 AM",
       "This property is monitored by Noise Alarms",
       "THIS PROPERTY DOES NOT ACCEPT SCHOOLIES",
-      "Pets welcome (please disclose at booking and follow house guidelines)",
+      "Pets welcome — extra pet cleaning fee of $100 AUD (please disclose at booking and follow house guidelines)",
       "No smoking",
     ],
   },
@@ -735,7 +735,7 @@ This helps keep the home safe, quiet and comfortable for families and neighbours
       },
       {
         name: "ONDA, Sorrento",
-        type: "attraction",
+        type: "restaurant",
         url: "https://www.ondasorrento.com.au/",
         image: nearby("onda.jpg"),
         drive: { distanceKm: 11.0, durationMin: 13 },

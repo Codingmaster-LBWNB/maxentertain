@@ -7,7 +7,7 @@ import { format, startOfMonth, endOfMonth, addMonths, subMonths, startOfWeek, en
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
 import { useAvailability } from '@/hooks/useAvailability'
 import { blockedDates as defaultBlockedDates } from '@/config/property'
-import { getPriceSummary, groupNightsByTier, TIER_LABELS, NIGHTLY_RATES, PricingTier } from '@/lib/pricing'
+import { getPriceSummary, groupNightsByTier, TIER_LABELS, NIGHTLY_RATES, PricingTier, PET_FEE_AUD } from '@/lib/pricing'
 import { MIN_ADVANCE_DAYS, earliestCheckInStr } from '@/lib/booking-window'
 import { trackClick } from '@/lib/analytics'
 
@@ -407,7 +407,10 @@ export default function Calendar({
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 mt-1">
-                          All fees included. Cleaning, linen &amp; taxes — no hidden charges.
+                          Cleaning, linen &amp; taxes included — no hidden charges.
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1.5">
+                          Optional pets: <span className="font-semibold text-luxury-dark">${PET_FEE_AUD} AUD</span> pet cleaning fee (added at checkout if you&rsquo;re travelling with a pet).
                         </p>
                       </div>
                     </>
