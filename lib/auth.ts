@@ -1,6 +1,5 @@
-import { randomUUID } from 'crypto'
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 
 const COOKIE_NAME = 'maxowner_session'
 export const SESSION_MAX_AGE_SEC = 60 * 60 * 24 // 24 hours
@@ -14,7 +13,8 @@ function getJwtSecret() {
 }
 
 export async function signSession(): Promise<string> {
-  const jti = randomUUID()
+  // Web Crypto works in both Edge middleware and Node API routes.
+  const jti = globalThis.crypto.randomUUID()
   return new SignJWT({ role: 'owner' })
     .setProtectedHeader({ alg: 'HS256' })
     .setJti(jti)
@@ -87,38 +87,4 @@ export function safeOwnerRedirectPath(from: string | null | undefined): string {
   if (!from.startsWith('/maxowner')) return fallback
   if (from.startsWith('//') || from.includes('://') || from.includes('\\')) return fallback
   return from
-}
-
-/**
- * Route-level owner gate for Node.js API routes.
- * Verifies JWT and checks the Mongo revocation list (logout).
- */
-export async function requireOwner(req: NextRequest | Request): Promise<NextResponse | null> {
-  const token = getSessionToken(req)
-  if (!token) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const payload = await readSessionPayload(token)
-  if (!payload) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  if (typeof payload.jti === 'string') {
-    const { isJtiRevoked } = await import('@/lib/authSessions')
-    if (await isJtiRevoked(payload.jti)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-  }
-
-  return null
-}
-
-export async function revokeSessionToken(token: string | undefined): Promise<void> {
-  if (!token) return
-  const payload = await readSessionPayload(token)
-  if (typeof payload?.jti === 'string') {
-    const { revokeJti } = await import('@/lib/authSessions')
-    await revokeJti(payload.jti, typeof payload.exp === 'number' ? payload.exp : undefined)
-  }
 }

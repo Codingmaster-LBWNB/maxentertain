@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
-import { requireOwner } from '@/lib/auth'
+import { requireOwner } from '@/lib/authServer'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'

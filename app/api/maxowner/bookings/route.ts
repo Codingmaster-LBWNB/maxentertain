@@ -3,7 +3,7 @@ import { getDb } from '@/lib/mongodb'
 import { expireBooking } from '@/lib/bookings'
 import { captureBond, releaseBond } from '@/lib/bonds'
 import { sendBookingConfirmedEmail, sendOwnerBookingAlert } from '@/lib/email'
-import { requireOwner } from '@/lib/auth'
+import { requireOwner } from '@/lib/authServer'
 import type { BookingRecord, BookingStatus } from '@/types/booking'
 
 const VALID_STATUSES: BookingStatus[] = ['pending_payment', 'confirmed', 'expired', 'cancelled', 'refunded', 'completed']

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
-import { requireOwner } from '@/lib/auth'
+import { requireOwner } from '@/lib/authServer'
 
 export async function GET(req: NextRequest) {
   const denied = await requireOwner(req)

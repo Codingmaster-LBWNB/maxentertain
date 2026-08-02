@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { sendReturningGuestOfferEmail } from '@/lib/email'
-import { requireOwner } from '@/lib/auth'
+import { requireOwner } from '@/lib/authServer'
 import type { BookingGroupType, BookingRecord, GuestRecord } from '@/types/booking'
 
 const VALID_TAGS: BookingGroupType[] = ['family', 'corporate', 'golf', 'milestone', 'other']

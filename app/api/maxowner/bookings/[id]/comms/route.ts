@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { buildCommsTimeline } from '@/lib/bookingComms'
-import { requireOwner } from '@/lib/auth'
+import { requireOwner } from '@/lib/authServer'
 import type { BookingRecord } from '@/types/booking'
 
 export const runtime = 'nodejs'

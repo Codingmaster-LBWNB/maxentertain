@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { NIGHTLY_RATES, TIER_LABELS, PricingTier } from '@/lib/pricing'
-import { requireOwner } from '@/lib/auth'
+import { requireOwner } from '@/lib/authServer'
 
 const TIERS = Object.keys(NIGHTLY_RATES) as PricingTier[]
 
