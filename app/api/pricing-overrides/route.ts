@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   // If MongoDB is not configured, return defaults so the calendar shows tier prices as normal
   if (!process.env.MONGODB_URI) {
-    return NextResponse.json({ overrides: {}, tierPrices: NIGHTLY_RATES, minNightsMap: {}, source: 'unconfigured' })
+    return NextResponse.json({ overrides: {}, tierPrices: NIGHTLY_RATES, minNightsMap: {} })
   }
 
   try {
@@ -36,7 +36,7 @@ export async function GET() {
       minNightsMap[doc.date] = doc.minNights
     }
 
-    return NextResponse.json({ overrides, tierPrices, minNightsMap, source: 'db' })
+    return NextResponse.json({ overrides, tierPrices, minNightsMap })
   } catch {
     // DB is configured but unreachable — signal to frontend to show "-"
     return NextResponse.json({ error: 'Pricing data unavailable' }, { status: 503 })

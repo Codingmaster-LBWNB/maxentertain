@@ -140,22 +140,17 @@ export async function GET() {
 
     // Merge all blocked dates from all feeds
     const allBlockedDates = new Set<string>()
-    let totalEventCount = 0
-    const feedStatus: { source: string; success: boolean; eventCount: number }[] = []
+    let anyFeedSucceeded = false
+    let feedAttempts = 0
 
-    feedResults.forEach((result, index) => {
+    feedResults.forEach((result) => {
+      feedAttempts += 1
       result.blockedDates.forEach(date => allBlockedDates.add(date))
-      totalEventCount += result.eventCount
-      feedStatus.push({
-        source: icalFeeds[index]?.source ?? `ical_${index + 1}`,
-        success: result.success,
-        eventCount: result.eventCount,
-      })
+      if (result.success) anyFeedSucceeded = true
     })
 
     const calendarHealth = {
-      healthy: feedStatus.some((feed) => feed.success),
-      degraded: feedStatus.length > 0 && feedStatus.every((feed) => !feed.success),
+      degraded: feedAttempts > 0 && !anyFeedSucceeded,
     }
 
     // Merge manual blocks from MongoDB (if configured)
@@ -182,15 +177,13 @@ export async function GET() {
       }
     }
 
-    // Convert Set to sorted array
+    // Convert Set to sorted array — public payload is intentionally minimal
+    // (no per-feed identities, event counts, or inventory telemetry).
     const blockedDates = Array.from(allBlockedDates).sort()
 
     return NextResponse.json({
       blockedDates,
       lastUpdated: new Date().toISOString(),
-      eventCount: totalEventCount,
-      feedCount: icalFeeds.length,
-      feedStatus, // Safe debugging info (no URLs/tokens)
       calendarHealth,
     })
   } catch (error) {

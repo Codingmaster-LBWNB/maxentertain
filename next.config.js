@@ -37,16 +37,20 @@ const nextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains' },
           { key: 'X-DNS-Prefetch-Control', value: 'on' },
+          // Same-origin browsing context isolation. Do not emit Access-Control-Allow-Origin: *
+          // — public APIs are same-origin only (no ACAO header = browser same-origin default).
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'Cross-Origin-Resource-Policy', value: 'same-site' },
           // Report-Only first so we can tighten without breaking Next.js/GTM.
           {
             key: 'Content-Security-Policy-Report-Only',
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://js.stripe.com https://va.vercel-scripts.com",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: https://fonts.gstatic.com",
-              "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://api.stripe.com",
+              "connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://api.stripe.com https://vitals.vercel-insights.com",
               "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
               "frame-ancestors 'self'",
               "base-uri 'self'",

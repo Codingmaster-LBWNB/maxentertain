@@ -14,7 +14,7 @@ import type {
 } from '@/types/booking'
 import { getSiteUrl } from '@/lib/site'
 import { sendBookingRecoveryEmail } from '@/lib/email'
-import { MIN_ADVANCE_DAYS, MAX_OCCUPANCY, earliestCheckInStr } from '@/lib/booking-window'
+import { MIN_ADVANCE_DAYS, MAX_OCCUPANCY, earliestCheckInStr, latestCheckInStr, MAX_BOOKING_HORIZON_MONTHS } from '@/lib/booking-window'
 
 export const PROPERTY_ID = 'maxentertain'
 export const PENDING_HOLD_MINUTES = 30
@@ -82,9 +82,25 @@ export function getNightDates(checkIn: string, checkOut: string) {
   return dates
 }
 
-function normaliseGroupType(value: string): BookingGroupType {
-  const allowed: BookingGroupType[] = ['family', 'corporate', 'golf', 'milestone', 'other']
-  return allowed.includes(value as BookingGroupType) ? (value as BookingGroupType) : 'other'
+function cleanGuestField(value: unknown, maxLength: number): string {
+  return String(value ?? '')
+    .replace(/[\r\n\0]+/g, ' ')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, maxLength)
+}
+
+const ALLOWED_GROUP_TYPES: BookingGroupType[] = ['family', 'corporate', 'golf', 'milestone', 'other']
+
+function parseGroupType(value: unknown): BookingGroupType {
+  if (value === undefined || value === null || value === '') return 'other'
+  if (typeof value !== 'string') {
+    throw new BookingValidationError('groupType must be one of: family, corporate, golf, milestone, other')
+  }
+  if (!ALLOWED_GROUP_TYPES.includes(value as BookingGroupType)) {
+    throw new BookingValidationError('groupType must be one of: family, corporate, golf, milestone, other')
+  }
+  return value as BookingGroupType
 }
 
 export function normaliseGuest(input: Record<string, unknown>): BookingGuest {
@@ -94,14 +110,14 @@ export function normaliseGuest(input: Record<string, unknown>): BookingGuest {
   }
 
   const guest: BookingGuest = {
-    name: String(input.name ?? '').trim(),
-    email: String(input.email ?? '').trim().toLowerCase(),
-    phone: String(input.phone ?? '').trim(),
+    name: cleanGuestField(input.name, 200),
+    email: cleanGuestField(input.email, 320).toLowerCase(),
+    phone: cleanGuestField(input.phone, 50),
     guests,
-    groupType: normaliseGroupType(String(input.groupType ?? 'other')),
-    pets: String(input.pets ?? '').trim(),
+    groupType: parseGroupType(input.groupType),
+    pets: cleanGuestField(input.pets, 500),
     withPet: input.withPet === true,
-    message: String(input.message ?? '').trim(),
+    message: cleanGuestField(input.message, 5000),
   }
 
   if (!guest.name) throw new BookingValidationError('Name is required')
@@ -263,6 +279,13 @@ export async function createPendingBooking(input: CreatePendingBookingInput) {
   if (input.checkIn < earliest) {
     throw new BookingValidationError(
       `Bookings require at least ${MIN_ADVANCE_DAYS} days' notice. The earliest available check-in is ${earliest}.`
+    )
+  }
+
+  const latest = latestCheckInStr()
+  if (input.checkIn > latest) {
+    throw new BookingValidationError(
+      `Check-in cannot be more than ${MAX_BOOKING_HORIZON_MONTHS} months ahead. The latest available check-in is ${latest}.`
     )
   }
 

@@ -8,7 +8,7 @@ import { toZonedTime, formatInTimeZone } from 'date-fns-tz'
 import { useAvailability } from '@/hooks/useAvailability'
 import { blockedDates as defaultBlockedDates } from '@/config/property'
 import { getPriceSummary, groupNightsByTier, TIER_LABELS, NIGHTLY_RATES, PricingTier, PET_FEE_AUD } from '@/lib/pricing'
-import { MIN_ADVANCE_DAYS, earliestCheckInStr } from '@/lib/booking-window'
+import { MIN_ADVANCE_DAYS, earliestCheckInStr, latestCheckInStr } from '@/lib/booking-window'
 import { trackClick } from '@/lib/analytics'
 
 type PricingState =
@@ -55,6 +55,7 @@ export default function Calendar({
   const [currentMonth, setCurrentMonth] = useState<Date | null>(null)
   const [todayStr, setTodayStr] = useState('')
   const [earliest, setEarliest] = useState('')
+  const [latest, setLatest] = useState('')
   const [checkIn, setCheckIn] = useState<Date | null>(null)
   const [checkOut, setCheckOut] = useState<Date | null>(null)
 
@@ -68,6 +69,7 @@ export default function Calendar({
     setCurrentMonth(toZonedTime(now, TZ))
     setTodayStr(formatInTimeZone(now, TZ, 'yyyy-MM-dd'))
     setEarliest(earliestCheckInStr(now))
+    setLatest(latestCheckInStr(now))
     setMounted(true)
   }, [])
 
@@ -97,7 +99,8 @@ export default function Calendar({
   const isPast = (date: Date) => !!todayStr && auStr(date) < todayStr
   // Within the advance-notice window (today .. earliest-1): not bookable.
   const isTooSoon = (date: Date) => !!earliest && !isPast(date) && auStr(date) < earliest
-  const isAvailable = (date: Date) => !isPast(date) && !isTooSoon(date) && !isBlocked(date)
+  const isTooFar = (date: Date) => !!latest && auStr(date) > latest
+  const isAvailable = (date: Date) => !isPast(date) && !isTooSoon(date) && !isTooFar(date) && !isBlocked(date)
   const isToday = (date: Date) => auStr(date) === todayStr
   const isCheckIn = (date: Date) => !!checkIn && auStr(date) === auStr(checkIn)
   const isCheckOut = (date: Date) => !!checkOut && auStr(date) === auStr(checkOut)
@@ -282,6 +285,7 @@ export default function Calendar({
                 const available = isAvailable(day)
                 const past = isPast(day)
                 const tooSoon = isTooSoon(day)
+                const tooFar = isTooFar(day)
                 const today = isToday(day)
                 const ci = isCheckIn(day)
                 const co = isCheckOut(day)
@@ -296,7 +300,7 @@ export default function Calendar({
                   cellClass += 'bg-luxury-gold text-white rounded-lg cursor-pointer '
                 } else if (inRange) {
                   cellClass += 'bg-luxury-gold/20 text-luxury-dark rounded-lg cursor-pointer '
-                } else if (past || tooSoon) {
+                } else if (past || tooSoon || tooFar) {
                   cellClass += 'bg-gray-100 text-gray-400 rounded-lg cursor-not-allowed '
                 } else if (blocked) {
                   cellClass += 'bg-red-100 text-red-600 rounded-lg line-through cursor-not-allowed '
@@ -313,7 +317,7 @@ export default function Calendar({
                     key={day.toString()}
                     className={cellClass}
                     onClick={() => handleDayClick(day)}
-                    title={blocked ? 'Booked' : past ? 'Past' : tooSoon ? `${MIN_ADVANCE_DAYS} days notice required` : available ? 'Available' : ''}
+                    title={blocked ? 'Booked' : past ? 'Past' : tooSoon ? `${MIN_ADVANCE_DAYS} days notice required` : tooFar ? 'Beyond booking window' : available ? 'Available' : ''}
                   >
                     {format(day, 'd')}
                   </div>
