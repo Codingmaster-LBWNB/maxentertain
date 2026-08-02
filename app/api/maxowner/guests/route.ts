@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { sendReturningGuestOfferEmail } from '@/lib/email'
+import { requireOwner } from '@/lib/auth'
 import type { BookingGroupType, BookingRecord, GuestRecord } from '@/types/booking'
 
 const VALID_TAGS: BookingGroupType[] = ['family', 'corporate', 'golf', 'milestone', 'other']
@@ -11,6 +12,9 @@ function normaliseTags(tags: unknown): BookingGroupType[] {
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { searchParams } = new URL(req.url)
   const tag = searchParams.get('tag')
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
@@ -28,6 +32,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { email, tags, marketingOptOut } = await req.json()
   const nextTags = normaliseTags(tags)
   if (!email || nextTags.length === 0) {
@@ -43,6 +50,9 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { email, action } = await req.json()
   if (action === 'backfill_from_bookings') {
     try {

@@ -225,6 +225,29 @@ export async function cleanupExpiredPendingBookings() {
     await expireBooking(booking._id, 'checkout_expired')
   }
 
+  // Remove locks whose booking row is gone (partial insertMany orphans).
+  const orphanIds = await db
+    .collection('booking_locks')
+    .aggregate<{ _id: string }>([
+      {
+        $lookup: {
+          from: 'bookings',
+          localField: 'bookingId',
+          foreignField: '_id',
+          as: 'booking',
+        },
+      },
+      { $match: { booking: { $size: 0 } } },
+      { $group: { _id: '$bookingId' } },
+    ])
+    .toArray()
+
+  for (const orphan of orphanIds) {
+    if (orphan._id) {
+      await db.collection('booking_locks').deleteMany({ bookingId: orphan._id })
+    }
+  }
+
   return expired.length
 }
 
@@ -304,6 +327,8 @@ export async function createPendingBooking(input: CreatePendingBookingInput) {
   try {
     await db.collection('booking_locks').insertMany(locks, { ordered: true })
   } catch (error) {
+    // Partial ordered inserts can leave orphan nights locked with no booking row.
+    await db.collection('booking_locks').deleteMany({ bookingId })
     if (isDuplicateKeyError(error)) {
       throw new DatesUnavailableError()
     }
@@ -344,8 +369,27 @@ export async function confirmBookingPayment(bookingId: string, payment: BookingP
   const now = new Date()
   const existing = await getBookingById(bookingId)
 
-  await db.collection<BookingRecord>('bookings').updateOne(
-    { _id: bookingId, status: { $in: ['pending_payment', 'confirmed'] } },
+  // Idempotent re-delivery: already confirmed — refresh payment details only.
+  if (existing?.status === 'confirmed') {
+    await db.collection<BookingRecord>('bookings').updateOne(
+      { _id: bookingId, status: 'confirmed' },
+      { $set: { payment, updatedAt: now } }
+    )
+    await db.collection('booking_locks').updateMany(
+      { bookingId, status: { $in: ['pending_payment', 'confirmed'] } },
+      {
+        $set: { status: 'confirmed', updatedAt: now },
+        $unset: { expiresAt: '' },
+      }
+    )
+    const booking = await getBookingById(bookingId)
+    if (!booking) throw new Error('Booking not found after confirmation')
+    return booking
+  }
+
+  // Atomic claim: only pending_payment → confirmed wins the race against expire.
+  const claimed = await db.collection<BookingRecord>('bookings').findOneAndUpdate(
+    { _id: bookingId as any, status: 'pending_payment' } as any,
     {
       $set: {
         status: 'confirmed',
@@ -354,11 +398,18 @@ export async function confirmBookingPayment(bookingId: string, payment: BookingP
         updatedAt: now,
       },
       $unset: { expiresAt: '' },
-    }
+    },
+    { returnDocument: 'after' }
   )
 
+  if (!claimed) {
+    throw new Error(
+      `Booking ${bookingId} could not be confirmed (status=${existing?.status ?? 'missing'})`
+    )
+  }
+
   await db.collection('booking_locks').updateMany(
-    { bookingId },
+    { bookingId, status: { $in: ['pending_payment', 'confirmed'] } },
     {
       $set: { status: 'confirmed', updatedAt: now },
       $unset: { expiresAt: '' },
@@ -366,11 +417,9 @@ export async function confirmBookingPayment(bookingId: string, payment: BookingP
   )
   await recordBookingEvent(db, bookingId, 'booking.confirmed', { payment })
 
-  const booking = await getBookingById(bookingId)
+  const booking = (claimed as BookingRecord) ?? (await getBookingById(bookingId))
   if (!booking) throw new Error('Booking not found after confirmation')
-  if (existing?.status !== 'confirmed') {
-    await upsertGuestFromBooking(booking)
-  }
+  await upsertGuestFromBooking(booking)
   return booking
 }
 
@@ -427,17 +476,23 @@ export async function upsertGuestFromBooking(booking: BookingRecord) {
 export async function expireBooking(bookingId: string, reason = 'expired') {
   const db = await getDb()
   const now = new Date()
-  const booking = await getBookingById(bookingId)
-  if (!booking || booking.status !== 'pending_payment') return booking
 
-  await db.collection('booking_locks').deleteMany({ bookingId })
-  await db.collection<BookingRecord>('bookings').updateOne(
-    { _id: bookingId, status: 'pending_payment' },
+  // Atomic claim first — never delete locks unless we actually expired the booking.
+  // Prevents confirm × expire TOCTOU from wiping locks on a paid stay.
+  const booking = await db.collection<BookingRecord>('bookings').findOneAndUpdate(
+    { _id: bookingId as any, status: 'pending_payment' } as any,
     {
       $set: { status: 'expired', updatedAt: now },
       $unset: { expiresAt: '' },
-    }
+    },
+    { returnDocument: 'before' }
   )
+
+  if (!booking) {
+    return getBookingById(bookingId)
+  }
+
+  await db.collection('booking_locks').deleteMany({ bookingId, status: 'pending_payment' })
   await recordBookingEvent(db, bookingId, 'booking.pending_expired', { reason })
 
   // Abandoned-checkout recovery: the guest reached the booking form (so we have
@@ -448,7 +503,7 @@ export async function expireBooking(bookingId: string, reason = 'expired') {
   if (RECOVERY_REASONS.has(reason) && booking.guest?.email) {
     try {
       if (!(await hasCommsEvent(bookingId, 'booking.recovery.email'))) {
-        await sendBookingRecoveryEmail(booking)
+        await sendBookingRecoveryEmail(booking as BookingRecord)
         await markCommsEventSent(bookingId, 'booking.recovery.email')
         await recordBookingEvent(db, bookingId, 'booking.recovery_email_sent', { reason })
       }
@@ -504,8 +559,29 @@ export async function beginCancellation(bookingId: string, refundAmountAud: numb
   return result
 }
 
-export async function failCancellation(bookingId: string, error: string) {
+export async function failCancellation(
+  bookingId: string,
+  error: string,
+  options?: { refundAlreadyIssued?: boolean }
+) {
   const db = await getDb()
+  // If Stripe already refunded, do NOT revert to confirmed — leave refund_pending
+  // so inventory stays released only via cancelBooking, and the owner can reconcile.
+  if (options?.refundAlreadyIssued) {
+    await db.collection<BookingRecord>('bookings').updateOne(
+      { _id: bookingId as any, status: { $in: ['cancelling', 'refund_pending'] } } as any,
+      {
+        $set: {
+          status: 'refund_pending',
+          updatedAt: new Date(),
+          'comms.lastEmailError': `Refund issued but finalize failed: ${error}`,
+        },
+      }
+    )
+    await recordBookingEvent(db, bookingId, 'booking.cancellation_refund_orphaned', { error })
+    return getBookingById(bookingId)
+  }
+
   await db.collection<BookingRecord>('bookings').updateOne(
     { _id: bookingId as any, status: { $in: ['cancelling', 'refund_pending'] } } as any,
     {

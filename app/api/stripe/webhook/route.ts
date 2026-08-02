@@ -92,10 +92,40 @@ export async function POST(req: NextRequest) {
       const bookingId = session.metadata?.bookingId
       if (!bookingId) throw new Error('Missing bookingId in Stripe metadata')
 
+      if (session.payment_status !== 'paid') {
+        throw new Error(`Checkout session ${session.id} is not paid (status=${session.payment_status})`)
+      }
+
       const payment = await buildPaymentDetails(session)
       const existingBooking = await getBookingById(bookingId)
       if (!existingBooking) {
         throw new Error(`Booking ${bookingId} not found for completed checkout`)
+      }
+
+      const storedSessionId =
+        existingBooking.payment.stripeSessionId || existingBooking.stripeSessionId
+      if (storedSessionId && storedSessionId !== session.id) {
+        throw new Error(`Stripe session mismatch for booking ${bookingId}`)
+      }
+
+      // Compare against amounts actually sent to Stripe Checkout (levy is tracked
+      // separately and is not a Checkout line item today).
+      const expectedCents =
+        (existingBooking.pricing.accommodationAud + (existingBooking.pricing.petFeeAud || 0)) * 100
+      if (typeof session.amount_total === 'number' && session.amount_total !== expectedCents) {
+        const reason = `Paid amount ${session.amount_total} does not match expected checkout total ${expectedCents}`
+        const orphaned = await markPaymentOrphaned(bookingId, payment, reason)
+        if (payment.stripePaymentIntentId) {
+          await stripe.refunds.create(
+            {
+              payment_intent: payment.stripePaymentIntentId,
+              metadata: { bookingId, reason: 'amount_mismatch_direct_booking' },
+            },
+            { idempotencyKey: `amount-mismatch-refund-${bookingId}` }
+          )
+        }
+        if (orphaned) await sendOwnerPaymentIssueAlert(orphaned, reason)
+        return NextResponse.json({ received: true, orphaned: true })
       }
 
       const locksStillHeld = await hasActiveLocksForBooking(existingBooking)

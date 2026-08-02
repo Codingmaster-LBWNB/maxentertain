@@ -69,7 +69,11 @@ export async function POST(req: NextRequest) {
         reason: reasonText,
       })
     } catch (error) {
-      await failCancellation(booking._id, error instanceof Error ? error.message : 'Final cancellation update failed')
+      await failCancellation(
+        booking._id,
+        error instanceof Error ? error.message : 'Final cancellation update failed',
+        { refundAlreadyIssued: Boolean(refundStripeId) }
+      )
       throw error
     }
 

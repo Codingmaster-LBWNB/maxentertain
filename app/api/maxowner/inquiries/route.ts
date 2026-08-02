@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
+import { requireOwner } from '@/lib/auth'
 
 export async function GET(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { searchParams } = new URL(req.url)
   const page = Math.max(1, parseInt(searchParams.get('page') ?? '1'))
   const limit = 20
@@ -24,12 +28,23 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { id, status } = await req.json()
   const validStatuses = ['new', 'replied', 'booked']
   if (!id || !validStatuses.includes(status)) {
     return NextResponse.json({ error: 'Valid id and status required' }, { status: 400 })
   }
+
+  let oid: ObjectId
+  try {
+    oid = new ObjectId(id)
+  } catch {
+    return NextResponse.json({ error: 'Invalid id' }, { status: 400 })
+  }
+
   const db = await getDb()
-  await db.collection('inquiries').updateOne({ _id: new ObjectId(id) }, { $set: { status } })
+  await db.collection('inquiries').updateOne({ _id: oid }, { $set: { status } })
   return NextResponse.json({ ok: true })
 }

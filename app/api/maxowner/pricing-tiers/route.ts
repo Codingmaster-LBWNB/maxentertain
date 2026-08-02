@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { NIGHTLY_RATES, TIER_LABELS, PricingTier } from '@/lib/pricing'
+import { requireOwner } from '@/lib/auth'
 
 const TIERS = Object.keys(NIGHTLY_RATES) as PricingTier[]
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const defaults = TIERS.map((tier) => ({
     tier,
     label: TIER_LABELS[tier],
@@ -33,12 +37,14 @@ export async function GET() {
       }))
     )
   } catch {
-    // MongoDB unavailable — return hardcoded defaults so the UI still renders
     return NextResponse.json(defaults)
   }
 }
 
 export async function PUT(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { tier, price } = await req.json()
   if (!tier || !TIERS.includes(tier) || typeof price !== 'number' || price < 0) {
     return NextResponse.json({ error: 'Valid tier and numeric price required' }, { status: 400 })
@@ -53,6 +59,9 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { tier } = await req.json()
   if (!tier || !TIERS.includes(tier)) {
     return NextResponse.json({ error: 'Valid tier required' }, { status: 400 })

@@ -37,6 +37,14 @@ function escapeHtml(value: unknown) {
     .replace(/'/g, '&#39;')
 }
 
+function sanitizeHeader(value: unknown, maxLength = 120) {
+  return String(value ?? '')
+    .replace(/[\r\n\0]+/g, ' ')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    .trim()
+    .slice(0, maxLength)
+}
+
 function dateRangeLine(booking: BookingRecord) {
   return `${booking.checkIn} to ${booking.checkOut} (${booking.nights} nights)`
 }
@@ -439,15 +447,18 @@ export async function sendCheckoutFollowupEmail(booking: BookingRecord) {
   })
 }
 
-export async function sendInquiryReceivedEmails(input: {
-  name: string
-  email: string
-  phone: string
-  checkIn: string
-  checkOut: string
-  guests: string
-  message: string
-}) {
+export async function sendInquiryReceivedEmails(
+  input: {
+    name: string
+    email: string
+    phone: string
+    checkIn: string
+    checkOut: string
+    guests: string
+    message: string
+  },
+  options?: { notifyGuest?: boolean }
+) {
   const name = escapeHtml(input.name)
   const email = escapeHtml(input.email)
   const phone = escapeHtml(input.phone)
@@ -456,6 +467,7 @@ export async function sendInquiryReceivedEmails(input: {
   const guests = escapeHtml(input.guests)
   const message = escapeHtml(input.message)
   const propertyName = escapeHtml(propertyConfig.name)
+  const notifyGuest = options?.notifyGuest !== false
 
   const ownerText = [
     'New inquiry received',
@@ -469,7 +481,7 @@ export async function sendInquiryReceivedEmails(input: {
 
   await sendEmail({
     to: getOwnerEmail(),
-    subject: `New inquiry: ${input.name} (${input.checkIn} to ${input.checkOut})`,
+    subject: `New inquiry: ${sanitizeHeader(input.name)} (${sanitizeHeader(input.checkIn)} to ${sanitizeHeader(input.checkOut)})`,
     html: `
       <h2>New inquiry received</h2>
       <p><strong>Name:</strong> ${name}</p>
@@ -481,6 +493,8 @@ export async function sendInquiryReceivedEmails(input: {
     `,
     text: ownerText,
   })
+
+  if (!notifyGuest) return
 
   await sendEmail({
     to: input.email,
@@ -524,7 +538,7 @@ export async function sendUnansweredQuestionAlert(input: {
   await sendEmail({
     to: getOwnerEmail(),
     replyTo: input.guestEmail,
-    subject: `MAX couldn't answer: "${input.question.slice(0, 60)}"`,
+    subject: `MAX couldn't answer: "${sanitizeHeader(input.question, 60)}"`,
     html: `
       <h2>A guest question needs your reply</h2>
       <p>MAX (the chat assistant) could not answer this from the property info, so the guest asked to hear from you directly.</p>

@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
+import { requireOwner } from '@/lib/auth'
 
 export const runtime = 'nodejs'
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { id: string } }
 ) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const db = await getDb()
   const events = await db
     .collection('booking_events')

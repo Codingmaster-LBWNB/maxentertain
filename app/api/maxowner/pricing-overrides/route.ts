@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
+import { requireOwner } from '@/lib/auth'
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   try {
     const db = await getDb()
     const overrides = await db
@@ -16,6 +20,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { date, price, note } = await req.json()
   if (!date || !price || typeof price !== 'number' || price < 0) {
     return NextResponse.json({ error: 'date and numeric price are required' }, { status: 400 })
@@ -30,6 +37,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { date } = await req.json()
   if (!date) return NextResponse.json({ error: 'date is required' }, { status: 400 })
   const db = await getDb()

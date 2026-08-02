@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { sendInquiryReceivedEmails } from '@/lib/email'
-import { getClientIp, rateLimit } from '@/lib/rateLimit'
+import { getClientIp, rateLimitDurable } from '@/lib/rateLimit'
 
 const MAX_LENGTHS = {
   name: 200,
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true }) // silently skip if not configured
   }
 
-  if (!rateLimit('inquiries', getClientIp(req), 5, 60_000)) {
+  if (!(await rateLimitDurable('inquiries', getClientIp(req), 5, 60_000))) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again in a minute.' },
       { status: 429 }

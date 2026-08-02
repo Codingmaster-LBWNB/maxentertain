@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import { ObjectId } from 'mongodb'
+import { requireOwner } from '@/lib/auth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   let oid: ObjectId
   try {
     oid = new ObjectId(params.id)

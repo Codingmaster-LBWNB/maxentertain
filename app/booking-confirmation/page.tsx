@@ -1,16 +1,37 @@
 import Link from 'next/link'
 import BookingSummary from '@/components/BookingSummary'
 import CancellationPolicy from '@/components/CancellationPolicy'
-import { getBookingById, toPublicBookingSummary } from '@/lib/bookings'
+import { getBookingById, getBookingByStripeSession, toPublicBookingSummary } from '@/lib/bookings'
+import { getStripe } from '@/lib/stripe'
 
 export default async function BookingConfirmationPage({
   searchParams,
 }: {
-  searchParams?: { bookingId?: string }
+  searchParams?: { bookingId?: string; session_id?: string }
 }) {
   const bookingId = searchParams?.bookingId
-  const booking = bookingId ? await getBookingById(bookingId) : null
-  const summary = booking ? toPublicBookingSummary(booking, booking.status === 'confirmed') : null
+  const sessionId = searchParams?.session_id
+
+  // Prefer Stripe session proof when present; never reveal cancellation tokens
+  // from bookingId alone (cancel links stay in the confirmation email).
+  let booking = null
+  if (sessionId) {
+    try {
+      const session = await getStripe().checkout.sessions.retrieve(sessionId)
+      const sessionBookingId = session.metadata?.bookingId
+      if (sessionBookingId && (!bookingId || bookingId === sessionBookingId)) {
+        booking =
+          (await getBookingByStripeSession(sessionId)) ??
+          (await getBookingById(sessionBookingId))
+      }
+    } catch {
+      booking = null
+    }
+  } else if (bookingId) {
+    booking = await getBookingById(bookingId)
+  }
+
+  const summary = booking ? toPublicBookingSummary(booking, false) : null
 
   return (
     <main className="min-h-screen bg-luxury-light px-4 py-16 dark:bg-[#141411]">
@@ -71,11 +92,6 @@ export default async function BookingConfirmationPage({
                   <a href={summary.receiptUrl} className="inline-flex items-center justify-center border border-luxury-gold px-8 py-3.5 text-sm font-semibold uppercase tracking-widest text-luxury-gold transition-colors hover:bg-luxury-gold hover:text-white" target="_blank" rel="noreferrer">
                     View Receipt
                   </a>
-                ) : null}
-                {summary.cancellationUrl ? (
-                  <Link href={summary.cancellationUrl} className="inline-flex items-center justify-center border border-gray-300 px-8 py-3.5 text-sm font-semibold uppercase tracking-widest text-gray-700 transition-colors hover:border-luxury-gold hover:text-luxury-gold dark:border-white/20 dark:text-gray-300">
-                    Manage Booking
-                  </Link>
                 ) : null}
               </div>
             </section>

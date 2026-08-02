@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto'
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
 import type { BookingRecord, BookingStatus } from '@/types/booking'
@@ -21,10 +22,18 @@ function formatICalDateTime(date = new Date()) {
   return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
 }
 
+function tokensMatch(provided: string | null, secret: string): boolean {
+  if (!provided) return false
+  const a = Buffer.from(provided)
+  const b = Buffer.from(secret)
+  if (a.length !== b.length) return false
+  return timingSafeEqual(a, b)
+}
+
 export async function GET(req: Request) {
   const secret = process.env.ICAL_EXPORT_SECRET
   const token = new URL(req.url).searchParams.get('token')
-  if (!secret || token !== secret) {
+  if (!secret || !tokensMatch(token, secret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

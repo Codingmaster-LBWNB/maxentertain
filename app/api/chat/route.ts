@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { propertyConfig } from '@/config/property'
 import { getDb } from '@/lib/mongodb'
 import { chatToolDeclarations, executeChatTool, type ToolResult } from '@/lib/chatTools'
+import { getSiteUrl } from '@/lib/site'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -34,11 +35,7 @@ function getClientIp(req: NextRequest): string {
 
 function checkOrigin(req: NextRequest): boolean {
   if (process.env.NODE_ENV !== 'production') return true
-  const siteUrl =
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_URL
-  if (!siteUrl) return true
+  const siteUrl = getSiteUrl()
   const origin = req.headers.get('origin') || req.headers.get('referer') || ''
   try {
     return new URL(origin).origin === new URL(siteUrl).origin

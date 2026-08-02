@@ -3,6 +3,7 @@ import { getDb } from '@/lib/mongodb'
 import { expireBooking } from '@/lib/bookings'
 import { captureBond, releaseBond } from '@/lib/bonds'
 import { sendBookingConfirmedEmail, sendOwnerBookingAlert } from '@/lib/email'
+import { requireOwner } from '@/lib/auth'
 import type { BookingRecord, BookingStatus } from '@/types/booking'
 
 const VALID_STATUSES: BookingStatus[] = ['pending_payment', 'confirmed', 'expired', 'cancelled', 'refunded', 'completed']
@@ -14,6 +15,9 @@ function statusFilter(status: string | null) {
 }
 
 export async function GET(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const { searchParams } = new URL(req.url)
   const page = Math.max(1, Number(searchParams.get('page') ?? 1))
   const status = searchParams.get('status')
@@ -46,6 +50,9 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const body = await req.json()
   const { bookingId, action } = body
   if (!bookingId || !action) {
@@ -102,7 +109,6 @@ export async function POST(req: NextRequest) {
     await db.collection('booking_events').insertOne({
       bookingId: booking._id,
       event: 'booking.arrival_details_set',
-      // Never log the passcode value itself.
       data: { hasDetails: Boolean(details), hasPasscode: Boolean(passcode) },
       createdAt: new Date(),
     })

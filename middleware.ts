@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSessionToken, verifySession } from '@/lib/auth'
+import { getSessionToken, verifySession, safeOwnerRedirectPath } from '@/lib/auth'
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -12,7 +12,7 @@ export async function middleware(req: NextRequest) {
   const token = getSessionToken(req)
   if (!token || !(await verifySession(token))) {
     const loginUrl = new URL('/maxowner/login', req.url)
-    loginUrl.searchParams.set('from', pathname)
+    loginUrl.searchParams.set('from', safeOwnerRedirectPath(pathname))
     return NextResponse.redirect(loginUrl)
   }
 

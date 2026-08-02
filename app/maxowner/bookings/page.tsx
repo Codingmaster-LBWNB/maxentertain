@@ -96,7 +96,7 @@ export default function OwnerBookingsPage() {
   const [commsByBooking, setCommsByBooking] = useState<Record<string, CommsItem[]>>({})
   const [openCommsId, setOpenCommsId] = useState<string | null>(null)
   const [health, setHealth] = useState<Record<string, boolean> | null>(null)
-  const [directBookingIcalUrl, setDirectBookingIcalUrl] = useState<string | null>(null)
+  const [icalExportConfigured, setIcalExportConfigured] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -114,7 +114,7 @@ export default function OwnerBookingsPage() {
       .then((res) => res.json())
       .then((data) => {
         setHealth(data.checks ?? null)
-        setDirectBookingIcalUrl(data.directBookingIcalUrl ?? null)
+        setIcalExportConfigured(Boolean(data.icalExportConfigured ?? data.checks?.icalExportSecret))
       })
       .catch(() => setHealth(null))
   }, [])
@@ -196,10 +196,14 @@ export default function OwnerBookingsPage() {
         </div>
       ) : null}
 
-      {directBookingIcalUrl ? (
+      {icalExportConfigured ? (
         <div className="mb-6 rounded-lg border border-luxury-gold/20 bg-luxury-gold/10 px-4 py-3 text-sm text-luxury-gold">
           <p className="font-semibold">Private direct-booking iCal feed</p>
-          <p className="mt-1 break-all text-luxury-gold/80">{directBookingIcalUrl}</p>
+          <p className="mt-1 text-luxury-gold/80">
+            Configured. Use{' '}
+            <code className="text-xs">/api/calendar/direct-bookings.ics?token=&lt;ICAL_EXPORT_SECRET&gt;</code>{' '}
+            with the secret from your server env (never stored in this UI).
+          </p>
         </div>
       ) : null}
 

@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getDb } from '@/lib/mongodb'
-import { getSiteUrl } from '@/lib/site'
+import { requireOwner } from '@/lib/auth'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(req: Request) {
+  const denied = await requireOwner(req)
+  if (denied) return denied
+
   const checks = {
     mongo: false,
     stripe: Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_WEBHOOK_SECRET),
@@ -24,9 +27,9 @@ export async function GET() {
     checks.mongo = false
   }
 
-  const directBookingIcalUrl = process.env.ICAL_EXPORT_SECRET
-    ? `${getSiteUrl()}/api/calendar/direct-bookings.ics?token=${encodeURIComponent(process.env.ICAL_EXPORT_SECRET)}`
-    : null
-
-  return NextResponse.json({ checks, directBookingIcalUrl })
+  // Never return the raw ICAL_EXPORT_SECRET — only whether it is configured.
+  return NextResponse.json({
+    checks,
+    icalExportConfigured: checks.icalExportSecret,
+  })
 }

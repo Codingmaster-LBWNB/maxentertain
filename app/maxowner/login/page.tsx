@@ -24,8 +24,18 @@ function LoginForm() {
 
     setLoading(false)
     if (res.ok) {
-      const from = params.get('from') ?? '/maxowner/pricing'
-      router.push(from)
+      const from = params.get('from')
+      const safe =
+        from &&
+        from.startsWith('/maxowner') &&
+        !from.startsWith('//') &&
+        !from.includes('://') &&
+        !from.includes('\\')
+          ? from
+          : '/maxowner/pricing'
+      router.push(safe)
+    } else if (res.status === 429) {
+      setError('Too many attempts. Please wait and try again.')
     } else {
       setError('Incorrect password.')
     }
